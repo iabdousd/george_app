@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:george_project/services/user/user_service.dart';
 import 'package:george_project/views/main.dart';
 import 'package:get/get.dart';
 
@@ -11,7 +11,9 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  final Future<FirebaseApp> _initialization = Firebase.initializeApp();
+  final Future _initialization = Future.wait([
+    createUser(),
+  ]);
 
   @override
   Widget build(BuildContext context) {
@@ -20,11 +22,19 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: lightThemeData(context),
       darkTheme: darkThemeData(context),
-      home: FutureBuilder<FirebaseApp>(
+      home: FutureBuilder<dynamic>(
         future: _initialization,
         builder: (context, snapshot) {
           if (snapshot.hasData) return MainView();
-          return Container();
+
+          if (snapshot.hasError) {
+            print('Error: ${snapshot.error}');
+            return Container(color: Colors.red);
+          }
+
+          return Container(
+            color: Colors.white,
+          );
         },
       ),
     );
