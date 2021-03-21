@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "857707576305",
+    "project_id": "upwork-projects-56b20",
+    "storage_bucket": "upwork-projects-56b20.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:857707576305:android:e59c70f39eaaf15f322250",
+        "android_client_info": {
+          "package_name": "com.example.george_project"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "857707576305-le34e332etq4okmcgspoimdmsqvkgbp0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCkcOEilCHYNOcOw1KKjOUJD4U6u0aZWTw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "857707576305-le34e332etq4okmcgspoimdmsqvkgbp0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
