@@ -28,7 +28,8 @@ class Goal {
     this.stacks = stacks ?? [];
   }
 
-  Goal.fromJson(Map<String, dynamic> jsonObject) {
+  Goal.fromJson(Map<String, dynamic> jsonObject, {String id}) {
+    this.id = id;
     this.title = jsonObject[goal_constants.TITLE_KEY];
     this.color = jsonObject[goal_constants.COLOR_KEY];
     this.status = jsonObject[goal_constants.STATUS_KEY];

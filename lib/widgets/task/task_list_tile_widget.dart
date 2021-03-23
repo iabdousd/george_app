@@ -1,29 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:george_project/config/extensions/hex_color.dart';
-import 'package:george_project/models/Goal.dart';
+import 'package:george_project/models/Task.dart';
 import 'package:george_project/services/feed-back/loader.dart';
-import 'package:george_project/views/goal/goal_details.dart';
-import 'package:george_project/views/goal/save_goal.dart';
+import 'package:george_project/views/task/save_task.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
-class GoalListTileWidget extends StatelessWidget {
-  final Goal goal;
+class TaskListTileWidget extends StatelessWidget {
+  final Task task;
+  final String stackColor;
 
-  const GoalListTileWidget({Key key, @required this.goal}) : super(key: key);
+  const TaskListTileWidget(
+      {Key key, @required this.task, @required this.stackColor})
+      : super(key: key);
 
-  _deleteGoal(context) {
+  _deleteTask(context) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: Text(
-            'Delete Goal',
+            'Delete Task',
             style: Theme.of(context).textTheme.headline6,
           ),
           content: Text(
-              'Would you really like to delete \'${goal.title.toUpperCase()}\' ?'),
+              'Would you really like to delete \'${task.title.toUpperCase()}\' ?'),
           actions: [
             TextButton(
               onPressed: () async {
@@ -39,7 +41,7 @@ class GoalListTileWidget extends StatelessWidget {
             TextButton(
               onPressed: () async {
                 toggleLoading(state: true);
-                await goal.delete();
+                await task.delete();
                 toggleLoading(state: false);
                 Navigator.of(context).pop();
               },
@@ -57,9 +59,13 @@ class GoalListTileWidget extends StatelessWidget {
     );
   }
 
-  _editGoal(context) {
+  _editTask(context) {
     Get.to(
-      () => SaveGoalPage(goal: goal),
+      () => SaveTaskPage(
+        task: task,
+        stackRef: task.stackRef,
+        goalRef: task.goalRef,
+      ),
       popGesture: true,
       transition: Transition.rightToLeftWithFade,
     );
@@ -82,9 +88,9 @@ class GoalListTileWidget extends StatelessWidget {
       margin: EdgeInsets.only(top: 16.0),
       height: 64.0 + 20,
       child: GestureDetector(
-        onTap: () => Get.to(() => GoalDetailsPage(
-              goal: goal,
-            )),
+        onTap: () => task.status == 0
+            ? (task..status = 1).save()
+            : (task..status = 0).save(),
         child: Slidable(
           actionPane: SlidableScrollActionPane(),
           actionExtentRatio: 0.25,
@@ -97,14 +103,37 @@ class GoalListTileWidget extends StatelessWidget {
               mainAxisSize: MainAxisSize.max,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Container(
-                  width: 12.0,
-                  height: 64.0,
-                  decoration: BoxDecoration(
-                    color: HexColor.fromHex(goal.color),
-                    borderRadius: BorderRadius.circular(2.0),
+                Center(
+                  child: Container(
+                    width: 32.0,
+                    height: 32.0,
+                    margin: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                    child: Stack(
+                      children: [
+                        Center(
+                          child: Container(
+                            width: 20.0,
+                            height: 20.0,
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: HexColor.fromHex(stackColor),
+                                width: 2,
+                              ),
+                              borderRadius: BorderRadius.circular(2.0),
+                            ),
+                          ),
+                        ),
+                        if (task.status == 1)
+                          Center(
+                            child: Icon(
+                              Icons.done_rounded,
+                              size: 30.0,
+                              color: HexColor.fromHex(stackColor),
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
-                  margin: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
                 ),
                 Expanded(
                   child: Container(
@@ -115,22 +144,32 @@ class GoalListTileWidget extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          goal.title.toUpperCase(),
-                          style: Theme.of(context)
-                              .textTheme
-                              .headline6
-                              .copyWith(fontWeight: FontWeight.w600),
+                          task.title,
+                          style: Theme.of(context).textTheme.headline6.copyWith(
+                                fontWeight: FontWeight.w600,
+                                decoration: task.status == 1
+                                    ? TextDecoration.lineThrough
+                                    : TextDecoration.none,
+                                fontStyle: task.status == 1
+                                    ? FontStyle.italic
+                                    : FontStyle.normal,
+                              ),
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
                         ),
                         Text(
-                          DateFormat('MMM yyyy').format(goal.startDate) +
+                          DateFormat('dd MMM yyyy').format(task.startDate) +
                               ' - ' +
-                              DateFormat('MMM yyyy').format(goal.endDate),
-                          style: Theme.of(context)
-                              .textTheme
-                              .subtitle1
-                              .copyWith(fontWeight: FontWeight.w300),
+                              DateFormat('dd MMM yyyy').format(task.endDate),
+                          style: Theme.of(context).textTheme.subtitle1.copyWith(
+                                fontWeight: FontWeight.w300,
+                                decoration: task.status == 1
+                                    ? TextDecoration.lineThrough
+                                    : TextDecoration.none,
+                                fontStyle: task.status == 1
+                                    ? FontStyle.italic
+                                    : FontStyle.normal,
+                              ),
                         ),
                       ],
                     ),
@@ -141,7 +180,7 @@ class GoalListTileWidget extends StatelessWidget {
           ),
           secondaryActions: <Widget>[
             IconSlideAction(
-              onTap: () => _editGoal(context),
+              onTap: () => _editTask(context),
               iconWidget: LayoutBuilder(builder: (context, constraints) {
                 return Container(
                   width: constraints.maxWidth,
@@ -178,7 +217,7 @@ class GoalListTileWidget extends StatelessWidget {
                 },
               ),
               closeOnTap: true,
-              onTap: () => _deleteGoal(context),
+              onTap: () => _deleteTask(context),
             ),
           ],
         ),

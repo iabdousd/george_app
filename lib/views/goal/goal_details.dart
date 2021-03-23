@@ -1,0 +1,150 @@
+import 'package:flutter/material.dart';
+import 'package:george_project/models/Goal.dart';
+import 'package:george_project/services/feed-back/loader.dart';
+import 'package:george_project/views/goal/save_goal.dart';
+import 'package:george_project/views/stack/stacks_list_view.dart';
+import 'package:george_project/widgets/shared/app_action_button.dart';
+import 'package:george_project/widgets/shared/app_appbar.dart';
+import 'package:george_project/widgets/shared/app_date_view.dart';
+import 'package:get/get.dart';
+
+class GoalDetailsPage extends StatefulWidget {
+  final Goal goal;
+
+  GoalDetailsPage({
+    Key key,
+    @required this.goal,
+  }) : super(key: key);
+
+  @override
+  _GoalDetailsPageState createState() => _GoalDetailsPageState();
+}
+
+class _GoalDetailsPageState extends State<GoalDetailsPage> {
+  _editGoal() {
+    Get.to(
+      () => SaveGoalPage(goal: widget.goal),
+      popGesture: true,
+      transition: Transition.rightToLeftWithFade,
+    );
+  }
+
+  _deleteGoal() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(
+            'Delete Goal',
+            style: Theme.of(context).textTheme.headline6,
+          ),
+          content: Text(
+              'Would you really like to delete \'${widget.goal.title.toUpperCase()}\' ?'),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+              },
+              child: Text(
+                'Cancel',
+                style: Theme.of(context).textTheme.subtitle1.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+            ),
+            TextButton(
+              onPressed: () async {
+                toggleLoading(state: true);
+                await widget.goal.delete();
+                toggleLoading(state: false);
+                Navigator.of(context).pop();
+              },
+              child: Text(
+                'Delete',
+                style: Theme.of(context).textTheme.subtitle1.copyWith(
+                      color: Colors.red,
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: appAppBar(
+        title: '',
+      ),
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 16.0,
+            vertical: 4.0,
+          ),
+          children: [
+            Container(
+              child: Text(
+                widget.goal.title.toUpperCase(),
+                style: Theme.of(context).textTheme.headline5.copyWith(
+                      fontWeight: FontWeight.w900,
+                    ),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 12.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: AppDateView(
+                      label: 'From:',
+                      date: widget.goal.startDate,
+                    ),
+                  ),
+                  Expanded(
+                    child: AppDateView(
+                      label: 'To:',
+                      date: widget.goal.endDate,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 12.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: AppActionButton(
+                      icon: Icons.edit,
+                      label: 'EDIT',
+                      onPressed: _editGoal,
+                      backgroundColor: Theme.of(context).accentColor,
+                    ),
+                  ),
+                  Expanded(
+                    child: AppActionButton(
+                      icon: Icons.delete,
+                      label: 'DELETE',
+                      onPressed: _deleteGoal,
+                      backgroundColor: Colors.red,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            StacksListView(
+              goal: widget.goal,
+            ),
+          ],
+        ),
+      ),
+      backgroundColor: Theme.of(context).backgroundColor,
+    );
+  }
+}

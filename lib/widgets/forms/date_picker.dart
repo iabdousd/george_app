@@ -6,20 +6,41 @@ class DatePickerWidget extends StatefulWidget {
   final String title;
   final String color;
   final Function(DateTime) onSubmit;
+  final DateTime initialDate;
+  final bool withTime;
+  final String dateFormat;
 
-  const DatePickerWidget(
-      {Key key,
-      @required this.title,
-      @required this.color,
-      @required this.onSubmit})
-      : super(key: key);
+  const DatePickerWidget({
+    Key key,
+    @required this.title,
+    @required this.color,
+    @required this.onSubmit,
+    this.initialDate,
+    this.withTime = false,
+    this.dateFormat = 'EEEE, dd MMMM',
+  }) : super(key: key);
 
   @override
   _DatePickerWidgetState createState() => _DatePickerWidgetState();
 }
 
 class _DatePickerWidgetState extends State<DatePickerWidget> {
-  DateTime selectedDate = DateTime.now();
+  DateTime selectedDate;
+
+  Future<Null> _selectTime(BuildContext context) async {
+    final TimeOfDay picked = await showTimePicker(
+      context: context,
+      initialTime:
+          TimeOfDay(hour: selectedDate.hour, minute: selectedDate.minute),
+    );
+    if (picked != null) {
+      setState(() {
+        selectedDate = DateTime(selectedDate.year, selectedDate.month,
+            selectedDate.day, picked.hour, picked.minute);
+      });
+      widget.onSubmit(selectedDate);
+    }
+  }
 
   _pickDate() async {
     final DateTime picked = await showDatePicker(
@@ -32,8 +53,17 @@ class _DatePickerWidgetState extends State<DatePickerWidget> {
       setState(() {
         selectedDate = picked;
       });
-      widget.onSubmit(picked);
+      if (widget.withTime) {
+        _selectTime(context);
+      } else
+        widget.onSubmit(picked);
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    selectedDate = widget.initialDate ?? DateTime.now();
   }
 
   @override
@@ -91,7 +121,7 @@ class _DatePickerWidgetState extends State<DatePickerWidget> {
                   width: 12,
                 ),
                 Text(
-                  DateFormat('EEEE, dd MMMM').format(selectedDate),
+                  DateFormat(widget.dateFormat).format(selectedDate),
                   style: Theme.of(context).textTheme.headline6,
                 ),
                 SizedBox(

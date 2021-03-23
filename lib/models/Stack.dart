@@ -4,6 +4,7 @@ import 'package:george_project/constants/models/stack.dart' as stack_constants;
 import 'package:george_project/constants/models/goal.dart' as goal_constants;
 import 'package:george_project/constants/user.dart' as user_constants;
 
+import 'Note.dart';
 import 'Task.dart';
 
 class Stack {
@@ -17,6 +18,7 @@ class Stack {
   DateTime endDate;
 
   List<Task> tasks;
+  List<Note> notes;
 
   Stack({
     this.id,

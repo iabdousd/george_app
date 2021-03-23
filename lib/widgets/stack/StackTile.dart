@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:george_project/config/extensions/hex_color.dart';
-import 'package:george_project/models/Goal.dart';
 import 'package:george_project/services/feed-back/loader.dart';
-import 'package:george_project/views/goal/goal_details.dart';
-import 'package:george_project/views/goal/save_goal.dart';
+import 'package:george_project/views/stack/save_stack.dart';
+import 'package:george_project/views/stack/stack_details.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:george_project/models/Stack.dart' as stack_model;
 
-class GoalListTileWidget extends StatelessWidget {
-  final Goal goal;
+class StackListTileWidget extends StatelessWidget {
+  final stack_model.Stack stack;
 
-  const GoalListTileWidget({Key key, @required this.goal}) : super(key: key);
+  const StackListTileWidget({Key key, @required this.stack}) : super(key: key);
 
   _deleteGoal(context) {
     showDialog(
@@ -19,11 +19,11 @@ class GoalListTileWidget extends StatelessWidget {
       builder: (context) {
         return AlertDialog(
           title: Text(
-            'Delete Goal',
+            'Delete Stack',
             style: Theme.of(context).textTheme.headline6,
           ),
           content: Text(
-              'Would you really like to delete \'${goal.title.toUpperCase()}\' ?'),
+              'Would you really like to delete \'${stack.title.toUpperCase()}\' ?'),
           actions: [
             TextButton(
               onPressed: () async {
@@ -39,7 +39,7 @@ class GoalListTileWidget extends StatelessWidget {
             TextButton(
               onPressed: () async {
                 toggleLoading(state: true);
-                await goal.delete();
+                await stack.delete();
                 toggleLoading(state: false);
                 Navigator.of(context).pop();
               },
@@ -59,7 +59,10 @@ class GoalListTileWidget extends StatelessWidget {
 
   _editGoal(context) {
     Get.to(
-      () => SaveGoalPage(goal: goal),
+      () => SaveStackPage(
+        stack: stack,
+        goalRef: stack.goalRef,
+      ),
       popGesture: true,
       transition: Transition.rightToLeftWithFade,
     );
@@ -82,8 +85,8 @@ class GoalListTileWidget extends StatelessWidget {
       margin: EdgeInsets.only(top: 16.0),
       height: 64.0 + 20,
       child: GestureDetector(
-        onTap: () => Get.to(() => GoalDetailsPage(
-              goal: goal,
+        onTap: () => Get.to(() => StackDetailsPage(
+              stack: stack,
             )),
         child: Slidable(
           actionPane: SlidableScrollActionPane(),
@@ -97,14 +100,16 @@ class GoalListTileWidget extends StatelessWidget {
               mainAxisSize: MainAxisSize.max,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Container(
-                  width: 12.0,
-                  height: 64.0,
-                  decoration: BoxDecoration(
-                    color: HexColor.fromHex(goal.color),
-                    borderRadius: BorderRadius.circular(2.0),
+                Center(
+                  child: Container(
+                    width: 20.0,
+                    height: 20.0,
+                    decoration: BoxDecoration(
+                      color: HexColor.fromHex(stack.color),
+                      borderRadius: BorderRadius.circular(20.0),
+                    ),
+                    margin: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
                   ),
-                  margin: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
                 ),
                 Expanded(
                   child: Container(
@@ -115,7 +120,7 @@ class GoalListTileWidget extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          goal.title.toUpperCase(),
+                          stack.title.toUpperCase(),
                           style: Theme.of(context)
                               .textTheme
                               .headline6
@@ -124,9 +129,9 @@ class GoalListTileWidget extends StatelessWidget {
                           maxLines: 1,
                         ),
                         Text(
-                          DateFormat('MMM yyyy').format(goal.startDate) +
+                          DateFormat('dd MMM yyyy').format(stack.startDate) +
                               ' - ' +
-                              DateFormat('MMM yyyy').format(goal.endDate),
+                              DateFormat('dd MMM yyyy').format(stack.endDate),
                           style: Theme.of(context)
                               .textTheme
                               .subtitle1

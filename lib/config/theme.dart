@@ -5,12 +5,15 @@ import 'package:google_fonts/google_fonts.dart';
 ThemeData lightThemeData(BuildContext context) {
   return ThemeData.light().copyWith(
     primaryColor: kPrimaryColor,
+    accentColor: kSecondaryColor,
     scaffoldBackgroundColor: Color(0xFFF1F1F1),
     appBarTheme: appBarTheme,
     iconTheme: IconThemeData(color: kContentColorLightTheme),
     backgroundColor: Colors.white,
-    textTheme: GoogleFonts.interTextTheme(Theme.of(context).textTheme)
-        .apply(bodyColor: kContentColorLightTheme),
+    textTheme: GoogleFonts.interTextTheme(Theme.of(context).textTheme).apply(
+      bodyColor: kContentColorLightTheme,
+      fontFamily: GoogleFonts.openSans().fontFamily,
+    ),
     colorScheme: ColorScheme.light(
       primary: kPrimaryColor,
       secondary: kSecondaryColor,
@@ -29,6 +32,7 @@ ThemeData lightThemeData(BuildContext context) {
 ThemeData darkThemeData(BuildContext context) {
   return ThemeData.dark().copyWith(
     primaryColor: kPrimaryColor,
+    accentColor: kSecondaryColor,
     scaffoldBackgroundColor: kContentColorLightTheme,
     appBarTheme: appBarTheme,
     iconTheme: IconThemeData(color: kContentColorDarkTheme),

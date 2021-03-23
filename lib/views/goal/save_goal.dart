@@ -4,16 +4,17 @@ import 'package:george_project/models/Goal.dart';
 import 'package:george_project/services/feed-back/flush_bar.dart';
 import 'package:george_project/services/feed-back/loader.dart';
 import 'package:george_project/widgets/forms/date_picker.dart';
+import 'package:george_project/widgets/shared/app_appbar.dart';
 
-class GoalDetails extends StatefulWidget {
+class SaveGoalPage extends StatefulWidget {
   final Goal goal;
-  GoalDetails({Key key, this.goal}) : super(key: key);
+  SaveGoalPage({Key key, this.goal}) : super(key: key);
 
   @override
-  _GoalDetailsState createState() => _GoalDetailsState();
+  _SaveGoalPageState createState() => _SaveGoalPageState();
 }
 
-class _GoalDetailsState extends State<GoalDetails> {
+class _SaveGoalPageState extends State<SaveGoalPage> {
   GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   TextEditingController _titleController = TextEditingController();
   DateTime startDate = DateTime.now();
@@ -109,15 +110,21 @@ class _GoalDetailsState extends State<GoalDetails> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    if (widget.goal != null) {
+      _titleController.text = widget.goal.title;
+      startDate = widget.goal.startDate;
+      endDate = widget.goal.endDate;
+      selectedColor = widget.goal.color;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        iconTheme: Theme.of(context).iconTheme,
-        title: Text(
-          widget.goal != null ? 'Goal details' : 'New Goal',
-          style: Theme.of(context).textTheme.headline6,
-        ),
-        backgroundColor: Theme.of(context).backgroundColor,
+      appBar: appAppBar(
+        title: widget.goal != null ? 'Goal details' : 'New Goal',
         actions: [
           TextButton(
             onPressed: _submitGoal,
@@ -129,7 +136,6 @@ class _GoalDetailsState extends State<GoalDetails> {
             ),
           ),
         ],
-        centerTitle: true,
       ),
       body: SafeArea(
         child: Form(
@@ -195,11 +201,13 @@ class _GoalDetailsState extends State<GoalDetails> {
                 title: 'I want to start this goal on',
                 color: selectedColor,
                 onSubmit: _pickStartDate,
+                initialDate: startDate,
               ),
               DatePickerWidget(
                 title: 'I want to end this goal on',
                 color: selectedColor,
                 onSubmit: _pickEndDate,
+                initialDate: endDate,
               ),
             ],
           ),

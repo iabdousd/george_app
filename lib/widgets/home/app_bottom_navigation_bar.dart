@@ -1,0 +1,84 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+
+class AppBottomNavigationBar extends StatelessWidget {
+  final int index;
+  final Function(int) changePage;
+  const AppBottomNavigationBar({
+    Key key,
+    @required this.index,
+    @required this.changePage,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return BottomNavigationBar(
+      showSelectedLabels: false,
+      showUnselectedLabels: false,
+      currentIndex: index,
+      onTap: changePage,
+      items: [
+        BottomNavigationBarItem(
+          icon: SvgPicture.asset(
+            'assets/images/icons/home.svg',
+            width: 22,
+            height: 22,
+          ),
+          activeIcon: SvgPicture.asset(
+            'assets/images/icons/home.svg',
+            width: 22,
+            height: 22,
+            color: Theme.of(context).primaryColor,
+          ),
+          label: '',
+          tooltip: '',
+        ),
+        BottomNavigationBarItem(
+          icon: SvgPicture.asset(
+            'assets/images/icons/calendar.svg',
+            width: 22,
+            height: 22,
+          ),
+          activeIcon: SvgPicture.asset(
+            'assets/images/icons/calendar.svg',
+            width: 22,
+            height: 22,
+            color: Theme.of(context).primaryColor,
+          ),
+          label: '',
+          tooltip: '',
+        ),
+        BottomNavigationBarItem(
+          icon: SvgPicture.asset(
+            'assets/images/icons/timer.svg',
+            width: 22,
+            height: 22,
+          ),
+          activeIcon: SvgPicture.asset(
+            'assets/images/icons/timer.svg',
+            width: 22,
+            height: 22,
+            color: Theme.of(context).primaryColor,
+          ),
+          label: '',
+          tooltip: '',
+        ),
+        BottomNavigationBarItem(
+          icon: SvgPicture.asset(
+            'assets/images/icons/activity.svg',
+            width: 22,
+            height: 22,
+          ),
+          activeIcon: SvgPicture.asset(
+            'assets/images/icons/activity.svg',
+            width: 22,
+            height: 22,
+            color: Theme.of(context).primaryColor,
+          ),
+          label: '',
+          tooltip: '',
+        ),
+      ],
+    );
+  }
+}
