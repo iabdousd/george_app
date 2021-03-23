@@ -4,15 +4,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:george_project/constants/models/goal.dart' as goal_constants;
 import 'package:george_project/constants/user.dart' as user_constants;
 import 'package:george_project/constants/models/stack.dart' as stack_constants;
-import 'package:george_project/constants/models/task.dart' as task_constants;
+import 'package:george_project/constants/models/note.dart' as note_constants;
+import 'package:george_project/models/Note.dart';
 import 'package:george_project/models/Stack.dart' as stack_model;
-import 'package:george_project/models/Task.dart';
 import 'package:george_project/services/feed-back/loader.dart';
 import 'package:george_project/services/user/user_service.dart';
-import 'package:george_project/views/task/save_task.dart';
+import 'package:george_project/views/note/save_note.dart';
+import 'package:george_project/widgets/note/note_lsit_tile.dart';
 import 'package:george_project/widgets/shared/app_action_button.dart';
 import 'package:george_project/widgets/shared/app_error_widget.dart';
-import 'package:george_project/widgets/task/task_list_tile_widget.dart';
 import 'package:get/get.dart';
 
 class NoteListView extends StatelessWidget {
@@ -37,7 +37,8 @@ class NoteListView extends StatelessWidget {
                 width: constraints.maxWidth,
                 child: AppActionButton(
                   onPressed: () => Get.to(
-                    SaveTaskPage(goalRef: stack.goalRef, stackRef: stack.id),
+                    () => SaveNotePage(
+                        goalRef: stack.goalRef, stackRef: stack.id),
                   ),
                   icon: Icons.add,
                   label: 'NEW NOTE',
@@ -61,8 +62,8 @@ class NoteListView extends StatelessWidget {
                   .doc(stack.goalRef)
                   .collection(goal_constants.STACKS_KEY)
                   .doc(stack.id)
-                  .collection(stack_constants.TASKS_KEY)
-                  .orderBy(task_constants.CREATION_DATE_KEY, descending: true)
+                  .collection(stack_constants.NOTES_KEY)
+                  .orderBy(note_constants.CREATION_DATE_KEY, descending: true)
                   .limit(10)
                   .snapshots(),
               builder: (context, snapshot) {
@@ -75,8 +76,8 @@ class NoteListView extends StatelessWidget {
                     itemCount: snapshot.data.docs.length,
                     physics: NeverScrollableScrollPhysics(),
                     itemBuilder: (context, index) {
-                      return TaskListTileWidget(
-                        task: Task.fromJson(snapshot.data.docs[index].data())
+                      return NoteListTileWidget(
+                        note: Note.fromJson(snapshot.data.docs[index].data())
                           ..goalRef = stack.goalRef
                           ..stackRef = stack.id
                           ..id = snapshot.data.docs[index].id,

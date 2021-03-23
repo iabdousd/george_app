@@ -6,3 +6,4 @@ const String CREATION_DATE_KEY = 'creationDate';
 const String START_DATE_KEY = 'startDate';
 const String END_DATE_KEY = 'endDate';
 const String TASKS_KEY = 'tasks';
+const String NOTES_KEY = 'notes';

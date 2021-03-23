@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:george_project/config/extensions/hex_color.dart';
 import 'package:george_project/models/Task.dart';
 import 'package:george_project/services/feed-back/flush_bar.dart';
 import 'package:george_project/services/feed-back/loader.dart';
@@ -26,64 +25,7 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
   DateTime startDate = DateTime.now();
   DateTime endDate = DateTime.now();
 
-  List<String> availableColors = [
-    '#f7f13b',
-    '#ed5858',
-    '#70f065',
-    '#eba373',
-    '#eb73d7',
-    '#4b9ede',
-  ];
   String selectedColor = '#ed5858';
-
-  pickColor() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text(
-            'The color of your task item',
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.subtitle1,
-          ),
-          content: Container(
-            width: MediaQuery.of(context).size.width * .7,
-            child: GridView.count(
-              crossAxisCount: 3,
-              childAspectRatio: 1.0,
-              padding: const EdgeInsets.all(8.0),
-              mainAxisSpacing: 12.0,
-              crossAxisSpacing: 12.0,
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              children: availableColors
-                  .map(
-                    (e) => Center(
-                      child: InkWell(
-                        onTap: () {
-                          setState(() {
-                            selectedColor = e;
-                          });
-                          Navigator.of(context).pop();
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(4.0),
-                          child: Icon(
-                            Icons.brightness_1,
-                            color: HexColor.fromHex(e),
-                            size: 32,
-                          ),
-                        ),
-                      ),
-                    ),
-                  )
-                  .toList(),
-            ),
-          ),
-        );
-      },
-    );
-  }
 
   _submitTask() async {
     if (!_formKey.currentState.validate()) return;
