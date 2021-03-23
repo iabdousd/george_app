@@ -8,6 +8,9 @@ class AppActionButton extends StatelessWidget {
   final Alignment alignment;
   final double iconSize;
   final TextStyle textStyle;
+  final Color iconColor;
+  final List<BoxShadow> shadows;
+  final EdgeInsets margin;
   const AppActionButton({
     Key key,
     @required this.onPressed,
@@ -16,21 +19,24 @@ class AppActionButton extends StatelessWidget {
     @required this.backgroundColor,
     this.alignment = Alignment.centerLeft,
     this.iconSize = 20.0,
+    this.iconColor,
     this.textStyle,
+    this.shadows = const [
+      BoxShadow(
+        color: Color(0x2F000000),
+        blurRadius: 6,
+        offset: Offset(0, 3),
+      )
+    ],
+    this.margin = const EdgeInsets.all(8.0),
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.all(8.0),
+      margin: margin,
       decoration: BoxDecoration(
-        boxShadow: [
-          BoxShadow(
-            color: Color(0x2F000000),
-            blurRadius: 6,
-            offset: Offset(0, 3),
-          )
-        ],
+        boxShadow: shadows,
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12.0),
@@ -40,7 +46,7 @@ class AppActionButton extends StatelessWidget {
             onPressed: onPressed,
             icon: Icon(
               icon,
-              color: Theme.of(context).backgroundColor,
+              color: iconColor ?? Theme.of(context).backgroundColor,
               size: iconSize,
             ),
             style: ButtonStyle(
