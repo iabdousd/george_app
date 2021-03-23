@@ -76,11 +76,14 @@ class NoteListView extends StatelessWidget {
                     itemCount: snapshot.data.docs.length,
                     physics: NeverScrollableScrollPhysics(),
                     itemBuilder: (context, index) {
+                      Note note = Note.fromJson(
+                        snapshot.data.docs[index].data(),
+                        id: snapshot.data.docs[index].id,
+                      );
                       return NoteListTileWidget(
-                        note: Note.fromJson(snapshot.data.docs[index].data())
+                        note: note
                           ..goalRef = stack.goalRef
-                          ..stackRef = stack.id
-                          ..id = snapshot.data.docs[index].id,
+                          ..stackRef = stack.id,
                         stackColor: stack.color,
                       );
                     },

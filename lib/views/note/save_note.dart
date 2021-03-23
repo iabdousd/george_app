@@ -1,15 +1,15 @@
 import 'dart:io';
 
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
+import 'package:multi_image_picker/multi_image_picker.dart';
 
 import 'package:george_project/models/Note.dart';
 import 'package:george_project/services/feed-back/flush_bar.dart';
 import 'package:george_project/services/feed-back/loader.dart';
 import 'package:george_project/widgets/shared/app_action_button.dart';
 import 'package:george_project/widgets/shared/app_appbar.dart';
-import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
-import 'package:multi_image_picker/multi_image_picker.dart';
+import 'package:george_project/widgets/shared/images_list_view.dart';
 
 class SaveNotePage extends StatefulWidget {
   final String goalRef;
@@ -34,13 +34,17 @@ class _SaveNotePageState extends State<SaveNotePage> {
   _submitNote() async {
     if (!_formKey.currentState.validate()) return;
     toggleLoading(state: true);
-    await Note(
+    Note note = Note(
       goalRef: widget.goalRef,
       stackRef: widget.stackRef,
       id: widget.note?.id,
       content: _contentController.text,
       creationDate: DateTime.now(),
-    ).save();
+    );
+    await note.save();
+
+    await note.addAttachments(images);
+
     toggleLoading(state: false);
     Navigator.of(context).pop();
     showFlushBar(
@@ -50,10 +54,6 @@ class _SaveNotePageState extends State<SaveNotePage> {
   }
 
   _pickImage() async {
-    setState(() {
-      images = [];
-    });
-
     List<Asset> resultList;
 
     try {
@@ -63,25 +63,18 @@ class _SaveNotePageState extends State<SaveNotePage> {
         selectedAssets: images,
       );
     } on Exception {
-      showFlushBar(title: 'Error', message: 'Unknown error happened while importing your images.', success: false,);
+      showFlushBar(
+        title: 'Error',
+        message: 'Unknown error happened while importing your images.',
+        success: false,
+      );
     }
     if (!mounted) return;
 
     setState(() {
-      images = resultList;
+      images = resultList ?? [];
     });
-  }
-
-  _pickDocument() async {
-    FilePickerResult result = await FilePicker.platform.pickFiles(
-      allowMultiple: true,
-      type: FileType.custom,
-      allowedExtensions: ['jpg', 'png', 'pdf', 'doc'],
-    );
-
-    if (result != null) {
-      files = result.paths.map((path) => File(path)).toList();
-    }
+    Navigator.of(context).pop();
   }
 
   addAttachment() {
@@ -109,21 +102,15 @@ class _SaveNotePageState extends State<SaveNotePage> {
               margin: EdgeInsets.only(bottom: 4, top: 4),
               iconSize: 28,
             ),
-            AppActionButton(
-              onPressed: _pickDocument,
-              icon: Icons.image_outlined,
-              label: 'Document',
-              backgroundColor: Theme.of(context).backgroundColor,
-              textStyle: Theme.of(context).textTheme.headline6,
-              iconColor: Theme.of(context).primaryColor,
-              shadows: [],
-              margin: EdgeInsets.only(bottom: 4, top: 0),
-              iconSize: 28,
-            ),
           ],
         ),
       ),
     );
+  }
+
+  init() async {
+    await widget.note.fetchAttachments();
+    setState(() {});
   }
 
   @override
@@ -131,6 +118,7 @@ class _SaveNotePageState extends State<SaveNotePage> {
     super.initState();
     if (widget.note != null) {
       _contentController.text = widget.note.content ?? '';
+      init();
     }
   }
 
@@ -194,10 +182,29 @@ class _SaveNotePageState extends State<SaveNotePage> {
                 label: 'Add attachment',
                 backgroundColor: Theme.of(context).primaryColor,
               ),
+              ImagesListView(
+                images: images,
+                networkImages: widget.note.attachments,
+                deleteEvent: _deleteImage,
+              ),
+              // FilesListView(files: files),
             ],
           ),
         ),
       ),
     );
+  }
+
+  _deleteImage(image) async {
+    if (image is Asset)
+      setState(() {
+        images.remove(image);
+      });
+    else {
+      toggleLoading(state: true);
+      await widget.note.deleteAttachment(image);
+      setState(() {});
+      toggleLoading(state: false);
+    }
   }
 }

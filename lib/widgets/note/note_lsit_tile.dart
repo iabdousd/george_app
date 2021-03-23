@@ -70,8 +70,9 @@ class NoteListTileWidget extends StatelessWidget {
     );
   }
 
-  _tapEvent() async {
+  _tapEvent(context) async {
     //
+    _editNote(context);
   }
 
   @override
@@ -90,7 +91,7 @@ class NoteListTileWidget extends StatelessWidget {
       ),
       margin: EdgeInsets.only(top: 16.0),
       child: GestureDetector(
-        onTap: _tapEvent,
+        onTap: () => _tapEvent(context),
         child: Slidable(
           actionPane: SlidableScrollActionPane(),
           actionExtentRatio: 0.25,
@@ -102,7 +103,7 @@ class NoteListTileWidget extends StatelessWidget {
             child: Container(
               margin: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -114,6 +115,8 @@ class NoteListTileWidget extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     maxLines: 4,
                   ),
+                  if ((note.attachments?.length ?? 0) > 0)
+                    Text('${note.attachments.length} attachment(s)'),
                 ],
               ),
             ),
