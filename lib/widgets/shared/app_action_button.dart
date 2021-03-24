@@ -15,7 +15,7 @@ class AppActionButton extends StatelessWidget {
     Key key,
     @required this.onPressed,
     @required this.icon,
-    @required this.label,
+    this.label,
     @required this.backgroundColor,
     this.alignment = Alignment.centerLeft,
     this.iconSize = 20.0,
@@ -40,30 +40,43 @@ class AppActionButton extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12.0),
-        child: InkWell(
-          onTap: onPressed,
-          child: TextButton.icon(
-            onPressed: onPressed,
-            icon: Icon(
-              icon,
-              color: iconColor ?? Theme.of(context).backgroundColor,
-              size: iconSize,
-            ),
-            style: ButtonStyle(
-              alignment: alignment,
-              backgroundColor: MaterialStateProperty.all(backgroundColor),
-              padding: MaterialStateProperty.all(
-                  EdgeInsets.symmetric(horizontal: 14.0, vertical: 10)),
-            ),
-            label: Text(
-              label,
-              style: textStyle ??
-                  Theme.of(context).textTheme.subtitle1.copyWith(
-                        color: Theme.of(context).backgroundColor,
-                      ),
-            ),
-          ),
-        ),
+        child: label == null
+            ? InkWell(
+                onTap: onPressed,
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: backgroundColor,
+                  ),
+                  child: Icon(
+                    icon,
+                    color: iconColor ?? Theme.of(context).backgroundColor,
+                    size: iconSize,
+                  ),
+                ),
+              )
+            : TextButton.icon(
+                onPressed: onPressed,
+                icon: Icon(
+                  icon,
+                  color: iconColor ?? Theme.of(context).backgroundColor,
+                  size: iconSize,
+                ),
+                style: ButtonStyle(
+                  alignment: alignment,
+                  backgroundColor: MaterialStateProperty.all(backgroundColor),
+                  padding: MaterialStateProperty.all(
+                    EdgeInsets.symmetric(horizontal: 10.0, vertical: 10),
+                  ),
+                ),
+                label: Text(
+                  label,
+                  style: textStyle ??
+                      Theme.of(context).textTheme.subtitle1.copyWith(
+                            color: Theme.of(context).backgroundColor,
+                          ),
+                ),
+              ),
       ),
     );
   }

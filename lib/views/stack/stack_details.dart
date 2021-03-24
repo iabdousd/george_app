@@ -9,10 +9,12 @@ import 'package:get/get.dart';
 import 'package:george_project/models/Stack.dart' as stack_model;
 
 class StackDetailsPage extends StatefulWidget {
+  final String goalTitle;
   final stack_model.Stack stack;
 
   StackDetailsPage({
     Key key,
+    @required this.goalTitle,
     @required this.stack,
   }) : super(key: key);
 
@@ -95,6 +97,18 @@ class _StackDetailsPageState extends State<StackDetailsPage> {
               shrinkWrap: true,
               physics: NeverScrollableScrollPhysics(),
               children: [
+                InkWell(
+                  onTap: () => Get.back(),
+                  child: Container(
+                    margin: EdgeInsets.only(bottom: 4.0),
+                    child: Text(
+                      widget.goalTitle.toUpperCase() + ' > ',
+                      style: Theme.of(context).textTheme.bodyText2.copyWith(
+                            fontWeight: FontWeight.w900,
+                          ),
+                    ),
+                  ),
+                ),
                 Container(
                   child: Text(
                     widget.stack.title.toUpperCase(),
@@ -122,6 +136,19 @@ class _StackDetailsPageState extends State<StackDetailsPage> {
                           format: 'dd MMM yyyy',
                         ),
                       ),
+                      AppActionButton(
+                        icon: Icons.edit,
+                        label: 'EDIT',
+                        onPressed: _editStack,
+                        backgroundColor: Theme.of(context).accentColor,
+                        margin: EdgeInsets.only(left: 8, right: 4),
+                      ),
+                      AppActionButton(
+                        icon: Icons.delete,
+                        onPressed: _deleteStack,
+                        backgroundColor: Colors.red,
+                        margin: EdgeInsets.only(left: 4),
+                      ),
                     ],
                   ),
                 ),
@@ -129,24 +156,7 @@ class _StackDetailsPageState extends State<StackDetailsPage> {
                   padding: const EdgeInsets.symmetric(vertical: 12.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: AppActionButton(
-                          icon: Icons.edit,
-                          label: 'EDIT',
-                          onPressed: _editStack,
-                          backgroundColor: Theme.of(context).accentColor,
-                        ),
-                      ),
-                      Expanded(
-                        child: AppActionButton(
-                          icon: Icons.delete,
-                          label: 'DELETE',
-                          onPressed: _deleteStack,
-                          backgroundColor: Colors.red,
-                        ),
-                      ),
-                    ],
+                    children: [],
                   ),
                 ),
               ],

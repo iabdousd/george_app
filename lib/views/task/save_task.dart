@@ -1,17 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:george_project/config/extensions/hex_color.dart';
 import 'package:george_project/models/Task.dart';
 import 'package:george_project/services/feed-back/flush_bar.dart';
 import 'package:george_project/services/feed-back/loader.dart';
 import 'package:george_project/widgets/forms/date_picker.dart';
 import 'package:george_project/widgets/shared/app_appbar.dart';
+import 'package:george_project/constants/models/task.dart' as task_constants;
 
 class SaveTaskPage extends StatefulWidget {
   final String goalRef;
   final String stackRef;
+  final String stackColor;
   final Task task;
   SaveTaskPage(
-      {Key key, @required this.goalRef, @required this.stackRef, this.task})
+      {Key key,
+      @required this.goalRef,
+      @required this.stackRef,
+      @required this.stackColor,
+      this.task})
       : super(key: key);
 
   @override
@@ -23,15 +30,15 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
   TextEditingController _titleController = TextEditingController();
   TextEditingController _descriptionController = TextEditingController();
   DateTime startDate = DateTime.now();
-  DateTime endDate = DateTime.now();
-
-  String selectedColor = '#ed5858';
+  DateTime endDate = DateTime.now().add(Duration(hours: 1));
+  String repetition = 'No repetition';
 
   _submitTask() async {
     if (!_formKey.currentState.validate()) return;
     toggleLoading(state: true);
     await Task(
       goalRef: widget.goalRef,
+      repetition: repetition,
       stackRef: widget.stackRef,
       id: widget.task?.id,
       title: _titleController.text,
@@ -40,6 +47,8 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
       startDate: startDate,
       endDate: endDate,
       status: 0,
+      stackColor: widget.stackColor,
+      donesHistory: widget.task.donesHistory ?? [],
     ).save();
     toggleLoading(state: false);
     Navigator.of(context).pop();
@@ -67,6 +76,7 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
     if (widget.task != null) {
       _titleController.text = widget.task.title ?? '';
       _descriptionController.text = widget.task.description ?? '';
+      repetition = widget.task?.repetition ?? repetition;
       startDate = widget.task.startDate;
       endDate = widget.task.endDate;
     }
@@ -95,6 +105,7 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
           key: _formKey,
           child: ListView(
             padding: const EdgeInsets.all(16.0),
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             children: [
               Container(
                 decoration: BoxDecoration(
@@ -147,21 +158,68 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
                   maxLines: 5,
                 ),
               ),
-              DatePickerWidget(
-                title: 'I want to start this task on',
-                color: selectedColor,
-                onSubmit: _pickStartDate,
-                initialDate: startDate,
-                dateFormat: 'hh:mm a, dd MMM',
-                withTime: true,
+              Container(
+                margin: EdgeInsets.symmetric(vertical: 8.0),
+                child: DropdownButtonFormField(
+                  onChanged: (value) {
+                    print(value);
+                    setState(() {
+                      repetition = value;
+                    });
+                  },
+                  value: repetition,
+                  decoration: InputDecoration(
+                    labelText: 'Task repetition:',
+                    prefixIcon: Icon(
+                      repetition == 'No repetition'
+                          ? Icons.repeat_one
+                          : Icons.repeat,
+                      size: 24,
+                      color: HexColor.fromHex(widget.stackColor),
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                      borderSide: BorderSide(width: 1),
+                    ),
+                  ),
+                  items: ['No repetition', ...task_constants.REPETITION_OPTIONS]
+                      .map(
+                        (e) => DropdownMenuItem(
+                          child: Text(
+                              e.substring(0, 1).toUpperCase() + e.substring(1)),
+                          value: e == 'none' ? null : e,
+                        ),
+                      )
+                      .toList(),
+                ),
               ),
-              DatePickerWidget(
-                title: 'I want to end this task on',
-                color: selectedColor,
-                onSubmit: _pickEndDate,
-                initialDate: endDate,
-                dateFormat: 'hh:mm a, dd MMM',
-                withTime: true,
+              Row(
+                children: [
+                  Expanded(
+                    child: DatePickerWidget(
+                      title: 'Start:',
+                      color: widget.stackColor,
+                      onSubmit: _pickStartDate,
+                      initialDate: startDate,
+                      dateFormat: 'hh:mm a, dd MMM',
+                      withTime: true,
+                    ),
+                  ),
+                  SizedBox(
+                    width: 8.0,
+                  ),
+                  Expanded(
+                    child: DatePickerWidget(
+                      title: 'End',
+                      color: widget.stackColor,
+                      startDate: startDate,
+                      onSubmit: _pickEndDate,
+                      initialDate: endDate,
+                      dateFormat: 'hh:mm a, dd MMM',
+                      withTime: true,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

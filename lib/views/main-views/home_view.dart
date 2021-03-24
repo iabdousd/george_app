@@ -14,7 +14,8 @@ class HomeView extends StatefulWidget {
   _HomeViewState createState() => _HomeViewState();
 }
 
-class _HomeViewState extends State<HomeView> {
+class _HomeViewState extends State<HomeView>
+    with AutomaticKeepAliveClientMixin {
   @override
   Widget build(BuildContext context) {
     return ListView(
@@ -59,6 +60,8 @@ class _HomeViewState extends State<HomeView> {
               else
                 return AppErrorWidget(
                   status: 404,
+                  customMessage:
+                      'Nothing here. Create a Goal by pressing + to get started',
                 );
               if (snapshot.hasError) return AppErrorWidget();
               return LoadingWidget();
@@ -68,4 +71,7 @@ class _HomeViewState extends State<HomeView> {
       ],
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

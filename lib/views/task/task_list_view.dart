@@ -37,7 +37,11 @@ class TaskListView extends StatelessWidget {
                 width: constraints.maxWidth,
                 child: AppActionButton(
                   onPressed: () => Get.to(
-                    SaveTaskPage(goalRef: stack.goalRef, stackRef: stack.id),
+                    SaveTaskPage(
+                      goalRef: stack.goalRef,
+                      stackRef: stack.id,
+                      stackColor: stack.color,
+                    ),
                   ),
                   icon: Icons.add,
                   label: 'NEW TASK',

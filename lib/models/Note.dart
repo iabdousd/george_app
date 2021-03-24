@@ -16,6 +16,7 @@ class Note {
   DateTime creationDate;
   String content;
   List<Attachment> attachments;
+  int attachmentsCount;
 
   Note({
     this.id,
@@ -24,6 +25,7 @@ class Note {
     this.creationDate,
     this.content,
     this.attachments,
+    this.attachmentsCount = 0,
   });
 
   Note.fromJson(jsonObject, {String id}) {
@@ -31,20 +33,21 @@ class Note {
     this.creationDate =
         (jsonObject[note_constants.CREATION_DATE_KEY] as Timestamp).toDate();
     this.content = jsonObject[note_constants.CONTENT_KEY];
-    if (id != null) fetchAttachments();
+    this.attachmentsCount = jsonObject[note_constants.ATTACHMENTS_COUNT_KEY];
   }
 
   Map<String, dynamic> toJson() {
     return {
       note_constants.CONTENT_KEY: this.content,
       note_constants.CREATION_DATE_KEY: this.creationDate,
+      note_constants.ATTACHMENTS_COUNT_KEY: this.attachmentsCount,
     };
   }
 
   save() async {
     assert(goalRef != null && stackRef != null);
     if (id == null) {
-      await FirebaseFirestore.instance
+      DocumentReference docRef = await FirebaseFirestore.instance
           .collection(user_constants.USERS_KEY)
           .doc(getCurrentUser().uid)
           .collection(goal_constants.GOALS_KEY)
@@ -53,6 +56,7 @@ class Note {
           .doc(stackRef)
           .collection(stack_constants.NOTES_KEY)
           .add(toJson());
+      this.id = docRef.id;
     } else {
       await FirebaseFirestore.instance
           .collection(user_constants.USERS_KEY)
@@ -97,6 +101,7 @@ class Note {
     snapshot.docs.forEach((doc) {
       attachments.add(Attachment.fromJson(doc.data(), id: doc.id));
     });
+    this.attachmentsCount = snapshot.docs.length;
   }
 
   Future deleteAttachment(Attachment attachment) async {
@@ -114,6 +119,8 @@ class Note {
         .doc(attachment.id)
         .delete();
     attachments.remove(attachment);
+    this.attachmentsCount--;
+    await save();
   }
 
   Future addAttachments(List<Asset> images) async {
@@ -140,5 +147,8 @@ class Note {
           );
       attachments.add(attachment..id = docRef.id);
     }
+
+    this.attachmentsCount += images.length;
+    await save();
   }
 }

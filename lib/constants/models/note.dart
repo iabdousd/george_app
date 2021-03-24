@@ -1,5 +1,6 @@
 const String CREATION_DATE_KEY = 'creationDate';
 const String CONTENT_KEY = 'content';
+const String ATTACHMENTS_COUNT_KEY = 'attachmentsCount';
 const String ATTACHMENTS_KEY = 'attachments';
 
 // ATTACHMENT

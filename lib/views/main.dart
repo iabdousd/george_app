@@ -5,6 +5,7 @@ import 'package:george_project/views/goal/save_goal.dart';
 import 'package:george_project/widgets/home/app_bottom_navigation_bar.dart';
 import 'package:get/get.dart';
 
+import 'main-views/calendar_view.dart';
 import 'main-views/home_view.dart';
 
 class MainView extends StatefulWidget {
@@ -49,7 +50,7 @@ class _MainViewState extends State<MainView>
           physics: NeverScrollableScrollPhysics(),
           children: [
             HomeView(),
-            Container(),
+            CalendarView(),
             Container(),
             Container(),
           ],
@@ -58,7 +59,8 @@ class _MainViewState extends State<MainView>
       floatingActionButton: StreamBuilder<int>(
           stream: pageIndexStreamController.stream,
           builder: (context, snapshot) {
-            if (snapshot.hasData && snapshot.data == 0)
+            int index = snapshot.data ?? 0;
+            if (index == 0)
               return FloatingActionButton(
                 onPressed: () => Get.to(() => SaveGoalPage()),
                 child: Icon(

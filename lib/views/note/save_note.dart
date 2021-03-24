@@ -30,8 +30,13 @@ class _SaveNotePageState extends State<SaveNotePage> {
   DateTime endDate = DateTime.now();
   List<Asset> images = [];
   List<File> files = [];
+  bool editing = false;
 
   _submitNote() async {
+    if (!editing) {
+      Navigator.of(context).pop();
+      return;
+    }
     if (!_formKey.currentState.validate()) return;
     toggleLoading(state: true);
     Note note = Note(
@@ -61,6 +66,9 @@ class _SaveNotePageState extends State<SaveNotePage> {
         maxImages: 300,
         enableCamera: true,
         selectedAssets: images,
+        materialOptions: MaterialOptions(
+          actionBarColor: '#4094db',
+        ),
       );
     } on Exception {
       showFlushBar(
@@ -74,38 +82,38 @@ class _SaveNotePageState extends State<SaveNotePage> {
     setState(() {
       images = resultList ?? [];
     });
-    Navigator.of(context).pop();
   }
 
   addAttachment() {
-    showMaterialModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      expand: false,
-      builder: (context) => Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).scaffoldBackgroundColor,
-          borderRadius: BorderRadius.circular(12.0),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            AppActionButton(
-              onPressed: _pickImage,
-              icon: Icons.image_outlined,
-              label: 'Image',
-              backgroundColor: Theme.of(context).backgroundColor,
-              textStyle: Theme.of(context).textTheme.headline6,
-              iconColor: Theme.of(context).primaryColor,
-              shadows: [],
-              margin: EdgeInsets.only(bottom: 4, top: 4),
-              iconSize: 28,
-            ),
-          ],
-        ),
-      ),
-    );
+    _pickImage();
+    // showMaterialModalBottomSheet(
+    //   context: context,
+    //   backgroundColor: Colors.transparent,
+    //   expand: false,
+    //   builder: (context) => Container(
+    //     decoration: BoxDecoration(
+    //       color: Theme.of(context).scaffoldBackgroundColor,
+    //       borderRadius: BorderRadius.circular(12.0),
+    //     ),
+    //     child: Column(
+    //       crossAxisAlignment: CrossAxisAlignment.stretch,
+    //       mainAxisSize: MainAxisSize.min,
+    //       children: [
+    //         AppActionButton(
+    //           onPressed: _pickImage,
+    //           icon: Icons.image_outlined,
+    //           label: 'Image',
+    //           backgroundColor: Theme.of(context).backgroundColor,
+    //           textStyle: Theme.of(context).textTheme.headline6,
+    //           iconColor: Theme.of(context).primaryColor,
+    //           shadows: [],
+    //           margin: EdgeInsets.only(bottom: 4, top: 4),
+    //           iconSize: 28,
+    //         ),
+    //       ],
+    //     ),
+    //   ),
+    // );
   }
 
   init() async {
@@ -116,6 +124,7 @@ class _SaveNotePageState extends State<SaveNotePage> {
   @override
   void initState() {
     super.initState();
+    editing = widget.note == null;
     if (widget.note != null) {
       _contentController.text = widget.note.content ?? '';
       init();
@@ -145,6 +154,7 @@ class _SaveNotePageState extends State<SaveNotePage> {
           key: _formKey,
           child: ListView(
             padding: const EdgeInsets.all(16.0),
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             children: [
               Container(
                 decoration: BoxDecoration(
@@ -167,24 +177,34 @@ class _SaveNotePageState extends State<SaveNotePage> {
                       borderSide: BorderSide(width: 1),
                     ),
                   ),
+                  enabled: editing,
                   validator: (t) {
                     if (t.isEmpty)
                       return 'Please enter the content of the note first';
                     return null;
                   },
                   minLines: 2,
-                  maxLines: 5,
+                  maxLines: 100,
                 ),
               ),
               AppActionButton(
-                onPressed: addAttachment,
-                icon: Icons.attach_file,
-                label: 'Add attachment',
-                backgroundColor: Theme.of(context).primaryColor,
+                onPressed: editing
+                    ? addAttachment
+                    : () => setState(
+                          () {
+                            editing = true;
+                          },
+                        ),
+                icon: editing ? Icons.attach_file : Icons.edit,
+                label: editing ? 'Add attachment' : 'Edit',
+                backgroundColor: editing
+                    ? Theme.of(context).primaryColor
+                    : Theme.of(context).accentColor,
               ),
               ImagesListView(
                 images: images,
-                networkImages: widget.note.attachments,
+                readOnly: !editing,
+                networkImages: widget.note?.attachments ?? [],
                 deleteEvent: _deleteImage,
               ),
               // FilesListView(files: files),

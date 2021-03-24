@@ -86,13 +86,17 @@ class _GoalDetailsPageState extends State<GoalDetailsPage> {
             vertical: 4.0,
           ),
           children: [
-            Container(
-              child: Text(
-                widget.goal.title.toUpperCase(),
-                style: Theme.of(context).textTheme.headline5.copyWith(
-                      fontWeight: FontWeight.w900,
-                    ),
-              ),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    widget.goal.title.toUpperCase(),
+                    style: Theme.of(context).textTheme.headline5.copyWith(
+                          fontWeight: FontWeight.w900,
+                        ),
+                  ),
+                ),
+              ],
             ),
             Container(
               padding: const EdgeInsets.symmetric(vertical: 12.0),
@@ -111,29 +115,18 @@ class _GoalDetailsPageState extends State<GoalDetailsPage> {
                       date: widget.goal.endDate,
                     ),
                   ),
-                ],
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 12.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: AppActionButton(
-                      icon: Icons.edit,
-                      label: 'EDIT',
-                      onPressed: _editGoal,
-                      backgroundColor: Theme.of(context).accentColor,
-                    ),
+                  AppActionButton(
+                    icon: Icons.edit,
+                    onPressed: _editGoal,
+                    label: 'EDIT',
+                    backgroundColor: Theme.of(context).accentColor,
+                    margin: EdgeInsets.only(left: 8, right: 4),
                   ),
-                  Expanded(
-                    child: AppActionButton(
-                      icon: Icons.delete,
-                      label: 'DELETE',
-                      onPressed: _deleteGoal,
-                      backgroundColor: Colors.red,
-                    ),
+                  AppActionButton(
+                    icon: Icons.delete,
+                    onPressed: _deleteGoal,
+                    backgroundColor: Colors.red,
+                    margin: EdgeInsets.only(left: 4),
                   ),
                 ],
               ),

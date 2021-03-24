@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:george_project/config/extensions/hex_color.dart';
 import 'package:george_project/models/Task.dart';
 import 'package:george_project/services/feed-back/loader.dart';
@@ -10,10 +11,14 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 class TaskListTileWidget extends StatelessWidget {
   final Task task;
   final String stackColor;
+  final DateTime enforcedDate;
 
-  const TaskListTileWidget(
-      {Key key, @required this.task, @required this.stackColor})
-      : super(key: key);
+  const TaskListTileWidget({
+    Key key,
+    @required this.task,
+    @required this.stackColor,
+    this.enforcedDate,
+  }) : super(key: key);
 
   _deleteTask(context) {
     showDialog(
@@ -65,6 +70,7 @@ class TaskListTileWidget extends StatelessWidget {
         task: task,
         stackRef: task.stackRef,
         goalRef: task.goalRef,
+        stackColor: task.stackColor,
       ),
       popGesture: true,
       transition: Transition.rightToLeftWithFade,
@@ -73,9 +79,9 @@ class TaskListTileWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return AnimatedContainer(
+      duration: Duration(milliseconds: 250),
       decoration: BoxDecoration(
-        color: Theme.of(context).backgroundColor,
         borderRadius: BorderRadius.circular(8.0),
         boxShadow: [
           BoxShadow(
@@ -88,15 +94,16 @@ class TaskListTileWidget extends StatelessWidget {
       margin: EdgeInsets.only(top: 16.0),
       height: 64.0 + 20,
       child: GestureDetector(
-        onTap: () => task.status == 0
-            ? (task..status = 1).save()
-            : (task..status = 0).save(),
+        onTap: () => _editTask(context),
         child: Slidable(
           actionPane: SlidableScrollActionPane(),
           actionExtentRatio: 0.25,
-          child: Container(
+          child: AnimatedContainer(
+            duration: Duration(milliseconds: 250),
             decoration: BoxDecoration(
-              color: Theme.of(context).backgroundColor,
+              color: task.isDone(date: enforcedDate)
+                  ? Theme.of(context).backgroundColor.withOpacity(.8)
+                  : Theme.of(context).backgroundColor,
               borderRadius: BorderRadius.circular(8.0),
             ),
             child: Row(
@@ -104,34 +111,39 @@ class TaskListTileWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Center(
-                  child: Container(
-                    width: 32.0,
-                    height: 32.0,
-                    margin: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-                    child: Stack(
-                      children: [
-                        Center(
-                          child: Container(
-                            width: 20.0,
-                            height: 20.0,
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: HexColor.fromHex(stackColor),
-                                width: 2,
-                              ),
-                              borderRadius: BorderRadius.circular(2.0),
-                            ),
-                          ),
-                        ),
-                        if (task.status == 1)
+                  child: GestureDetector(
+                    onTap: () => task.accomplish(customDate: enforcedDate),
+                    child: Container(
+                      width: 32.0,
+                      height: 32.0,
+                      margin:
+                          EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                      child: Stack(
+                        children: [
                           Center(
-                            child: Icon(
-                              Icons.done_rounded,
-                              size: 30.0,
-                              color: HexColor.fromHex(stackColor),
+                            child: Container(
+                              width: 20.0,
+                              height: 20.0,
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: HexColor.fromHex(stackColor),
+                                  width: 2,
+                                ),
+                                borderRadius: BorderRadius.circular(2.0),
+                              ),
                             ),
                           ),
-                      ],
+                          if (task.isDone(date: enforcedDate))
+                            Center(
+                              child: SvgPicture.asset(
+                                'assets/images/icons/done.svg',
+                                color: HexColor.fromHex(stackColor),
+                                height: 24.0,
+                                width: 24.0,
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -147,29 +159,67 @@ class TaskListTileWidget extends StatelessWidget {
                           task.title,
                           style: Theme.of(context).textTheme.headline6.copyWith(
                                 fontWeight: FontWeight.w600,
-                                decoration: task.status == 1
+                                decoration: task.isDone(date: enforcedDate)
                                     ? TextDecoration.lineThrough
                                     : TextDecoration.none,
-                                fontStyle: task.status == 1
+                                fontStyle: task.isDone(date: enforcedDate)
                                     ? FontStyle.italic
                                     : FontStyle.normal,
                               ),
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
                         ),
-                        Text(
-                          DateFormat('dd MMM yyyy').format(task.startDate) +
-                              ' - ' +
-                              DateFormat('dd MMM yyyy').format(task.endDate),
-                          style: Theme.of(context).textTheme.subtitle1.copyWith(
-                                fontWeight: FontWeight.w300,
-                                decoration: task.status == 1
-                                    ? TextDecoration.lineThrough
-                                    : TextDecoration.none,
-                                fontStyle: task.status == 1
-                                    ? FontStyle.italic
-                                    : FontStyle.normal,
+                        Row(
+                          mainAxisSize: MainAxisSize.max,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.only(right: 8.0),
+                              child: Icon(
+                                Icons.calendar_today_outlined,
+                                color: (task.startDate
+                                            .isBefore(DateTime.now()) &&
+                                        task.endDate.isAfter(DateTime.now()))
+                                    ? HexColor.fromHex(stackColor)
+                                    : Color(0x88000000),
+                                size: 20,
                               ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.only(right: 8.0),
+                              child: Icon(
+                                Icons.repeat,
+                                color: task.repetition != null
+                                    ? HexColor.fromHex(stackColor)
+                                    : Color(0x88000000),
+                                size: 20,
+                              ),
+                            ),
+                            Text(
+                              (task.isDone(date: enforcedDate) &&
+                                          task.hasNext &&
+                                          enforcedDate == null
+                                      ? 'Next: '
+                                      : '') +
+                                  DateFormat('hh:mm a, dd MMM yyyy').format(
+                                    enforcedDate != null
+                                        ? DateTime(
+                                            enforcedDate.year,
+                                            enforcedDate.month,
+                                            enforcedDate.day,
+                                            task.startDate.hour,
+                                            task.startDate.minute,
+                                          )
+                                        : task.nextDueDate(),
+                                  ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .subtitle1
+                                  .copyWith(
+                                    fontWeight: FontWeight.w300,
+                                  ),
+                            ),
+                          ],
                         ),
                       ],
                     ),

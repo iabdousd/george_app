@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_rounded_date_picker/flutter_rounded_date_picker.dart';
 import 'package:george_project/config/extensions/hex_color.dart';
 import 'package:intl/intl.dart';
 
@@ -6,7 +7,9 @@ class DatePickerWidget extends StatefulWidget {
   final String title;
   final String color;
   final Function(DateTime) onSubmit;
+  final DateTime startDate;
   final DateTime initialDate;
+  final DateTime endDate;
   final bool withTime;
   final String dateFormat;
 
@@ -15,9 +18,11 @@ class DatePickerWidget extends StatefulWidget {
     @required this.title,
     @required this.color,
     @required this.onSubmit,
+    this.startDate,
     this.initialDate,
+    this.endDate,
     this.withTime = false,
-    this.dateFormat = 'EEEE, dd MMMM',
+    this.dateFormat = 'dd/MM/yyyy',
   }) : super(key: key);
 
   @override
@@ -28,33 +33,31 @@ class _DatePickerWidgetState extends State<DatePickerWidget> {
   DateTime selectedDate;
 
   Future<Null> _selectTime(BuildContext context) async {
-    final TimeOfDay picked = await showTimePicker(
+    final TimeOfDay picked = await showRoundedTimePicker(
       context: context,
       initialTime:
           TimeOfDay(hour: selectedDate.hour, minute: selectedDate.minute),
     );
+
     if (picked != null) {
-      setState(() {
-        selectedDate = DateTime(selectedDate.year, selectedDate.month,
-            selectedDate.day, picked.hour, picked.minute);
-      });
+      selectedDate = DateTime(selectedDate.year, selectedDate.month,
+          selectedDate.day, picked.hour, picked.minute);
       widget.onSubmit(selectedDate);
     }
+    setState(() {});
   }
 
   _pickDate() async {
-    final DateTime picked = await showDatePicker(
+    final DateTime picked = await showRoundedDatePicker(
       context: context,
       initialDate: selectedDate,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2025),
+      firstDate: widget.startDate ?? DateTime(2000),
+      lastDate: widget.endDate ?? DateTime(2100),
     );
-    if (picked != null && picked != selectedDate) {
-      setState(() {
-        selectedDate = picked;
-      });
+    if (picked != null) {
       if (widget.withTime) {
-        _selectTime(context);
+        selectedDate = picked;
+        await _selectTime(context);
       } else
         widget.onSubmit(picked);
     }
@@ -69,7 +72,7 @@ class _DatePickerWidgetState extends State<DatePickerWidget> {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
           margin: EdgeInsets.only(top: 8.0),
@@ -99,7 +102,7 @@ class _DatePickerWidgetState extends State<DatePickerWidget> {
           ),
         ),
         Container(
-          margin: EdgeInsets.only(bottom: 8.0),
+          padding: EdgeInsets.only(top: 4, bottom: 4.0),
           decoration: BoxDecoration(
             color: Color(0x07000000),
             borderRadius: BorderRadius.circular(8.0),
@@ -114,18 +117,23 @@ class _DatePickerWidgetState extends State<DatePickerWidget> {
                   child: Icon(
                     Icons.calendar_today_outlined,
                     color: HexColor.fromHex(widget.color),
-                    size: 32,
+                    size: 24,
                   ),
                 ),
                 SizedBox(
-                  width: 12,
+                  width: 4,
                 ),
-                Text(
-                  DateFormat(widget.dateFormat).format(selectedDate),
-                  style: Theme.of(context).textTheme.headline6,
+                Expanded(
+                  child: Text(
+                    DateFormat(widget.dateFormat).format(selectedDate),
+                    style: Theme.of(context)
+                        .textTheme
+                        .headline6
+                        .copyWith(fontSize: 16),
+                  ),
                 ),
                 SizedBox(
-                  width: 12,
+                  width: 4,
                 ),
               ],
             ),

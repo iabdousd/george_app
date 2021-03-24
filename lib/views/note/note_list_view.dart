@@ -38,7 +38,9 @@ class NoteListView extends StatelessWidget {
                 child: AppActionButton(
                   onPressed: () => Get.to(
                     () => SaveNotePage(
-                        goalRef: stack.goalRef, stackRef: stack.id),
+                      goalRef: stack.goalRef,
+                      stackRef: stack.id,
+                    ),
                   ),
                   icon: Icons.add,
                   label: 'NEW NOTE',

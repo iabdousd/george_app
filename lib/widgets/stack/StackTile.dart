@@ -4,14 +4,16 @@ import 'package:george_project/services/feed-back/loader.dart';
 import 'package:george_project/views/stack/save_stack.dart';
 import 'package:george_project/views/stack/stack_details.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:george_project/models/Stack.dart' as stack_model;
 
 class StackListTileWidget extends StatelessWidget {
+  final String goalTitle;
   final stack_model.Stack stack;
 
-  const StackListTileWidget({Key key, @required this.stack}) : super(key: key);
+  const StackListTileWidget(
+      {Key key, @required this.stack, @required this.goalTitle})
+      : super(key: key);
 
   _deleteGoal(context) {
     showDialog(
@@ -83,11 +85,14 @@ class StackListTileWidget extends StatelessWidget {
         ],
       ),
       margin: EdgeInsets.only(top: 16.0),
-      height: 64.0 + 20,
+      height: 40.0 + 20,
       child: GestureDetector(
-        onTap: () => Get.to(() => StackDetailsPage(
-              stack: stack,
-            )),
+        onTap: () => Get.to(
+          () => StackDetailsPage(
+            goalTitle: goalTitle,
+            stack: stack,
+          ),
+        ),
         child: Slidable(
           actionPane: SlidableScrollActionPane(),
           actionExtentRatio: 0.25,
@@ -128,15 +133,15 @@ class StackListTileWidget extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
                         ),
-                        Text(
-                          DateFormat('dd MMM yyyy').format(stack.startDate) +
-                              ' - ' +
-                              DateFormat('dd MMM yyyy').format(stack.endDate),
-                          style: Theme.of(context)
-                              .textTheme
-                              .subtitle1
-                              .copyWith(fontWeight: FontWeight.w300),
-                        ),
+                        // Text(
+                        //   DateFormat('dd MMM yyyy').format(stack.startDate) +
+                        //       ' - ' +
+                        //       DateFormat('dd MMM yyyy').format(stack.endDate),
+                        //   style: Theme.of(context)
+                        //       .textTheme
+                        //       .subtitle1
+                        //       .copyWith(fontWeight: FontWeight.w300),
+                        // ),
                       ],
                     ),
                   ),

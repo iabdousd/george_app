@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:george_project/config/extensions/hex_color.dart';
 import 'package:george_project/models/Note.dart';
 import 'package:george_project/services/feed-back/loader.dart';
 import 'package:george_project/views/note/save_note.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
 class NoteListTileWidget extends StatelessWidget {
@@ -115,8 +113,8 @@ class NoteListTileWidget extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     maxLines: 4,
                   ),
-                  if ((note.attachments?.length ?? 0) > 0)
-                    Text('${note.attachments.length} attachment(s)'),
+                  if ((note.attachmentsCount ?? 0) > 0)
+                    Text('${note.attachmentsCount} attachment(s)'),
                 ],
               ),
             ),

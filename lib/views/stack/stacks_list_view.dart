@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:george_project/config/extensions/hex_color.dart';
 
 import 'package:george_project/constants/models/goal.dart' as goal_constants;
 import 'package:george_project/constants/user.dart' as user_constants;
@@ -40,7 +41,7 @@ class StacksListView extends StatelessWidget {
                 child: Icon(
                   Icons.add_circle_outline_rounded,
                   size: 32.0,
-                  color: Theme.of(context).primaryColor,
+                  color: HexColor.fromHex(goal.color),
                 ),
               ),
             ],
@@ -64,6 +65,7 @@ class StacksListView extends StatelessWidget {
                   physics: NeverScrollableScrollPhysics(),
                   itemBuilder: (context, index) {
                     return StackListTileWidget(
+                      goalTitle: goal.title,
                       stack: stack_model.Stack.fromJson(
                         snapshot.data.docs[index].data(),
                         goalRef: goal.id,
