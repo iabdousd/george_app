@@ -34,6 +34,7 @@ class _CalendarViewState extends State<CalendarView>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return ListView(
       padding: const EdgeInsets.symmetric(
         horizontal: 16.0,

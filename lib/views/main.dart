@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 
 import 'main-views/calendar_view.dart';
 import 'main-views/home_view.dart';
+import 'main-views/timer_view.dart';
 
 class MainView extends StatefulWidget {
   @override
@@ -51,7 +52,7 @@ class _MainViewState extends State<MainView>
           children: [
             HomeView(),
             CalendarView(),
-            Container(),
+            TimerView(),
             Container(),
           ],
         ),

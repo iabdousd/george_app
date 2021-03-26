@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:george_project/config/extensions/hex_color.dart';
@@ -8,17 +10,27 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
-class TaskListTileWidget extends StatelessWidget {
+class TaskListTileWidget extends StatefulWidget {
   final Task task;
   final String stackColor;
   final DateTime enforcedDate;
+  final bool shotTimer;
 
   const TaskListTileWidget({
     Key key,
     @required this.task,
     @required this.stackColor,
     this.enforcedDate,
+    this.shotTimer: false,
   }) : super(key: key);
+
+  @override
+  _TaskListTileWidgetState createState() => _TaskListTileWidgetState();
+}
+
+class _TaskListTileWidgetState extends State<TaskListTileWidget> {
+  final StreamController _realTimeUpdateTimer = StreamController.broadcast();
+  Timer updateTimer;
 
   _deleteTask(context) {
     showDialog(
@@ -30,7 +42,7 @@ class TaskListTileWidget extends StatelessWidget {
             style: Theme.of(context).textTheme.headline6,
           ),
           content: Text(
-              'Would you really like to delete \'${task.title.toUpperCase()}\' ?'),
+              'Would you really like to delete \'${widget.task.title.toUpperCase()}\' ?'),
           actions: [
             TextButton(
               onPressed: () async {
@@ -46,7 +58,7 @@ class TaskListTileWidget extends StatelessWidget {
             TextButton(
               onPressed: () async {
                 toggleLoading(state: true);
-                await task.delete();
+                await widget.task.delete();
                 toggleLoading(state: false);
                 Navigator.of(context).pop();
               },
@@ -67,14 +79,29 @@ class TaskListTileWidget extends StatelessWidget {
   _editTask(context) {
     Get.to(
       () => SaveTaskPage(
-        task: task,
-        stackRef: task.stackRef,
-        goalRef: task.goalRef,
-        stackColor: task.stackColor,
+        task: widget.task,
+        stackRef: widget.task.stackRef,
+        goalRef: widget.task.goalRef,
+        stackColor: widget.task.stackColor,
       ),
       popGesture: true,
       transition: Transition.rightToLeftWithFade,
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    updateTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+      _realTimeUpdateTimer.add(0);
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _realTimeUpdateTimer.close();
+    updateTimer.cancel();
   }
 
   @override
@@ -101,142 +128,197 @@ class TaskListTileWidget extends StatelessWidget {
           child: AnimatedContainer(
             duration: Duration(milliseconds: 250),
             decoration: BoxDecoration(
-              color: task.isDone(date: enforcedDate)
+              color: widget.task.isDone(date: widget.enforcedDate)
                   ? Theme.of(context).backgroundColor.withOpacity(.8)
                   : Theme.of(context).backgroundColor,
               borderRadius: BorderRadius.circular(8.0),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.max,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+            child: Stack(
               children: [
-                Center(
-                  child: GestureDetector(
-                    onTap: () => task.accomplish(
-                      customDate: enforcedDate,
-                      unChecking: task.isDone(date: enforcedDate),
-                    ),
-                    child: Container(
-                      width: 32.0,
-                      height: 32.0,
-                      margin:
-                          EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-                      child: Stack(
-                        children: [
-                          Center(
-                            child: Container(
-                              width: 20.0,
-                              height: 20.0,
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                  color: HexColor.fromHex(stackColor),
-                                  width: 2,
+                Row(
+                  mainAxisSize: MainAxisSize.max,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Center(
+                      child: GestureDetector(
+                        onTap: () => widget.task.accomplish(
+                          customDate: widget.enforcedDate,
+                          unChecking:
+                              widget.task.isDone(date: widget.enforcedDate),
+                        ),
+                        child: Container(
+                          width: 32.0,
+                          height: 32.0,
+                          margin: EdgeInsets.symmetric(
+                              vertical: 10, horizontal: 10),
+                          child: Stack(
+                            children: [
+                              Center(
+                                child: Container(
+                                  width: 20.0,
+                                  height: 20.0,
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      color:
+                                          HexColor.fromHex(widget.stackColor),
+                                      width: 2,
+                                    ),
+                                    borderRadius: BorderRadius.circular(2.0),
+                                  ),
                                 ),
-                                borderRadius: BorderRadius.circular(2.0),
                               ),
-                            ),
+                              if (widget.task.isDone(date: widget.enforcedDate))
+                                Center(
+                                  child: SvgPicture.asset(
+                                    'assets/images/icons/done.svg',
+                                    color: HexColor.fromHex(widget.stackColor),
+                                    height: 24.0,
+                                    width: 24.0,
+                                  ),
+                                ),
+                            ],
                           ),
-                          if (task.isDone(date: enforcedDate))
-                            Center(
-                              child: SvgPicture.asset(
-                                'assets/images/icons/done.svg',
-                                color: HexColor.fromHex(stackColor),
-                                height: 24.0,
-                                width: 24.0,
-                              ),
-                            ),
-                        ],
+                        ),
                       ),
                     ),
-                  ),
-                ),
-                Expanded(
-                  child: Container(
-                    margin: EdgeInsets.symmetric(vertical: 16, horizontal: 10),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.max,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          task.title,
-                          style: Theme.of(context).textTheme.headline6.copyWith(
-                                fontWeight: FontWeight.w600,
-                                decoration: task.isDone(date: enforcedDate)
-                                    ? TextDecoration.lineThrough
-                                    : TextDecoration.none,
-                                fontStyle: task.isDone(date: enforcedDate)
-                                    ? FontStyle.italic
-                                    : FontStyle.normal,
-                              ),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                        ),
-                        Row(
+                    Expanded(
+                      child: Container(
+                        margin:
+                            EdgeInsets.symmetric(vertical: 16, horizontal: 10),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.max,
-                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Container(
-                              padding: const EdgeInsets.only(right: 8.0),
-                              child: Icon(
-                                Icons.calendar_today_outlined,
-                                color: (task.startDate
-                                            .isBefore(DateTime.now()) &&
-                                        task.endDate.isAfter(DateTime.now()))
-                                    ? HexColor.fromHex(stackColor)
-                                    : Color(0x88000000),
-                                size: 20,
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.only(right: 8.0),
-                              child: Icon(
-                                Icons.repeat,
-                                color: task.repetition != null
-                                    ? HexColor.fromHex(stackColor)
-                                    : Color(0x88000000),
-                                size: 20,
-                              ),
-                            ),
                             Text(
-                              (task.isDone(date: enforcedDate) &&
-                                          task.hasNext &&
-                                          enforcedDate == null
-                                      ? 'Next: '
-                                      : '') +
-                                  (task.nextDueDate() == null
-                                      ? 'Task completed'
-                                      : DateFormat('hh:mm a, dd MMM yyyy')
-                                          .format(
-                                          enforcedDate != null
-                                              ? DateTime(
-                                                  enforcedDate.year,
-                                                  enforcedDate.month,
-                                                  enforcedDate.day,
-                                                  task.startTime.hour,
-                                                  task.startTime.minute,
-                                                )
-                                              : DateTime(
-                                                  task.nextDueDate().year,
-                                                  task.nextDueDate().month,
-                                                  task.nextDueDate().day,
-                                                  task.startTime.hour,
-                                                  task.startTime.minute,
-                                                ),
-                                        )),
+                              widget.task.title,
                               style: Theme.of(context)
                                   .textTheme
-                                  .subtitle1
+                                  .headline6
                                   .copyWith(
-                                    fontWeight: FontWeight.w300,
+                                    fontWeight: FontWeight.w600,
+                                    decoration: widget.task
+                                            .isDone(date: widget.enforcedDate)
+                                        ? TextDecoration.lineThrough
+                                        : TextDecoration.none,
+                                    fontStyle: widget.task
+                                            .isDone(date: widget.enforcedDate)
+                                        ? FontStyle.italic
+                                        : FontStyle.normal,
                                   ),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                            Row(
+                              mainAxisSize: MainAxisSize.max,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.only(right: 8.0),
+                                  child: Icon(
+                                    Icons.calendar_today_outlined,
+                                    color: (widget.task.startDate
+                                                .isBefore(DateTime.now()) &&
+                                            widget.task.endDate
+                                                .isAfter(DateTime.now()))
+                                        ? HexColor.fromHex(widget.stackColor)
+                                        : Color(0x88000000),
+                                    size: 20,
+                                  ),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.only(right: 8.0),
+                                  child: Icon(
+                                    Icons.repeat,
+                                    color: widget.task.repetition != null
+                                        ? HexColor.fromHex(widget.stackColor)
+                                        : Color(0x88000000),
+                                    size: 20,
+                                  ),
+                                ),
+                                Text(
+                                  (widget.task.isDone(
+                                                  date: widget.enforcedDate) &&
+                                              widget.task.hasNext &&
+                                              widget.enforcedDate == null
+                                          ? 'Next: '
+                                          : '') +
+                                      (widget.task.nextDueDate() == null
+                                          ? 'Task completed'
+                                          : ((widget.task.anyTime
+                                                  ? 'Any time, '
+                                                  : '') +
+                                              DateFormat((widget.task.anyTime
+                                                          ? ''
+                                                          : 'hh:mm a, ') +
+                                                      'dd MMM yyyy')
+                                                  .format(
+                                                widget.enforcedDate != null
+                                                    ? DateTime(
+                                                        widget
+                                                            .enforcedDate.year,
+                                                        widget
+                                                            .enforcedDate.month,
+                                                        widget.enforcedDate.day,
+                                                        widget.task.startTime
+                                                            .hour,
+                                                        widget.task.startTime
+                                                            .minute,
+                                                      )
+                                                    : DateTime(
+                                                        widget.task
+                                                            .nextDueDate()
+                                                            .year,
+                                                        widget.task
+                                                            .nextDueDate()
+                                                            .month,
+                                                        widget.task
+                                                            .nextDueDate()
+                                                            .day,
+                                                        widget.task.startTime
+                                                            .hour,
+                                                        widget.task.startTime
+                                                            .minute,
+                                                      ),
+                                              ))),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .subtitle1
+                                      .copyWith(
+                                        fontWeight: FontWeight.w300,
+                                      ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                      ],
+                      ),
                     ),
-                  ),
+                  ],
                 ),
+                if (widget.shotTimer)
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    child: StreamBuilder<Object>(
+                        stream: _realTimeUpdateTimer.stream,
+                        builder: (context, snapshot) {
+                          return Container(
+                            color: HexColor.fromHex(widget.task.stackColor),
+                            height: 2,
+                            width: ((DateTime.now().hour +
+                                            DateTime.now().minute / 60 -
+                                            widget.task.startTime.hour +
+                                            widget.task.startTime.minute / 60) /
+                                        (widget.task.endTime.hour +
+                                            widget.task.endTime.minute / 60 -
+                                            widget.task.startTime.hour -
+                                            widget.task.startTime.minute / 60))
+                                    .abs() *
+                                MediaQuery.of(context).size.width,
+                          );
+                        }),
+                  ),
               ],
             ),
           ),

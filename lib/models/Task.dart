@@ -48,7 +48,7 @@ class Task {
       this.repetition = repetition;
       this.dueDates = [];
       DateTime nextDue =
-          DateTime.now().isAfter(startDate) ? DateTime.now() : startDate;
+          startDate; // DateTime.now().isAfter(startDate) ? DateTime.now() :
       int i = 0;
       if (repetition?.type == 'daily' && DateTime.now().isBefore(startDate))
         dueDates.add(startDate);
@@ -58,7 +58,17 @@ class Task {
 
         dueDates.add(DateTime(nextDue.year, nextDue.month, nextDue.day));
         i++;
-      } while (nextDue.isBefore(endDate) && i < 50);
+      } while (nextDue.isBefore(endDate) && i < 1000);
+    } else {
+      this.dueDates = [];
+      dueDates.add(startDate);
+      DateTime nextDue = startDate;
+      do {
+        nextDue = getNextInstanceDate(after: nextDue);
+        if (nextDue == null || nextDue.isAfter(endDate)) break;
+
+        dueDates.add(DateTime(nextDue.year, nextDue.month, nextDue.day));
+      } while (nextDue.isBefore(endDate));
     }
   }
 
@@ -179,6 +189,7 @@ class Task {
   }
 
   accomplish({DateTime customDate, bool unChecking: false}) async {
+    print(dueDates);
     if (repetition == null) {
       status = status == 1 ? 0 : 1;
       await save();
@@ -221,16 +232,17 @@ class Task {
   DateTime getNextInstanceDate({DateTime after}) {
     DateTime now = after ?? DateTime.now();
 
-    if (repetition == null) {
-      return null;
-      //  DateTime(
-      //   endDate.year,
-      //   endDate.month,
-      //   endDate.day,
-      //   startTime.hour,
-      //   startTime.minute,
-      // );
-    } else if (repetition.type == 'daily') {
+    // if (repetition == null) {
+    //   return null;
+    //  DateTime(
+    //   endDate.year,
+    //   endDate.month,
+    //   endDate.day,
+    //   startTime.hour,
+    //   startTime.minute,
+    // );
+    // } else
+    if (repetition == null || repetition.type == 'daily') {
       return DateTime(
         now.year,
         now.month,
