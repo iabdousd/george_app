@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:george_project/services/storage/image_upload.dart';
-import 'package:multi_image_picker/multi_image_picker.dart';
+import 'package:image_picker/image_picker.dart';
 
 import 'package:george_project/constants/models/note.dart' as note_constants;
 import 'package:george_project/constants/user.dart' as user_constants;
@@ -123,14 +123,14 @@ class Note {
     await save();
   }
 
-  Future addAttachments(List<Asset> images) async {
+  Future addAttachments(List<PickedFile> images) async {
     attachments = attachments ?? [];
-    for (Asset img in images) {
+    for (PickedFile img in images) {
       String url = await uploadFile(img);
       Attachment attachment = Attachment(
         path: url,
         creationDate: DateTime.now(),
-        ext: img.name.split('.').last,
+        ext: img.path.split('.').last,
       );
       DocumentReference docRef = await FirebaseFirestore.instance
           .collection(user_constants.USERS_KEY)

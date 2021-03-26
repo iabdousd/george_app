@@ -1,17 +1,16 @@
-import 'dart:typed_data';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:george_project/services/feed-back/loader.dart';
 import 'package:get/get.dart';
-import 'package:multi_image_picker/multi_image_picker.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 
 import 'package:george_project/models/Attachment.dart';
-import 'package:george_project/services/feed-back/loader.dart';
 
 class ImagesListView extends StatelessWidget {
-  final List<Asset> images;
+  final List<PickedFile> images;
   final bool readOnly;
   final List<Attachment> networkImages;
   final Function(dynamic) deleteEvent;
@@ -23,17 +22,17 @@ class ImagesListView extends StatelessWidget {
       this.networkImages = const []})
       : super(key: key);
 
-  _zooImage(file, {Asset asset}) async {
-    List<Uint8List> memoryImages = [];
+  _zooImage(file, {PickedFile asset}) async {
+    List<File> fileImages = [];
     for (var e in images)
-      memoryImages.add(
-        (await e.getByteData(quality: 80)).buffer.asUint8List(),
+      fileImages.add(
+        File(e.path),
       );
 
     Get.to(
       () => ZoomedImagesView(
-        galleryItems: List<dynamic>.from(networkImages) +
-            List<dynamic>.from(memoryImages),
+        galleryItems:
+            List<dynamic>.from(networkImages) + List<dynamic>.from(fileImages),
         initialIndex: file is Attachment
             ? networkImages.indexOf(file)
             : networkImages.length + images.indexOf(asset),
@@ -88,6 +87,8 @@ class ImagesListView extends StatelessWidget {
                                     e.path,
                                     fit: BoxFit.cover,
                                     gaplessPlayback: true,
+                                    loadingBuilder: (ctx, _, chunk) =>
+                                        chunk == null ? _ : LoadingWidget(),
                                   ),
                                   if (!readOnly)
                                     Positioned(
@@ -121,44 +122,36 @@ class ImagesListView extends StatelessWidget {
                             )
                           ],
                         ),
-                        child: FutureBuilder<ByteData>(
-                          future: file.getByteData(quality: 80),
-                          builder: (context, snapshot) {
-                            if (snapshot.hasData) {
-                              return ClipRRect(
-                                borderRadius: BorderRadius.circular(8.0),
-                                child: GestureDetector(
-                                  onTap: () => _zooImage(
-                                    snapshot.data.buffer.asUint8List(),
-                                    asset: file,
-                                  ),
-                                  child: Stack(
-                                    fit: StackFit.expand,
-                                    children: [
-                                      Image.memory(
-                                        snapshot.data.buffer.asUint8List(),
-                                        fit: BoxFit.cover,
-                                        gaplessPlayback: true,
-                                      ),
-                                      Positioned(
-                                        top: 4,
-                                        right: 4,
-                                        child: GestureDetector(
-                                          onTap: () => deleteEvent(file),
-                                          child: Icon(
-                                            Icons.delete,
-                                            color: Colors.red,
-                                            size: 32.0,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8.0),
+                          child: GestureDetector(
+                            onTap: () => _zooImage(
+                              file,
+                              asset: file,
+                            ),
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                Image.file(
+                                  File(file.path),
+                                  fit: BoxFit.cover,
+                                  gaplessPlayback: true,
+                                ),
+                                Positioned(
+                                  top: 4,
+                                  right: 4,
+                                  child: GestureDetector(
+                                    onTap: () => deleteEvent(file),
+                                    child: Icon(
+                                      Icons.delete,
+                                      color: Colors.red,
+                                      size: 32.0,
+                                    ),
                                   ),
                                 ),
-                              );
-                            }
-                            return LoadingWidget();
-                          },
+                              ],
+                            ),
+                          ),
                         ),
                       ),
                     )
@@ -190,7 +183,7 @@ class ZoomedImagesView extends StatelessWidget {
             return PhotoViewGalleryPageOptions(
               imageProvider: galleryItems[index] is Attachment
                   ? NetworkImage(galleryItems[index].path)
-                  : MemoryImage(galleryItems[index]),
+                  : FileImage(galleryItems[index]),
               initialScale: PhotoViewComputedScale.contained,
               minScale: PhotoViewComputedScale.contained,
             );

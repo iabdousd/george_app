@@ -39,7 +39,7 @@ dependencies:
   table_calendar: ^2.3.3
 
   # PICKERS
-  multi_image_picker: ^4.8.0
+  image_picker: ^0.7.3
   file_picker: ^3.0.0
   flutter_rounded_date_picker: ^2.0.0
 

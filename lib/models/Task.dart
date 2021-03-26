@@ -5,20 +5,24 @@ import 'package:george_project/constants/user.dart' as user_constants;
 import 'package:george_project/constants/models/stack.dart' as stack_constants;
 import 'package:george_project/constants/models/goal.dart' as goal_constants;
 import 'package:george_project/services/user/user_service.dart';
+import 'package:intl/intl.dart';
 
 class Task {
   String id;
   String goalRef;
   String stackRef;
-  String repetition;
+  TaskRepetition repetition;
   String title;
   String description;
   int status;
+  bool anyTime;
   DateTime creationDate;
   List<DateTime> dueDates;
   List<DateTime> donesHistory;
   DateTime startDate;
   DateTime endDate;
+  DateTime startTime;
+  DateTime endTime;
 
   String stackColor;
 
@@ -30,21 +34,30 @@ class Task {
     this.title,
     this.description,
     this.status,
-    repetition,
+    this.anyTime,
+    TaskRepetition repetition,
     this.creationDate,
     this.dueDates,
     this.donesHistory,
     this.startDate,
     this.endDate,
+    this.startTime,
+    this.endTime,
   }) {
-    if (task_constants.REPETITION_OPTIONS.contains(repetition)) {
+    if (task_constants.REPETITION_OPTIONS.contains(repetition?.type)) {
       this.repetition = repetition;
       this.dueDates = [];
-      DateTime nextDue = startDate;
-      while (nextDue.isBefore(endDate)) {
-        dueDates.add(DateTime(nextDue.year, nextDue.month, nextDue.day));
+      DateTime nextDue =
+          DateTime.now().isAfter(startDate) ? DateTime.now() : startDate;
+      int i = 0;
+      print(repetition.selectedWeekDays);
+      do {
         nextDue = getNextInstanceDate(after: nextDue);
-      }
+        if (nextDue == null || nextDue.isAfter(endDate)) break;
+
+        dueDates.add(DateTime(nextDue.year, nextDue.month, nextDue.day));
+        i++;
+      } while (nextDue.isBefore(endDate) && i < 50);
     }
   }
 
@@ -60,9 +73,13 @@ class Task {
     this.description = jsonObject[task_constants.DESCRIPTION_KEY];
 
     this.status = jsonObject[task_constants.STATUS_KEY];
-    if (task_constants.REPETITION_OPTIONS
-        .contains(jsonObject[task_constants.REPETITION_KEY]))
-      this.repetition = jsonObject[task_constants.REPETITION_KEY];
+    this.anyTime = jsonObject[task_constants.ANY_TIME_KEY];
+    if (jsonObject[task_constants.REPETITION_KEY] != null &&
+        task_constants.REPETITION_OPTIONS.contains(
+            jsonObject[task_constants.REPETITION_KEY]
+                [task_constants.REPETITION_TYPE_KEY]))
+      this.repetition =
+          TaskRepetition.fromJson(jsonObject[task_constants.REPETITION_KEY]);
 
     this.creationDate =
         (jsonObject[task_constants.CREATION_DATE_KEY] as Timestamp).toDate();
@@ -89,6 +106,10 @@ class Task {
         (jsonObject[task_constants.START_DATE_KEY] as Timestamp).toDate();
     this.endDate =
         (jsonObject[task_constants.END_DATE_KEY] as Timestamp).toDate();
+    this.startTime =
+        (jsonObject[task_constants.START_TIME_KEY] as Timestamp).toDate();
+    this.endTime =
+        (jsonObject[task_constants.END_TIME_KEY] as Timestamp).toDate();
   }
 
   Map<String, dynamic> toJson() {
@@ -99,15 +120,18 @@ class Task {
       task_constants.TITLE_KEY: title,
       task_constants.DESCRIPTION_KEY: description,
       task_constants.STATUS_KEY: status,
+      task_constants.ANY_TIME_KEY: anyTime,
       task_constants.REPETITION_KEY:
-          task_constants.REPETITION_OPTIONS.contains(repetition)
-              ? repetition
+          task_constants.REPETITION_OPTIONS.contains(repetition?.type)
+              ? repetition.toJson()
               : null,
       task_constants.CREATION_DATE_KEY: creationDate,
       task_constants.DUE_DATES_KEY: dueDates,
       task_constants.DONES_HISTORY_KEY: donesHistory,
       task_constants.START_DATE_KEY: startDate,
       task_constants.END_DATE_KEY: endDate,
+      task_constants.START_TIME_KEY: startTime,
+      task_constants.END_TIME_KEY: endTime,
     };
   }
 
@@ -117,30 +141,51 @@ class Task {
       (repetition == null && status == 1) ||
       ((donesHistory ?? []).length > 0 &&
           donesHistory.contains(
-            DateTime((date ?? DateTime.now()).year,
-                (date ?? DateTime.now()).month, (date ?? DateTime.now()).day),
+            DateTime(
+                (date ??
+                        dueDates.firstWhere(
+                            (element) => element.isAfter(DateTime.now())))
+                    .year,
+                (date ??
+                        dueDates.firstWhere(
+                            (element) => element.isAfter(DateTime.now())))
+                    .month,
+                (date ??
+                        dueDates.firstWhere(
+                            (element) => element.isAfter(DateTime.now())))
+                    .day),
           ));
 
   bool get hasNext => (repetition != null && status != 1);
 
   DateTime nextDueDate() {
+    if (repetition?.type == null) {
+      return status == 1
+          ? null
+          : DateTime.now().isAfter(startDate)
+              ? DateTime.now()
+              : startDate;
+    }
     if (this.dueDates.length > 0) {
-      print(this.donesHistory);
+      // print('donesHistory: ${this.donesHistory}');
+      // print('dueDates: ${this.dueDates}');
       for (DateTime due in this.dueDates) {
-        if (!this.donesHistory.contains(due)) return due;
+        if (!this.donesHistory.contains(due) && due.isAfter(DateTime.now()))
+          return due;
       }
     }
-    return this.endDate;
+    return null;
   }
 
-  accomplish({DateTime customDate}) async {
+  accomplish({DateTime customDate, bool unChecking: false}) async {
     if (repetition == null) {
       status = status == 1 ? 0 : 1;
       await save();
       return;
     }
-    DateTime now = customDate ?? DateTime.now();
     if (this.donesHistory == null) this.donesHistory = [];
+    DateTime now =
+        customDate ?? (unChecking ? this.donesHistory.last : nextDueDate());
 
     DateTime accompishedDate = DateTime(
       now.year,
@@ -158,39 +203,131 @@ class Task {
     await save();
   }
 
+  int dateTimeToDayNumber(DateTime dateTime) {
+    Map<String, int> weekDays = {
+      'Mon': 0,
+      'Tue': 1,
+      'Wed': 2,
+      'Thu': 3,
+      'Fri': 4,
+      'Sat': 5,
+      'Sun': 6,
+    };
+    // print(DateFormat('E').format(dateTime));
+    return weekDays[DateFormat('E').format(dateTime)];
+  }
+
   DateTime getNextInstanceDate({DateTime after}) {
     DateTime now = after ?? DateTime.now();
 
-    if (repetition == 'daily') {
+    if (repetition == null) {
+      return null;
+      //  DateTime(
+      //   endDate.year,
+      //   endDate.month,
+      //   endDate.day,
+      //   startTime.hour,
+      //   startTime.minute,
+      // );
+    } else if (repetition.type == 'daily') {
       return DateTime(
         now.year,
         now.month,
         now.day + 1,
-        startDate.hour,
-        startDate.minute,
+        startTime.hour,
+        startTime.minute,
       );
-    } else if (repetition == 'weekly') {
+    } else if (repetition.type == 'weekly') {
+      bool forced = false;
+      DateTime next = DateTime(
+        startDate.year,
+        startDate.month,
+        startDate.day -
+            dateTimeToDayNumber(startDate) +
+            repetition.selectedWeekDays.firstWhere(
+              (element) => DateTime(now.year, now.month, now.day).isBefore(
+                DateTime(
+                  startDate.year,
+                  startDate.month,
+                  startDate.day - dateTimeToDayNumber(startDate) + element,
+                ),
+              ),
+              orElse: () {
+                forced = true;
+                return repetition.weeksCount * 7;
+              },
+            ),
+        startTime.hour,
+        startTime.minute,
+      );
+      int i = 0;
+      while (forced ||
+          (now.isAfter(next) ||
+                  now.year * 365 + now.month * 30 + now.day ==
+                      next.year * 365 + next.month * 30 + next.day) &&
+              i < 50) {
+        i++;
+        forced = false;
+        next = DateTime(
+          next.year,
+          next.month,
+          next.day +
+              repetition.selectedWeekDays.firstWhere(
+                (element) => DateTime(now.year, now.month, now.day).isBefore(
+                  DateTime(
+                    next.year,
+                    next.month,
+                    next.day + element,
+                  ),
+                ),
+                orElse: () {
+                  forced = true;
+                  return repetition.weeksCount * 7;
+                },
+              ),
+          startTime.hour,
+          startTime.minute,
+        );
+      }
+      if (i >= 49) print(i);
+      return next;
+    } else if (repetition.type == 'monthly') {
+      if (now.month % repetition.monthsCount == 0 &&
+          now.day + now.hour / 24 + now.minute / (24 * 60) <
+              repetition.dayNumber +
+                  startTime.hour / 24 +
+                  startTime.minute / (24 * 60))
+        return DateTime(
+          now.year,
+          now.month,
+          repetition.dayNumber,
+          startTime.hour,
+          startTime.minute,
+        );
+
       DateTime next = DateTime(
         now.year,
-        now.month,
-        now.day + 7,
-        startDate.hour,
-        startDate.minute,
+        now.month - now.month % repetition.monthsCount + repetition.monthsCount,
+        repetition.dayNumber,
+        startTime.hour,
+        startTime.minute,
       );
+
+      while (next.isBefore(now))
+        next = DateTime(
+          next.year,
+          next.month -
+              next.month % repetition.monthsCount +
+              repetition.monthsCount,
+          repetition.dayNumber,
+          startTime.hour,
+          startTime.minute,
+        );
       return next;
-    } else if (repetition == 'monthly')
-      return DateTime(
-        now.year,
-        now.month <= startDate.month ? now.month : now.month + 1,
-        startDate.day,
-        startDate.hour,
-        startDate.minute,
-      );
+    }
 
-    return startDate;
+    return null;
   }
-
-  bool get done => status == 1;
 
   Future save() async {
     assert(goalRef != null && stackRef != null);
@@ -248,5 +385,49 @@ class Task {
         .collection(stack_constants.TASKS_KEY)
         .doc(id)
         .delete();
+  }
+}
+
+class TaskRepetition {
+  String type;
+
+  // WEEKLY
+  int weeksCount;
+  List<int> selectedWeekDays;
+
+  // MONTHLY
+  int monthsCount;
+  int dayNumber;
+
+  TaskRepetition({
+    this.type,
+    this.weeksCount,
+    List<int> selectedWeekDays,
+    this.dayNumber,
+    this.monthsCount,
+  }) {
+    if (selectedWeekDays != null) {
+      this.selectedWeekDays = selectedWeekDays..sort((a, b) => a.compareTo(b));
+    }
+  }
+
+  TaskRepetition.fromJson(jsonObject) {
+    this.type = jsonObject[task_constants.REPETITION_TYPE_KEY];
+    this.weeksCount = jsonObject[task_constants.REPETITION_WEEKS_COUNT_KEY];
+    this.selectedWeekDays =
+        List<int>.from(jsonObject[task_constants.REPETITION_WEEK_DAYS_KEY]) ??
+            [];
+    this.dayNumber = jsonObject[task_constants.REPETITION_DAY_NUMBER_KEY];
+    this.monthsCount = jsonObject[task_constants.REPETITION_MONTHS_COUNT_KEY];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      task_constants.REPETITION_TYPE_KEY: type,
+      task_constants.REPETITION_WEEKS_COUNT_KEY: weeksCount,
+      task_constants.REPETITION_WEEK_DAYS_KEY: selectedWeekDays,
+      task_constants.REPETITION_DAY_NUMBER_KEY: dayNumber,
+      task_constants.REPETITION_MONTHS_COUNT_KEY: monthsCount,
+    };
   }
 }

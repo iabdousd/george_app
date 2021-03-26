@@ -64,6 +64,7 @@ class StackListTileWidget extends StatelessWidget {
       () => SaveStackPage(
         stack: stack,
         goalRef: stack.goalRef,
+        goalColor: stack.color,
       ),
       popGesture: true,
       transition: Transition.rightToLeftWithFade,

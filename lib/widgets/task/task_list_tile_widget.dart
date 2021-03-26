@@ -112,7 +112,10 @@ class TaskListTileWidget extends StatelessWidget {
               children: [
                 Center(
                   child: GestureDetector(
-                    onTap: () => task.accomplish(customDate: enforcedDate),
+                    onTap: () => task.accomplish(
+                      customDate: enforcedDate,
+                      unChecking: task.isDone(date: enforcedDate),
+                    ),
                     child: Container(
                       width: 32.0,
                       height: 32.0,
@@ -201,17 +204,18 @@ class TaskListTileWidget extends StatelessWidget {
                                           enforcedDate == null
                                       ? 'Next: '
                                       : '') +
-                                  DateFormat('hh:mm a, dd MMM yyyy').format(
-                                    enforcedDate != null
-                                        ? DateTime(
-                                            enforcedDate.year,
-                                            enforcedDate.month,
-                                            enforcedDate.day,
-                                            task.startDate.hour,
-                                            task.startDate.minute,
-                                          )
-                                        : task.nextDueDate(),
-                                  ),
+                                  (task.nextDueDate() == null
+                                      ? 'Task completed'
+                                      : DateFormat('hh:mm a, dd MMM yyyy')
+                                          .format(enforcedDate != null
+                                              ? DateTime(
+                                                  enforcedDate.year,
+                                                  enforcedDate.month,
+                                                  enforcedDate.day,
+                                                  task.startDate.hour,
+                                                  task.startDate.minute,
+                                                )
+                                              : task.nextDueDate())),
                               style: Theme.of(context)
                                   .textTheme
                                   .subtitle1

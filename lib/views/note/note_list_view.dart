@@ -15,12 +15,19 @@ import 'package:george_project/widgets/shared/app_action_button.dart';
 import 'package:george_project/widgets/shared/app_error_widget.dart';
 import 'package:get/get.dart';
 
-class NoteListView extends StatelessWidget {
+class NoteListView extends StatefulWidget {
   final stack_model.Stack stack;
   const NoteListView({Key key, this.stack}) : super(key: key);
 
   @override
+  _NoteListViewState createState() => _NoteListViewState();
+}
+
+class _NoteListViewState extends State<NoteListView>
+    with AutomaticKeepAliveClientMixin {
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: 16.0,
@@ -38,8 +45,8 @@ class NoteListView extends StatelessWidget {
                 child: AppActionButton(
                   onPressed: () => Get.to(
                     () => SaveNotePage(
-                      goalRef: stack.goalRef,
-                      stackRef: stack.id,
+                      goalRef: widget.stack.goalRef,
+                      stackRef: widget.stack.id,
                     ),
                   ),
                   icon: Icons.add,
@@ -61,9 +68,9 @@ class NoteListView extends StatelessWidget {
                   .collection(user_constants.USERS_KEY)
                   .doc(getCurrentUser().uid)
                   .collection(goal_constants.GOALS_KEY)
-                  .doc(stack.goalRef)
+                  .doc(widget.stack.goalRef)
                   .collection(goal_constants.STACKS_KEY)
-                  .doc(stack.id)
+                  .doc(widget.stack.id)
                   .collection(stack_constants.NOTES_KEY)
                   .orderBy(note_constants.CREATION_DATE_KEY, descending: true)
                   .limit(10)
@@ -84,14 +91,14 @@ class NoteListView extends StatelessWidget {
                       );
                       return NoteListTileWidget(
                         note: note
-                          ..goalRef = stack.goalRef
-                          ..stackRef = stack.id,
-                        stackColor: stack.color,
+                          ..goalRef = widget.stack.goalRef
+                          ..stackRef = widget.stack.id,
+                        stackColor: widget.stack.color,
                       );
                     },
                   );
                 else
-                  return AppErrorWidget(status: 404);
+                  return Container();
 
                 return LoadingWidget();
               }),
@@ -99,4 +106,7 @@ class NoteListView extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

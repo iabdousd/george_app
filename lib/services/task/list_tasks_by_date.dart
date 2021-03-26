@@ -23,15 +23,15 @@ Future<List<Task>> tasksByDate(DateTime date) async {
     Task task = Task.fromJson(taskRef.data());
 
     DateTime now = DateTime.now();
-    if (task.repetition == 'daily')
+    if (task.repetition?.type == 'daily')
       tasks.add(task);
-    else if (task.repetition == 'weekly') {
+    else if (task.repetition?.type == 'weekly') {
       if (task.getNextInstanceDate().month == now.month &&
           task.getNextInstanceDate().day == now.day) tasks.add(task);
-    } else if (task.repetition == 'monthly') {
+    } else if (task.repetition?.type == 'monthly') {
       if (task.getNextInstanceDate().month == now.month &&
           task.getNextInstanceDate().day == now.day) tasks.add(task);
-    } else if (task.repetition == null) {
+    } else if (task.repetition?.type == null) {
       tasks.add(task);
     }
   }

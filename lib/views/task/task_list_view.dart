@@ -15,12 +15,19 @@ import 'package:george_project/widgets/shared/app_error_widget.dart';
 import 'package:george_project/widgets/task/task_list_tile_widget.dart';
 import 'package:get/get.dart';
 
-class TaskListView extends StatelessWidget {
+class TaskListView extends StatefulWidget {
   final stack_model.Stack stack;
   const TaskListView({Key key, this.stack}) : super(key: key);
 
   @override
+  _TaskListViewState createState() => _TaskListViewState();
+}
+
+class _TaskListViewState extends State<TaskListView>
+    with AutomaticKeepAliveClientMixin {
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: 16.0,
@@ -37,10 +44,10 @@ class TaskListView extends StatelessWidget {
                 width: constraints.maxWidth,
                 child: AppActionButton(
                   onPressed: () => Get.to(
-                    SaveTaskPage(
-                      goalRef: stack.goalRef,
-                      stackRef: stack.id,
-                      stackColor: stack.color,
+                    () => SaveTaskPage(
+                      goalRef: widget.stack.goalRef,
+                      stackRef: widget.stack.id,
+                      stackColor: widget.stack.color,
                     ),
                   ),
                   icon: Icons.add,
@@ -62,9 +69,9 @@ class TaskListView extends StatelessWidget {
                   .collection(user_constants.USERS_KEY)
                   .doc(getCurrentUser().uid)
                   .collection(goal_constants.GOALS_KEY)
-                  .doc(stack.goalRef)
+                  .doc(widget.stack.goalRef)
                   .collection(goal_constants.STACKS_KEY)
-                  .doc(stack.id)
+                  .doc(widget.stack.id)
                   .collection(stack_constants.TASKS_KEY)
                   .orderBy(task_constants.CREATION_DATE_KEY, descending: true)
                   .limit(10)
@@ -81,15 +88,15 @@ class TaskListView extends StatelessWidget {
                     itemBuilder: (context, index) {
                       return TaskListTileWidget(
                         task: Task.fromJson(snapshot.data.docs[index].data())
-                          ..goalRef = stack.goalRef
-                          ..stackRef = stack.id
+                          ..goalRef = widget.stack.goalRef
+                          ..stackRef = widget.stack.id
                           ..id = snapshot.data.docs[index].id,
-                        stackColor: stack.color,
+                        stackColor: widget.stack.color,
                       );
                     },
                   );
                 else
-                  return AppErrorWidget(status: 404);
+                  return Container();
 
                 return LoadingWidget();
               }),
@@ -97,4 +104,7 @@ class TaskListView extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

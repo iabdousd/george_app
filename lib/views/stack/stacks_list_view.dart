@@ -36,7 +36,10 @@ class StacksListView extends StatelessWidget {
               ),
               InkWell(
                 onTap: () => Get.to(
-                  () => SaveStackPage(goalRef: goal.id),
+                  () => SaveStackPage(
+                    goalRef: goal.id,
+                    goalColor: goal.color,
+                  ),
                 ),
                 child: Icon(
                   Icons.add_circle_outline_rounded,

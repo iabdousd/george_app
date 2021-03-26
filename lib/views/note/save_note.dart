@@ -1,8 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
-import 'package:multi_image_picker/multi_image_picker.dart';
+import 'package:image_picker/image_picker.dart';
 
 import 'package:george_project/models/Note.dart';
 import 'package:george_project/services/feed-back/flush_bar.dart';
@@ -10,6 +9,7 @@ import 'package:george_project/services/feed-back/loader.dart';
 import 'package:george_project/widgets/shared/app_action_button.dart';
 import 'package:george_project/widgets/shared/app_appbar.dart';
 import 'package:george_project/widgets/shared/images_list_view.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 
 class SaveNotePage extends StatefulWidget {
   final String goalRef;
@@ -28,8 +28,7 @@ class _SaveNotePageState extends State<SaveNotePage> {
   TextEditingController _contentController = TextEditingController();
   DateTime startDate = DateTime.now();
   DateTime endDate = DateTime.now();
-  List<Asset> images = [];
-  List<File> files = [];
+  List<PickedFile> images = [];
   bool editing = false;
 
   _submitNote() async {
@@ -45,6 +44,7 @@ class _SaveNotePageState extends State<SaveNotePage> {
       id: widget.note?.id,
       content: _contentController.text,
       creationDate: DateTime.now(),
+      attachmentsCount: widget.note?.attachmentsCount ?? 0,
     );
     await note.save();
 
@@ -58,17 +58,13 @@ class _SaveNotePageState extends State<SaveNotePage> {
     );
   }
 
-  _pickImage() async {
-    List<Asset> resultList;
+  _pickImage(ImageSource imageSource) async {
+    PickedFile image;
 
     try {
-      resultList = await MultiImagePicker.pickImages(
-        maxImages: 300,
-        enableCamera: true,
-        selectedAssets: images,
-        materialOptions: MaterialOptions(
-          actionBarColor: '#4094db',
-        ),
+      image = await ImagePicker().getImage(
+        imageQuality: 80,
+        source: imageSource,
       );
     } on Exception {
       showFlushBar(
@@ -77,43 +73,55 @@ class _SaveNotePageState extends State<SaveNotePage> {
         success: false,
       );
     }
-    if (!mounted) return;
-
-    setState(() {
-      images = resultList ?? [];
-    });
+    if (image != null)
+      setState(() {
+        images.add(image);
+      });
   }
 
   addAttachment() {
-    _pickImage();
-    // showMaterialModalBottomSheet(
-    //   context: context,
-    //   backgroundColor: Colors.transparent,
-    //   expand: false,
-    //   builder: (context) => Container(
-    //     decoration: BoxDecoration(
-    //       color: Theme.of(context).scaffoldBackgroundColor,
-    //       borderRadius: BorderRadius.circular(12.0),
-    //     ),
-    //     child: Column(
-    //       crossAxisAlignment: CrossAxisAlignment.stretch,
-    //       mainAxisSize: MainAxisSize.min,
-    //       children: [
-    //         AppActionButton(
-    //           onPressed: _pickImage,
-    //           icon: Icons.image_outlined,
-    //           label: 'Image',
-    //           backgroundColor: Theme.of(context).backgroundColor,
-    //           textStyle: Theme.of(context).textTheme.headline6,
-    //           iconColor: Theme.of(context).primaryColor,
-    //           shadows: [],
-    //           margin: EdgeInsets.only(bottom: 4, top: 4),
-    //           iconSize: 28,
-    //         ),
-    //       ],
-    //     ),
-    //   ),
-    // );
+    showMaterialModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      expand: false,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(12.0),
+            topRight: Radius.circular(12.0),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AppActionButton(
+              onPressed: () => _pickImage(ImageSource.gallery),
+              icon: Icons.image_outlined,
+              label: 'Photos',
+              backgroundColor: Theme.of(context).backgroundColor,
+              textStyle: Theme.of(context).textTheme.headline6,
+              iconColor: Theme.of(context).primaryColor,
+              shadows: [],
+              margin: EdgeInsets.only(bottom: 0, top: 4),
+              iconSize: 28,
+            ),
+            AppActionButton(
+              onPressed: () => _pickImage(ImageSource.camera),
+              icon: Icons.camera_alt_outlined,
+              label: 'Camera',
+              backgroundColor: Theme.of(context).backgroundColor,
+              textStyle: Theme.of(context).textTheme.headline6,
+              iconColor: Theme.of(context).primaryColor,
+              shadows: [],
+              margin: EdgeInsets.only(bottom: 4, top: 0),
+              iconSize: 28,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   init() async {
@@ -207,7 +215,6 @@ class _SaveNotePageState extends State<SaveNotePage> {
                 networkImages: widget.note?.attachments ?? [],
                 deleteEvent: _deleteImage,
               ),
-              // FilesListView(files: files),
             ],
           ),
         ),
@@ -216,7 +223,7 @@ class _SaveNotePageState extends State<SaveNotePage> {
   }
 
   _deleteImage(image) async {
-    if (image is Asset)
+    if (image is PickedFile)
       setState(() {
         images.remove(image);
       });

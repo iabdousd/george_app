@@ -14,8 +14,6 @@ class Stack {
   String color;
   int status;
   DateTime creationDate;
-  DateTime startDate;
-  DateTime endDate;
 
   List<Task> tasks;
   List<Note> notes;
@@ -27,8 +25,6 @@ class Stack {
     this.color,
     this.status = 0,
     this.creationDate,
-    this.startDate,
-    this.endDate,
     this.tasks,
   });
 
@@ -44,10 +40,6 @@ class Stack {
     this.status = jsonObject[stack_constants.STATUS_KEY];
     this.creationDate =
         (jsonObject[stack_constants.CREATION_DATE_KEY] as Timestamp).toDate();
-    this.startDate =
-        (jsonObject[stack_constants.START_DATE_KEY] as Timestamp).toDate();
-    this.endDate =
-        (jsonObject[stack_constants.END_DATE_KEY] as Timestamp).toDate();
   }
 
   Map<String, dynamic> toJson() {
@@ -56,8 +48,6 @@ class Stack {
       stack_constants.COLOR_KEY: color,
       stack_constants.STATUS_KEY: status,
       stack_constants.CREATION_DATE_KEY: creationDate,
-      stack_constants.START_DATE_KEY: startDate,
-      stack_constants.END_DATE_KEY: endDate,
     };
   }
 

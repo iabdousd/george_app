@@ -118,7 +118,6 @@ class _GoalDetailsPageState extends State<GoalDetailsPage> {
                   AppActionButton(
                     icon: Icons.edit,
                     onPressed: _editGoal,
-                    label: 'EDIT',
                     backgroundColor: Theme.of(context).accentColor,
                     margin: EdgeInsets.only(left: 8, right: 4),
                   ),

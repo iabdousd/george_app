@@ -56,13 +56,15 @@ class Goal {
 
   Future fetch({bool withStacks = false}) async {
     assert(id != null);
-    Goal tempG = Goal.fromJson(await FirebaseFirestore.instance
+    DocumentSnapshot doc = await FirebaseFirestore.instance
         .collection(user_constants.USERS_KEY)
         .doc(getCurrentUser().uid)
         .collection(goal_constants.GOALS_KEY)
         .doc(id)
-        .get()
-        .then((value) => value.data()));
+        .get();
+    Goal tempG = Goal.fromJson(
+      doc.data(),
+    );
 
     this.title = tempG.title;
     this.color = tempG.color;

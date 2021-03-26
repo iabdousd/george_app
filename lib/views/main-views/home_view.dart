@@ -18,57 +18,62 @@ class _HomeViewState extends State<HomeView>
     with AutomaticKeepAliveClientMixin {
   @override
   Widget build(BuildContext context) {
-    return ListView(
+    super.build(context);
+    return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: 16.0,
         vertical: 24.0,
       ),
-      children: [
-        Container(
-          child: Text(
-            'Goals',
-            style: Theme.of(context).textTheme.headline5.copyWith(
-                  fontWeight: FontWeight.w900,
-                ),
+      child: Column(
+        children: [
+          Container(
+            child: Text(
+              'Goals',
+              style: Theme.of(context).textTheme.headline5.copyWith(
+                    fontWeight: FontWeight.w900,
+                  ),
+            ),
           ),
-        ),
-        Container(
-          margin: const EdgeInsets.symmetric(vertical: 12.0),
-          child: StreamBuilder<QuerySnapshot>(
-            stream: FirebaseFirestore.instance
-                .collection(user_constants.USERS_KEY)
-                .doc(getCurrentUser().uid)
-                .collection(goal_constants.GOALS_KEY)
-                .orderBy(goal_constants.CREATION_DATE_KEY, descending: true)
-                .limit(10)
-                .snapshots(),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) if (snapshot.data.docs.length > 0)
-                return ListView.builder(
-                  itemCount: snapshot.data.docs.length,
-                  shrinkWrap: true,
-                  // physics: NeverScrollableScrollPhysics(),
-                  itemBuilder: (context, index) {
-                    return GoalListTileWidget(
-                      goal: Goal.fromJson(
-                        snapshot.data.docs[index].data(),
-                        id: snapshot.data.docs[index].id,
+          Expanded(
+            child: Container(
+              margin: const EdgeInsets.symmetric(vertical: 12.0),
+              child: StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection(user_constants.USERS_KEY)
+                    .doc(getCurrentUser().uid)
+                    .collection(goal_constants.GOALS_KEY)
+                    .orderBy(goal_constants.CREATION_DATE_KEY, descending: true)
+                    .limit(10)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) if (snapshot.data.docs.length > 0)
+                    return ListView.builder(
+                      itemCount: snapshot.data.docs.length,
+                      itemBuilder: (context, index) {
+                        return GoalListTileWidget(
+                          goal: Goal.fromJson(
+                            snapshot.data.docs[index].data(),
+                            id: snapshot.data.docs[index].id,
+                          ),
+                        );
+                      },
+                    );
+                  else
+                    return Center(
+                      child: AppErrorWidget(
+                        status: 404,
+                        customMessage:
+                            'Nothing here. Create a Goal by pressing + to get started',
                       ),
                     );
-                  },
-                );
-              else
-                return AppErrorWidget(
-                  status: 404,
-                  customMessage:
-                      'Nothing here. Create a Goal by pressing + to get started',
-                );
-              if (snapshot.hasError) return AppErrorWidget();
-              return LoadingWidget();
-            },
+                  if (snapshot.hasError) return AppErrorWidget();
+                  return LoadingWidget();
+                },
+              ),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

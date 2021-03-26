@@ -30,6 +30,7 @@ class _SaveGoalPageState extends State<SaveGoalPage> {
     if (!_formKey.currentState.validate()) return;
     toggleLoading(state: true);
     await Goal(
+      id: widget.goal?.id,
       title: _titleController.text,
       color: selectedColor,
       creationDate: DateTime.now(),
@@ -151,6 +152,7 @@ class _SaveGoalPageState extends State<SaveGoalPage> {
                         child: DatePickerWidget(
                           title: 'Start:',
                           color: selectedColor,
+                          endDate: endDate,
                           onSubmit: _pickStartDate,
                           initialDate: startDate,
                         ),
@@ -163,6 +165,7 @@ class _SaveGoalPageState extends State<SaveGoalPage> {
                           title: 'End:',
                           color: selectedColor,
                           onSubmit: _pickEndDate,
+                          startDate: startDate,
                           initialDate: endDate,
                         ),
                       ),

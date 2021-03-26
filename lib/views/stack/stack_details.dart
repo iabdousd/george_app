@@ -28,6 +28,7 @@ class _StackDetailsPageState extends State<StackDetailsPage> {
       () => SaveStackPage(
         stack: widget.stack,
         goalRef: widget.stack.goalRef,
+        goalColor: widget.stack.color,
       ),
       popGesture: true,
       transition: Transition.rightToLeftWithFade,
@@ -109,55 +110,32 @@ class _StackDetailsPageState extends State<StackDetailsPage> {
                     ),
                   ),
                 ),
-                Container(
-                  child: Text(
-                    widget.stack.title.toUpperCase(),
-                    style: Theme.of(context).textTheme.headline5.copyWith(
-                          fontWeight: FontWeight.w900,
-                        ),
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        widget.stack.title.toUpperCase(),
+                        style: Theme.of(context).textTheme.headline5.copyWith(
+                              fontWeight: FontWeight.w900,
+                            ),
+                      ),
+                    ),
+                    AppActionButton(
+                      icon: Icons.edit,
+                      onPressed: _editStack,
+                      backgroundColor: Theme.of(context).accentColor,
+                      margin: EdgeInsets.only(left: 8, right: 4),
+                    ),
+                    AppActionButton(
+                      icon: Icons.delete,
+                      onPressed: _deleteStack,
+                      backgroundColor: Colors.red,
+                      margin: EdgeInsets.only(left: 4),
+                    ),
+                  ],
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(vertical: 12.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: AppDateView(
-                          label: 'From:',
-                          date: widget.stack.startDate,
-                          format: 'dd MMM yyyy',
-                        ),
-                      ),
-                      Expanded(
-                        child: AppDateView(
-                          label: 'To:',
-                          date: widget.stack.endDate,
-                          format: 'dd MMM yyyy',
-                        ),
-                      ),
-                      AppActionButton(
-                        icon: Icons.edit,
-                        label: 'EDIT',
-                        onPressed: _editStack,
-                        backgroundColor: Theme.of(context).accentColor,
-                        margin: EdgeInsets.only(left: 8, right: 4),
-                      ),
-                      AppActionButton(
-                        icon: Icons.delete,
-                        onPressed: _deleteStack,
-                        backgroundColor: Colors.red,
-                        margin: EdgeInsets.only(left: 4),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(vertical: 12.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [],
-                  ),
+                SizedBox(
+                  height: 20,
                 ),
               ],
             ),
