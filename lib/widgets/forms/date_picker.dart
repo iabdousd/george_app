@@ -62,11 +62,12 @@ class _DatePickerWidgetState extends State<DatePickerWidget> {
               picked.hour + picked.minute / 60 >
                   (widget.endDate?.hour ?? 24) +
                       (widget.endDate?.minute ?? 0) / 60)) {
-        showFlushBar(
-          title: 'Malformat dates',
-          message: 'The start date must be before the end date!',
-          success: false,
-        );
+        if (widget.withTime)
+          showFlushBar(
+            title: 'Malformat dates',
+            message: 'The start date must be before the end date!',
+            success: false,
+          );
 
         return;
       }
@@ -84,8 +85,20 @@ class _DatePickerWidgetState extends State<DatePickerWidget> {
       final DateTime picked = await showRoundedDatePicker(
         context: context,
         initialDate: selectedDate,
-        firstDate: widget.startDate ?? DateTime(2000),
-        lastDate: widget.endDate ?? DateTime(2100),
+        firstDate: widget.startDate != null
+            ? DateTime(
+                widget.startDate.year,
+                widget.startDate.month,
+                widget.startDate.day,
+              )
+            : DateTime(2000),
+        lastDate: widget.endDate != null
+            ? DateTime(
+                widget.endDate.year,
+                widget.endDate.month,
+                widget.endDate.day,
+              )
+            : DateTime(2100),
         height: 280,
       );
       if (picked != null) {
@@ -100,17 +113,20 @@ class _DatePickerWidgetState extends State<DatePickerWidget> {
         });
         if (widget.withTime)
           widget.onSubmit(
-              DateTime(selectedDate.year, selectedDate.month, selectedDate.day),
-              DateTime(1970, 1, 1, selectedDate.hour, selectedDate.minute));
+            DateTime(selectedDate.year, selectedDate.month, selectedDate.day),
+            DateTime(1970, 1, 1, selectedDate.hour, selectedDate.minute),
+          );
         else
           widget.onSubmit(selectedDate);
       }
     } catch (e) {
-      showFlushBar(
-        title: 'Malformat dates',
-        message: 'The start date must be before the end date!',
-        success: false,
-      );
+      print(e);
+      if (!(e is NoSuchMethodError))
+        showFlushBar(
+          title: 'Malformat dates',
+          message: 'The start date must be before the end date!',
+          success: false,
+        );
     }
   }
 

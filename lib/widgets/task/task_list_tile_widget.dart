@@ -207,15 +207,23 @@ class TaskListTileWidget extends StatelessWidget {
                                   (task.nextDueDate() == null
                                       ? 'Task completed'
                                       : DateFormat('hh:mm a, dd MMM yyyy')
-                                          .format(enforcedDate != null
+                                          .format(
+                                          enforcedDate != null
                                               ? DateTime(
                                                   enforcedDate.year,
                                                   enforcedDate.month,
                                                   enforcedDate.day,
-                                                  task.startDate.hour,
-                                                  task.startDate.minute,
+                                                  task.startTime.hour,
+                                                  task.startTime.minute,
                                                 )
-                                              : task.nextDueDate())),
+                                              : DateTime(
+                                                  task.nextDueDate().year,
+                                                  task.nextDueDate().month,
+                                                  task.nextDueDate().day,
+                                                  task.startTime.hour,
+                                                  task.startTime.minute,
+                                                ),
+                                        )),
                               style: Theme.of(context)
                                   .textTheme
                                   .subtitle1

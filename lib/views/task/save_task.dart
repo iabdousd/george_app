@@ -34,7 +34,7 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
   TextEditingController _descriptionController = TextEditingController();
   List<int> selectedWeekDays = [];
   DateTime startDate = DateTime.now();
-  DateTime endDate = DateTime.now().add(Duration(hours: 1));
+  DateTime endDate = DateTime.now().add(Duration(hours: 2));
   DateTime startTime = DateTime(
     1970,
     1,
@@ -115,6 +115,18 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
     setState(() {
       endDate = pickedDate;
       endTime = pickedTime;
+    });
+  }
+
+  _pickStartDateOnly(DateTime pickedDate) async {
+    setState(() {
+      startDate = pickedDate;
+    });
+  }
+
+  _pickEndDateOnly(DateTime pickedDate) async {
+    setState(() {
+      endDate = pickedDate;
     });
   }
 
@@ -267,7 +279,7 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
               DatePickerWidget(
                 title: 'Start:',
                 color: widget.stackColor,
-                onSubmit: _pickStartDate,
+                onSubmit: anyTime ? _pickStartDateOnly : _pickStartDate,
                 initialDate: DateTime(
                   startDate.year,
                   startDate.month,
@@ -296,7 +308,7 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
                   startTime.hour,
                   startTime.minute,
                 ),
-                onSubmit: _pickEndDate,
+                onSubmit: anyTime ? _pickEndDateOnly : _pickEndDate,
                 initialDate: DateTime(
                   endDate.year,
                   endDate.month,

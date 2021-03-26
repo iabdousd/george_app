@@ -50,7 +50,8 @@ class Task {
       DateTime nextDue =
           DateTime.now().isAfter(startDate) ? DateTime.now() : startDate;
       int i = 0;
-      print(repetition.selectedWeekDays);
+      if (repetition?.type == 'daily' && DateTime.now().isBefore(startDate))
+        dueDates.add(startDate);
       do {
         nextDue = getNextInstanceDate(after: nextDue);
         if (nextDue == null || nextDue.isAfter(endDate)) break;
