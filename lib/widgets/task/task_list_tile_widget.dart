@@ -106,6 +106,17 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
 
   @override
   Widget build(BuildContext context) {
+    print(DateTime.now());
+    print(widget.task.startTime);
+    print(widget.task.endTime);
+    print(((DateTime.now().hour +
+            DateTime.now().minute / 60 -
+            widget.task.startTime.hour -
+            widget.task.startTime.minute / 60) /
+        (widget.task.endTime.hour +
+            widget.task.endTime.minute / 60 -
+            widget.task.startTime.hour -
+            widget.task.startTime.minute / 60)));
     return AnimatedContainer(
       duration: Duration(milliseconds: 250),
       decoration: BoxDecoration(
@@ -308,7 +319,7 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                             height: 2,
                             width: ((DateTime.now().hour +
                                             DateTime.now().minute / 60 -
-                                            widget.task.startTime.hour +
+                                            widget.task.startTime.hour -
                                             widget.task.startTime.minute / 60) /
                                         (widget.task.endTime.hour +
                                             widget.task.endTime.minute / 60 -

@@ -12,7 +12,8 @@ import 'package:george_project/widgets/task/task_list_tile_widget.dart';
 import 'package:intl/intl.dart';
 
 class TasksTimerList extends StatefulWidget {
-  TasksTimerList({Key key}) : super(key: key);
+  final Function(Task) emitFirstTask;
+  TasksTimerList({Key key, @required this.emitFirstTask}) : super(key: key);
 
   @override
   _TasksTimerListState createState() => _TasksTimerListState();
@@ -20,8 +21,6 @@ class TasksTimerList extends StatefulWidget {
 
 class _TasksTimerListState extends State<TasksTimerList>
     with AutomaticKeepAliveClientMixin {
-  final DateTime now = DateTime.now();
-
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -33,7 +32,8 @@ class _TasksTimerListState extends State<TasksTimerList>
               .collection(stack_constants.TASKS_KEY)
               .where(
                 task_constants.DUE_DATES_KEY,
-                arrayContains: DateTime(now.year, now.month, now.day),
+                arrayContains: DateTime(DateTime.now().year,
+                    DateTime.now().month, DateTime.now().day),
               )
               .orderBy(
                 task_constants.ANY_TIME_KEY,
@@ -45,6 +45,7 @@ class _TasksTimerListState extends State<TasksTimerList>
               )
               .snapshots(),
           builder: (context, snapshot) {
+            final DateTime now = DateTime.now();
             if (snapshot.hasData) if (snapshot.data.docs.isNotEmpty)
               return ListView.builder(
                 itemCount: snapshot.data.docs.length,
@@ -55,22 +56,30 @@ class _TasksTimerListState extends State<TasksTimerList>
                     snapshot.data.docs[index].data(),
                     id: snapshot.data.docs[index].id,
                   );
+                  if (index == 0) {
+                    widget.emitFirstTask(task);
+                  }
                   return TaskListTileWidget(
                     task: task,
                     stackColor: task.stackColor,
                     enforcedDate: now,
-                    shotTimer: index == 0,
+                    shotTimer: index == 0 &&
+                        task.startTime.isBefore(
+                          DateTime(1970, 1, 1, now.hour, now.minute),
+                        ),
                   );
                 },
               );
-            else
+            else {
+              widget.emitFirstTask(null);
               return Container(
-                padding: const EdgeInsets.all(16.0),
-                child: AppErrorWidget(
-                  customMessage:
-                      'You don\' have tasks on ${DateFormat("dd MMMM").format(now)}',
-                ),
-              );
+                  // padding: const EdgeInsets.all(16.0),
+                  // child: AppErrorWidget(
+                  //   customMessage:
+                  //       'You don\' have tasks on ${DateFormat("dd MMMM").format(now)}',
+                  // ),
+                  );
+            }
             return LoadingWidget();
           }),
     );
