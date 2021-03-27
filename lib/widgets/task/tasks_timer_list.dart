@@ -7,9 +7,7 @@ import 'package:george_project/constants/models/stack.dart' as stack_constants;
 import 'package:george_project/models/Task.dart';
 import 'package:george_project/services/feed-back/loader.dart';
 import 'package:george_project/services/user/user_service.dart';
-import 'package:george_project/widgets/shared/app_error_widget.dart';
 import 'package:george_project/widgets/task/task_list_tile_widget.dart';
-import 'package:intl/intl.dart';
 
 class TasksTimerList extends StatefulWidget {
   final Function(Task) emitFirstTask;
@@ -59,6 +57,7 @@ class _TasksTimerListState extends State<TasksTimerList>
               )
               .snapshots(),
           builder: (context, snapshot) {
+            print(snapshot.data);
             final DateTime now = DateTime.now();
             if (snapshot.hasData) if (snapshot.data.docs.isNotEmpty)
               return ListView.builder(

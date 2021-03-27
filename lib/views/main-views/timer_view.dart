@@ -25,7 +25,18 @@ class _TimerViewState extends State<TimerView>
     }
     currentTask.add(task);
     refreshTimer?.cancel();
-    refreshTimer = Timer.periodic(Duration(minutes: 1), (timer) {
+    refreshTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+      print(task.endTime);
+      print(DateTime.now());
+      if (task.endTime.isBefore(DateTime(
+        1970,
+        1,
+        1,
+        DateTime.now().hour,
+        DateTime.now().minute,
+        DateTime.now().second,
+      ))) setState(() {});
+
       currentTask.add(task);
     });
   }
