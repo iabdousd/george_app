@@ -16,6 +16,23 @@ class HomeView extends StatefulWidget {
 
 class _HomeViewState extends State<HomeView>
     with AutomaticKeepAliveClientMixin {
+  int limit = 10;
+  int elementsCount = 10;
+  ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(() {
+      if (_scrollController.offset >=
+              _scrollController.position.maxScrollExtent &&
+          elementsCount == limit)
+        setState(() {
+          limit += 10;
+        });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -43,29 +60,33 @@ class _HomeViewState extends State<HomeView>
                     .doc(getCurrentUser().uid)
                     .collection(goal_constants.GOALS_KEY)
                     .orderBy(goal_constants.CREATION_DATE_KEY, descending: true)
-                    .limit(10)
+                    .limit(limit)
                     .snapshots(),
                 builder: (context, snapshot) {
-                  if (snapshot.hasData) if (snapshot.data.docs.length > 0)
-                    return ListView.builder(
-                      itemCount: snapshot.data.docs.length,
-                      itemBuilder: (context, index) {
-                        return GoalListTileWidget(
-                          goal: Goal.fromJson(
-                            snapshot.data.docs[index].data(),
-                            id: snapshot.data.docs[index].id,
-                          ),
-                        );
-                      },
-                    );
-                  else
-                    return Center(
-                      child: AppErrorWidget(
-                        status: 404,
-                        customMessage:
-                            'Nothing here. Create a Goal by pressing + to get started',
-                      ),
-                    );
+                  if (snapshot.hasData) {
+                    elementsCount = snapshot.data.docs.length;
+                    if (snapshot.data.docs.length > 0)
+                      return ListView.builder(
+                        itemCount: snapshot.data.docs.length,
+                        controller: _scrollController,
+                        itemBuilder: (context, index) {
+                          return GoalListTileWidget(
+                            goal: Goal.fromJson(
+                              snapshot.data.docs[index].data(),
+                              id: snapshot.data.docs[index].id,
+                            ),
+                          );
+                        },
+                      );
+                    else
+                      return Center(
+                        child: AppErrorWidget(
+                          status: 404,
+                          customMessage:
+                              'Nothing here. Create a Goal by pressing + to get started',
+                        ),
+                      );
+                  }
                   if (snapshot.hasError) return AppErrorWidget();
                   return LoadingWidget();
                 },

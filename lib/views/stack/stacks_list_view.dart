@@ -16,7 +16,11 @@ import 'package:get/get.dart';
 
 class StacksListView extends StatelessWidget {
   final Goal goal;
-  const StacksListView({Key key, @required this.goal}) : super(key: key);
+  final int limit;
+  final Function(int) updateCount;
+  const StacksListView(
+      {Key key, @required this.goal, this.limit, this.updateCount})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -58,27 +62,30 @@ class StacksListView extends StatelessWidget {
                 .doc(goal.id)
                 .collection(goal_constants.STACKS_KEY)
                 .orderBy(stack_constants.CREATION_DATE_KEY, descending: true)
-                .limit(10)
+                .limit(limit)
                 .snapshots(),
             builder: (context, snapshot) {
-              if (snapshot.hasData) if (snapshot.data.docs.length > 0)
-                return ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: snapshot.data.docs.length,
-                  physics: NeverScrollableScrollPhysics(),
-                  itemBuilder: (context, index) {
-                    return StackListTileWidget(
-                      goalTitle: goal.title,
-                      stack: stack_model.Stack.fromJson(
-                        snapshot.data.docs[index].data(),
-                        goalRef: goal.id,
-                        id: snapshot.data.docs[index].id,
-                      ),
-                    );
-                  },
-                );
-              else
-                return AppErrorWidget(status: 404);
+              if (snapshot.hasData) {
+                updateCount(snapshot.data.docs.length);
+                if (snapshot.data.docs.length > 0)
+                  return ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: snapshot.data.docs.length,
+                    physics: NeverScrollableScrollPhysics(),
+                    itemBuilder: (context, index) {
+                      return StackListTileWidget(
+                        goalTitle: goal.title,
+                        stack: stack_model.Stack.fromJson(
+                          snapshot.data.docs[index].data(),
+                          goalRef: goal.id,
+                          id: snapshot.data.docs[index].id,
+                        ),
+                      );
+                    },
+                  );
+                else
+                  return AppErrorWidget(status: 404);
+              }
 
               return LoadingWidget();
             }),

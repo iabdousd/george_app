@@ -11,7 +11,6 @@ import 'package:george_project/services/feed-back/loader.dart';
 import 'package:george_project/services/user/user_service.dart';
 import 'package:george_project/views/task/save_task.dart';
 import 'package:george_project/widgets/shared/app_action_button.dart';
-import 'package:george_project/widgets/shared/app_error_widget.dart';
 import 'package:george_project/widgets/task/task_list_tile_widget.dart';
 import 'package:get/get.dart';
 
@@ -25,6 +24,23 @@ class TaskListView extends StatefulWidget {
 
 class _TaskListViewState extends State<TaskListView>
     with AutomaticKeepAliveClientMixin {
+  int limit = 10;
+  int elementsCount = 10;
+  ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(() {
+      if (_scrollController.offset >=
+              _scrollController.position.maxScrollExtent &&
+          elementsCount == limit)
+        setState(() {
+          limit += 10;
+        });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -34,6 +50,7 @@ class _TaskListViewState extends State<TaskListView>
         vertical: 4.0,
       ),
       child: ListView(
+        controller: _scrollController,
         children: [
           SizedBox(
             height: 8.0,
@@ -74,30 +91,32 @@ class _TaskListViewState extends State<TaskListView>
                   .doc(widget.stack.id)
                   .collection(stack_constants.TASKS_KEY)
                   .orderBy(task_constants.CREATION_DATE_KEY, descending: true)
-                  .limit(10)
+                  .limit(limit)
                   .snapshots(),
               builder: (context, snapshot) {
-                if (snapshot.hasData) if (snapshot.data.docs.length > 0)
-                  return ListView.builder(
-                    shrinkWrap: true,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 4.0,
-                    ),
-                    itemCount: snapshot.data.docs.length,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemBuilder: (context, index) {
-                      return TaskListTileWidget(
-                        task: Task.fromJson(snapshot.data.docs[index].data())
-                          ..goalRef = widget.stack.goalRef
-                          ..stackRef = widget.stack.id
-                          ..id = snapshot.data.docs[index].id,
-                        stackColor: widget.stack.color,
-                      );
-                    },
-                  );
-                else
-                  return Container();
-
+                if (snapshot.hasData) {
+                  elementsCount = snapshot.data.docs.length;
+                  if (snapshot.data.docs.length > 0)
+                    return ListView.builder(
+                      shrinkWrap: true,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 4.0,
+                      ),
+                      itemCount: snapshot.data.docs.length,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemBuilder: (context, index) {
+                        return TaskListTileWidget(
+                          task: Task.fromJson(snapshot.data.docs[index].data())
+                            ..goalRef = widget.stack.goalRef
+                            ..stackRef = widget.stack.id
+                            ..id = snapshot.data.docs[index].id,
+                          stackColor: widget.stack.color,
+                        );
+                      },
+                    );
+                  else
+                    return Container();
+                }
                 return LoadingWidget();
               }),
         ],

@@ -4,6 +4,8 @@ import 'package:george_project/services/user/user_service.dart';
 import 'package:george_project/constants/models/goal.dart' as goal_constants;
 import 'package:george_project/constants/user.dart' as user_constants;
 
+import 'Task.dart';
+
 class Goal {
   String id;
   String title;

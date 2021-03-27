@@ -72,14 +72,41 @@ class _TasksTimerListState extends State<TasksTimerList>
                   if (index == 0) {
                     widget.emitFirstTask(task);
                   }
-                  return TaskListTileWidget(
-                    task: task,
-                    stackColor: task.stackColor,
-                    enforcedDate: now,
-                    shotTimer: index == 0 &&
-                        task.startTime.isBefore(
-                          DateTime(1970, 1, 1, now.hour, now.minute),
+                  return Container(
+                    padding: index == 0
+                        ? EdgeInsets.zero
+                        : EdgeInsets.only(
+                            left: 16,
+                            right: 16,
+                          ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        TaskListTileWidget(
+                          task: task,
+                          stackColor: task.stackColor,
+                          enforcedDate: now,
+                          shotTimer: index == 0 &&
+                              task.startTime.isBefore(
+                                DateTime(1970, 1, 1, now.hour, now.minute),
+                              ),
                         ),
+                        if (index == 0 && snapshot.data.docs.length > 1)
+                          Container(
+                            padding: EdgeInsets.only(
+                              top: 32,
+                              left: 16,
+                            ),
+                            child: Text(
+                              'Next Tasks:',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headline6
+                                  .copyWith(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                      ],
+                    ),
                   );
                 },
               );

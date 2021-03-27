@@ -73,6 +73,23 @@ class _GoalDetailsPageState extends State<GoalDetailsPage> {
     );
   }
 
+  int limit = 10;
+  int elementsCount = 10;
+  ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(() {
+      if (_scrollController.offset >=
+              _scrollController.position.maxScrollExtent &&
+          elementsCount == limit)
+        setState(() {
+          limit += 10;
+        });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -85,6 +102,7 @@ class _GoalDetailsPageState extends State<GoalDetailsPage> {
             horizontal: 16.0,
             vertical: 4.0,
           ),
+          controller: _scrollController,
           children: [
             Row(
               children: [
@@ -132,6 +150,8 @@ class _GoalDetailsPageState extends State<GoalDetailsPage> {
             ),
             StacksListView(
               goal: widget.goal,
+              limit: limit,
+              updateCount: (e) => elementsCount = e,
             ),
           ],
         ),
