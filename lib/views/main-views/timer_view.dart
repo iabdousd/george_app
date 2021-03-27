@@ -26,8 +26,6 @@ class _TimerViewState extends State<TimerView>
     currentTask.add(task);
     refreshTimer?.cancel();
     refreshTimer = Timer.periodic(Duration(seconds: 1), (timer) {
-      print(task.endTime);
-      print(DateTime.now());
       if (task.endTime.isBefore(DateTime(
         1970,
         1,
