@@ -35,12 +35,26 @@ class _TasksTimerListState extends State<TasksTimerList>
                 arrayContains: DateTime(DateTime.now().year,
                     DateTime.now().month, DateTime.now().day),
               )
+              .where(
+                task_constants.END_TIME_KEY,
+                isGreaterThan: DateTime(
+                  1970,
+                  1,
+                  1,
+                  DateTime.now().hour,
+                  DateTime.now().minute,
+                ),
+              )
               .orderBy(
-                task_constants.ANY_TIME_KEY,
+                task_constants.END_TIME_KEY,
                 descending: false,
               )
               .orderBy(
                 task_constants.START_TIME_KEY,
+                descending: false,
+              )
+              .orderBy(
+                task_constants.ANY_TIME_KEY,
                 descending: false,
               )
               .snapshots(),

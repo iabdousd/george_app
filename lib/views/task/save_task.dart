@@ -161,7 +161,7 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
         1970,
         1,
         1,
-        widget.task.endTime.hour + 1,
+        widget.task.endTime.hour,
         widget.task.endTime.minute,
       );
 

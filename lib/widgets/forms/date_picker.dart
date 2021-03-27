@@ -71,8 +71,13 @@ class _DatePickerWidgetState extends State<DatePickerWidget> {
 
         return;
       }
-      selectedDate = DateTime(selectedDate.year, selectedDate.month,
-          selectedDate.day, picked.hour, picked.minute);
+      selectedDate = DateTime(
+        selectedDate.year,
+        selectedDate.month,
+        selectedDate.day,
+        picked.hour,
+        picked.minute,
+      );
       widget.onSubmit(
           DateTime(selectedDate.year, selectedDate.month, selectedDate.day),
           DateTime(1970, 1, 1, picked.hour, picked.minute));
