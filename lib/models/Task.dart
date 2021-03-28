@@ -189,21 +189,25 @@ class Task {
       return status == 1
           ? null
           : DateTime.now().isAfter(startDate)
-              ? DateTime.now()
+              ? DateTime.now().isBefore(endDate)
+                  ? DateTime.now()
+                  : endDate
               : startDate;
     }
     if (this.dueDates.length > 0) {
       // print('donesHistory: ${this.donesHistory}');
       // print('dueDates: ${this.dueDates}');
       for (DateTime due in this.dueDates) {
-        if (!this.donesHistory.contains(due) &&
-            DateTime(
-              due.year,
-              due.month,
-              due.day,
-              endTime.hour,
-              endTime.minute,
-            ).isAfter(DateTime.now())) return due;
+        if (!this.donesHistory.contains(due)
+            //  &&
+            //     DateTime(
+            //       due.year,
+            //       due.month,
+            //       due.day,
+            //       endTime.hour,
+            //       endTime.minute,
+            //     ).isAfter(DateTime.now())
+            ) return due;
       }
     }
     return null;

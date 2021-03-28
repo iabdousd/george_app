@@ -252,7 +252,7 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                               ),
                             if (widget.showDescription)
                               SizedBox(
-                                height: 4,
+                                height: 8,
                               ),
                             Row(
                               mainAxisSize: MainAxisSize.max,
@@ -260,7 +260,7 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                               // mainAxisAlignment: MainAxisAlignment.spaceAround,
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.only(right: 4.0),
+                                  padding: const EdgeInsets.only(right: 8.0),
                                   child: Icon(
                                     Icons.calendar_today_outlined,
                                     color: inSchedule
@@ -271,8 +271,8 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                                 ),
                                 Container(
                                   padding: const EdgeInsets.only(
-                                    right: 8.0,
-                                    left: 4,
+                                    right: 16.0,
+                                    left: 8,
                                   ),
                                   child: Icon(
                                     Icons.repeat,

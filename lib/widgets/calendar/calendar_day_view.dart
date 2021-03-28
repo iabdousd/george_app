@@ -41,19 +41,22 @@ class CalendarDayView extends StatelessWidget {
         tasksPositions[i] += 1;
       }
 
-      tasksWidgets.add(Positioned(
-        left: position * (2 * MediaQuery.of(context).size.width / 3) +
-            64.0 +
-            8 * position,
-        top: (task.startTime.hour + task.startTime.minute / 60) * 93.0 + 20.0,
-        child: CalendarTaskListTileWidget(
-          task: task,
-          stackColor: task.stackColor,
-          enforcedDate: day,
-          height: task.endTime.hour * 93.0 - task.startTime.hour * 93.0 - 20.0,
-          width: 2 * MediaQuery.of(context).size.width / 3,
+      tasksWidgets.add(
+        Positioned(
+          left: position * (2 * MediaQuery.of(context).size.width / 3) +
+              64.0 +
+              8 * position,
+          top: (task.startTime.hour + task.startTime.minute / 60) * 93.0 + 20.0,
+          child: CalendarTaskListTileWidget(
+            task: task,
+            stackColor: task.stackColor,
+            enforcedDate: day,
+            height:
+                task.endTime.hour * 93.0 - task.startTime.hour * 93.0 - 20.0,
+            width: 2 * MediaQuery.of(context).size.width / 3,
+          ),
         ),
-      ));
+      );
     }
 
     return Container(

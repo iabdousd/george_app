@@ -22,6 +22,7 @@ class _TimerViewState extends State<TimerView>
       durationBeforeNextTask = null;
       currentTask.add(task);
       refreshTimer?.cancel();
+      return;
     }
     currentTask.add(task);
     refreshTimer?.cancel();
@@ -105,13 +106,13 @@ class _TimerViewState extends State<TimerView>
                 }
                 return Column(
                   children: [
-                    Text(
-                      'You have',
-                      style: Theme.of(context)
-                          .textTheme
-                          .subtitle1
-                          .copyWith(fontWeight: FontWeight.w100),
-                    ),
+                    // Text(
+                    //   'You have',
+                    //   style: Theme.of(context)
+                    //       .textTheme
+                    //       .subtitle1
+                    //       .copyWith(fontWeight: FontWeight.w100),
+                    // ),
                     Text(
                       '${durationBeforeNextTask.inHours.toStringAsFixed(0)}:${durationBeforeNextTask.inMinutes % 60 < 10 ? '0' : ''}${durationBeforeNextTask.inMinutes % 60}',
                       style: Theme.of(context)
@@ -119,13 +120,13 @@ class _TimerViewState extends State<TimerView>
                           .headline2
                           .copyWith(fontWeight: FontWeight.bold),
                     ),
-                    Text(
-                      'Before the next task',
-                      style: Theme.of(context)
-                          .textTheme
-                          .subtitle1
-                          .copyWith(fontWeight: FontWeight.w200),
-                    ),
+                    // Text(
+                    //   'Before the next task',
+                    //   style: Theme.of(context)
+                    //       .textTheme
+                    //       .subtitle1
+                    //       .copyWith(fontWeight: FontWeight.w200),
+                    // ),
                   ],
                 );
               }),

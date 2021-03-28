@@ -74,8 +74,9 @@ class _CalendarTaskListTileWidgetState
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
         margin: EdgeInsets.only(right: 16),
-        width: widget.width,
-        height: widget.height,
+        width: widget.width.abs(),
+        height: widget.height.abs(),
+        constraints: BoxConstraints(minHeight: 72),
         decoration: BoxDecoration(
           border: Border.all(
             width: 1,

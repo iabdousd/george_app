@@ -126,28 +126,30 @@ class _SaveGoalPageState extends State<SaveGoalPage> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      InkWell(
-                        onTap: () => pickColor(
-                          (e) => setState(() {
-                            selectedColor = e;
-                          }),
-                        ),
-                        child: Container(
-                          padding: const EdgeInsets.all(8.0),
-                          decoration: BoxDecoration(
-                            color: Color(0x07000000),
-                            borderRadius: BorderRadius.circular(8.0),
+                      if (widget.goal == null)
+                        InkWell(
+                          onTap: () => pickColor(
+                            (e) => setState(() {
+                              selectedColor = e;
+                            }),
                           ),
-                          child: Icon(
-                            Icons.brightness_1,
-                            color: HexColor.fromHex(selectedColor),
-                            size: 32,
+                          child: Container(
+                            padding: const EdgeInsets.all(8.0),
+                            decoration: BoxDecoration(
+                              color: Color(0x07000000),
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            child: Icon(
+                              Icons.brightness_1,
+                              color: HexColor.fromHex(selectedColor),
+                              size: 32,
+                            ),
                           ),
                         ),
-                      ),
-                      SizedBox(
-                        width: 8,
-                      ),
+                      if (widget.goal == null)
+                        SizedBox(
+                          width: 8,
+                        ),
                       Expanded(
                         child: DatePickerWidget(
                           title: 'Start:',

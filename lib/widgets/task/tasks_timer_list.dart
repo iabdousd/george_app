@@ -11,6 +11,7 @@ import 'package:george_project/services/feed-back/flush_bar.dart';
 import 'package:george_project/services/feed-back/loader.dart';
 import 'package:george_project/services/user/user_service.dart';
 import 'package:george_project/widgets/task/task_list_tile_widget.dart';
+import 'package:intl/intl.dart';
 
 class TasksTimerList extends StatefulWidget {
   final Function(Task) emitFirstTask;
@@ -129,7 +130,7 @@ class _TasksTimerListState extends State<TasksTimerList>
                             child: TextField(
                               controller: _contentController,
                               decoration: InputDecoration(
-                                labelText: 'Add note',
+                                labelText: 'Task Notes',
                                 hintText: 'The content of the note',
                                 contentPadding: const EdgeInsets.symmetric(
                                   vertical: 20.0,
@@ -146,7 +147,11 @@ class _TasksTimerListState extends State<TasksTimerList>
                               maxLines: 100,
                               onSubmitted: (text) async {
                                 await Note(
-                                  content: text,
+                                  content: 'Task Notes ' +
+                                      DateFormat('EEE dd, MMM')
+                                          .format(DateTime.now()) +
+                                      ' - ' +
+                                      text,
                                   goalRef: task.goalRef,
                                   stackRef: task.stackRef,
                                   creationDate: DateTime.now(),
