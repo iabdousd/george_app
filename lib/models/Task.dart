@@ -58,13 +58,14 @@ class Task {
       do {
         nextDue = getNextInstanceDate(after: nextDue);
         if (nextDue == null ||
-            nextDue.year * 365 + nextDue.month * 12 + nextDue.day >
-                endDate.year * 365 + endDate.month * 12 + endDate.day) {
+            nextDue.year * 365 + nextDue.month * 30 + nextDue.day >
+                endDate.year * 365 + endDate.month * 30 + endDate.day) {
+          print('FOUND NULL: $nextDue');
           break;
         }
 
         dueDates.add(DateTime(nextDue.year, nextDue.month, nextDue.day));
-        // print('ADDED: ${DateTime(nextDue.year, nextDue.month, nextDue.day)}');
+        print('ADDED: ${DateTime(nextDue.year, nextDue.month, nextDue.day)}');
         i++;
       } while (nextDue.isBefore(endDate) && i < 1000);
     } else {
@@ -250,7 +251,6 @@ class Task {
       'Sat': 5,
       'Sun': 6,
     };
-    // print(DateFormat('E').format(dateTime));
     return weekDays[DateFormat('E').format(dateTime)];
   }
 

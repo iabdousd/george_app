@@ -23,7 +23,7 @@ class TasksListByDay extends StatelessWidget {
       return Container(
         height: MediaQuery.of(context).size.height,
         color: Theme.of(context).backgroundColor,
-        // padding: const EdgeInsets.symmetric(vertical: 20.0),
+        padding: const EdgeInsets.only(bottom: 80),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -98,33 +98,35 @@ class TasksListByDay extends StatelessWidget {
             ),
             Expanded(
               child: SingleChildScrollView(
-                child: StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance
-                      .collection(user_constants.USERS_KEY)
-                      .doc(getCurrentUser().uid)
-                      .collection(stack_constants.TASKS_KEY)
-                      .where(
-                        task_constants.DUE_DATES_KEY,
-                        arrayContains: DateTime(day.year, day.month, day.day),
-                      )
-                      .orderBy(
-                        task_constants.START_TIME_KEY,
-                      )
-                      .snapshots(),
-                  builder: (context, snapshot) {
-                    List<Task> tasks = [];
-                    if (snapshot.hasData && snapshot.data.docs.length > 0)
-                      tasks = snapshot.data.docs
-                          .map(
-                            (e) => Task.fromJson(e.data(), id: e.id),
-                          )
-                          .toList();
+                child: Container(
+                  child: StreamBuilder<QuerySnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .collection(user_constants.USERS_KEY)
+                        .doc(getCurrentUser().uid)
+                        .collection(stack_constants.TASKS_KEY)
+                        .where(
+                          task_constants.DUE_DATES_KEY,
+                          arrayContains: DateTime(day.year, day.month, day.day),
+                        )
+                        .orderBy(
+                          task_constants.START_TIME_KEY,
+                        )
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      List<Task> tasks = [];
+                      if (snapshot.hasData && snapshot.data.docs.length > 0)
+                        tasks = snapshot.data.docs
+                            .map(
+                              (e) => Task.fromJson(e.data(), id: e.id),
+                            )
+                            .toList();
 
-                    return CalendarDayView(
-                      tasks: tasks,
-                      day: day,
-                    );
-                  },
+                      return CalendarDayView(
+                        tasks: tasks,
+                        day: day,
+                      );
+                    },
+                  ),
                 ),
               ),
             ),
