@@ -291,30 +291,25 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                                           : '') +
                                       (widget.task.nextDueDate() == null
                                           ? 'Task completed'
-                                          : ((widget.task.anyTime
-                                                  ? 'Any time, '
-                                                  : '') +
-                                              DateFormat('EEE, dd MMM').format(
-                                                widget.enforcedDate != null
-                                                    ? DateTime(
-                                                        widget
-                                                            .enforcedDate.year,
-                                                        widget
-                                                            .enforcedDate.month,
-                                                        widget.enforcedDate.day,
-                                                      )
-                                                    : DateTime(
-                                                        widget.task
-                                                            .nextDueDate()
-                                                            .year,
-                                                        widget.task
-                                                            .nextDueDate()
-                                                            .month,
-                                                        widget.task
-                                                            .nextDueDate()
-                                                            .day,
-                                                      ),
-                                              ))),
+                                          : (DateFormat('EEE, dd MMM').format(
+                                              widget.enforcedDate != null
+                                                  ? DateTime(
+                                                      widget.enforcedDate.year,
+                                                      widget.enforcedDate.month,
+                                                      widget.enforcedDate.day,
+                                                    )
+                                                  : DateTime(
+                                                      widget.task
+                                                          .nextDueDate()
+                                                          .year,
+                                                      widget.task
+                                                          .nextDueDate()
+                                                          .month,
+                                                      widget.task
+                                                          .nextDueDate()
+                                                          .day,
+                                                    ),
+                                            ))),
                                   style: Theme.of(context)
                                       .textTheme
                                       .subtitle2

@@ -14,6 +14,7 @@ class CalendarDayView extends StatelessWidget {
     List<Widget> tasksWidgets = [];
 
     Map<int, int> tasksPositions = {};
+    Map<int, int> timeLinesLengths = {};
 
     int maxLength = 0;
     for (int index = 0; index < 25; index++) {
@@ -21,7 +22,7 @@ class CalendarDayView extends StatelessWidget {
           .where((task) =>
               task.startTime.hour <= index && task.endTime.hour >= index)
           .length;
-
+      timeLinesLengths[index] = length;
       if (length > maxLength) maxLength = length;
     }
     for (Task task in tasks) {
@@ -36,17 +37,22 @@ class CalendarDayView extends StatelessWidget {
       //   }
       // });
 
-      for (int i = task.startTime.hour; i <= task.endTime.hour; i++) {
-        if (!tasksPositions.containsKey(i)) tasksPositions[i] = 0;
-        tasksPositions[i] += 1;
-      }
+      if (!task.anyTime)
+        for (int i = task.startTime.hour; i < task.endTime.hour; i++) {
+          if (!tasksPositions.containsKey(i)) tasksPositions[i] = 0;
+          tasksPositions[i] += 1;
+        }
 
       tasksWidgets.add(
         Positioned(
-          left: position * (2 * MediaQuery.of(context).size.width / 3) +
+          left: position *
+                  ((MediaQuery.of(context).size.width -
+                          64.0 -
+                          8 * timeLinesLengths[task.startTime.hour]) /
+                      (timeLinesLengths[task.startTime.hour])) +
               64.0 +
-              8 * position,
-          top: (task.startTime.hour) * 93.0 + 20.0,
+              4 * (position),
+          top: task.anyTime ? 8 : (task.startTime.hour) * 93.0 + 78 + 20.0,
           child: CalendarTaskListTileWidget(
             task: task,
             stackColor: task.stackColor,
@@ -54,7 +60,9 @@ class CalendarDayView extends StatelessWidget {
             height: task.endTime.hour == 23
                 ? 93.0 - 20.0
                 : task.endTime.hour * 93.0 - task.startTime.hour * 93.0 - 20.0,
-            width: 2 * MediaQuery.of(context).size.width / 3,
+            width: (MediaQuery.of(context).size.width - 64.0) /
+                    (timeLinesLengths[task.startTime.hour]) -
+                4 * timeLinesLengths[task.startTime.hour],
           ),
         ),
       );
@@ -64,7 +72,6 @@ class CalendarDayView extends StatelessWidget {
       width: MediaQuery.of(context).size.width,
       height: 93 * 24.0,
       child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
         child: Stack(
           fit: StackFit.loose,
           children: <Widget>[
@@ -74,6 +81,7 @@ class CalendarDayView extends StatelessWidget {
                       : 60.0 +
                           (2 * MediaQuery.of(context).size.width / 3 + 8.0) *
                               maxLength,
+                  padding: const EdgeInsets.only(top: 78),
                   height: 93 * 24.0,
                   child: ListView.builder(
                     itemCount: 24,

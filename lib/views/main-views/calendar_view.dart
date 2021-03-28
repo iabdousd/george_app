@@ -70,6 +70,8 @@ class _CalendarViewState extends State<CalendarView>
   Widget build(BuildContext context) {
     super.build(context);
     return SingleChildScrollView(
+      physics:
+          currentCalendarView == 'day' ? NeverScrollableScrollPhysics() : null,
       child: Column(
         children: [
           Container(

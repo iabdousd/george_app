@@ -73,7 +73,7 @@ class _CalendarTaskListTileWidgetState
       onTap: () => _editTask(context),
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-        margin: EdgeInsets.only(right: 16),
+        margin: EdgeInsets.only(right: 0),
         width: widget.width.abs(),
         height: widget.height.abs(),
         constraints: BoxConstraints(minHeight: 72),
@@ -90,80 +90,54 @@ class _CalendarTaskListTileWidgetState
           mainAxisSize: MainAxisSize.max,
           children: [
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.task.title,
-                    style: Theme.of(context).textTheme.headline6.copyWith(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 20,
-                          decoration:
-                              widget.task.isDone(date: widget.enforcedDate)
-                                  ? TextDecoration.lineThrough
-                                  : TextDecoration.none,
-                          fontStyle:
-                              widget.task.isDone(date: widget.enforcedDate)
-                                  ? FontStyle.italic
-                                  : FontStyle.normal,
-                        ),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                  ),
-                  SizedBox(
-                    height: 4,
-                  ),
-                  Expanded(
-                    child: Text(
-                      widget.task.description,
-                      style: Theme.of(context).textTheme.bodyText1.copyWith(
-                            decoration:
-                                widget.task.isDone(date: widget.enforcedDate)
-                                    ? TextDecoration.lineThrough
-                                    : TextDecoration.none,
-                            fontStyle:
-                                widget.task.isDone(date: widget.enforcedDate)
-                                    ? FontStyle.italic
-                                    : FontStyle.normal,
-                          ),
-                      overflow: TextOverflow.fade,
+              child: Text(
+                widget.task.title,
+                style: Theme.of(context).textTheme.headline6.copyWith(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                      decoration: widget.task.isDone(date: widget.enforcedDate)
+                          ? TextDecoration.lineThrough
+                          : TextDecoration.none,
+                      fontStyle: widget.task.isDone(date: widget.enforcedDate)
+                          ? FontStyle.italic
+                          : FontStyle.normal,
                     ),
-                  ),
-                ],
+                overflow: TextOverflow.clip,
+                // maxLines: 2,
               ),
             ),
             SizedBox(
               height: 4,
             ),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  padding: const EdgeInsets.only(right: 4.0),
-                  child: Icon(
-                    Icons.calendar_today_outlined,
-                    color: inSchedule
-                        ? HexColor.fromHex(widget.stackColor)
-                        : Color(0x88000000),
-                    size: 16,
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.only(
-                    right: 8.0,
-                    left: 4,
-                  ),
-                  child: Icon(
-                    Icons.repeat,
-                    color: widget.task.repetition != null
-                        ? HexColor.fromHex(widget.stackColor)
-                        : Color(0x88000000),
-                    size: 16,
-                  ),
-                ),
-              ],
-            ),
+            // Row(
+            //   mainAxisSize: MainAxisSize.min,
+            //   crossAxisAlignment: CrossAxisAlignment.center,
+            //   children: [
+            //     Container(
+            //       padding: const EdgeInsets.only(right: 4.0),
+            //       child: Icon(
+            //         Icons.calendar_today_outlined,
+            //         color: inSchedule
+            //             ? HexColor.fromHex(widget.stackColor)
+            //             : Color(0x88000000),
+            //         size: 16,
+            //       ),
+            //     ),
+            //     Container(
+            //       padding: const EdgeInsets.only(
+            //         right: 8.0,
+            //         left: 4,
+            //       ),
+            //       child: Icon(
+            //         Icons.repeat,
+            //         color: widget.task.repetition != null
+            //             ? HexColor.fromHex(widget.stackColor)
+            //             : Color(0x88000000),
+            //         size: 16,
+            //       ),
+            //     ),
+            //   ],
+            // ),
           ],
         ),
       ),
