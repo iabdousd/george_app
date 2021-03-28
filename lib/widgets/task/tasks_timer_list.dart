@@ -1,10 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'package:george_project/constants/user.dart' as user_constants;
 import 'package:george_project/constants/models/task.dart' as task_constants;
 import 'package:george_project/constants/models/stack.dart' as stack_constants;
+import 'package:george_project/models/Note.dart';
 import 'package:george_project/models/Task.dart';
+import 'package:george_project/services/feed-back/flush_bar.dart';
 import 'package:george_project/services/feed-back/loader.dart';
 import 'package:george_project/services/user/user_service.dart';
 import 'package:george_project/widgets/task/task_list_tile_widget.dart';
@@ -19,6 +22,8 @@ class TasksTimerList extends StatefulWidget {
 
 class _TasksTimerListState extends State<TasksTimerList>
     with AutomaticKeepAliveClientMixin {
+  TextEditingController _contentController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -73,28 +78,95 @@ class _TasksTimerListState extends State<TasksTimerList>
                     widget.emitFirstTask(task);
                   }
                   return Container(
-                    padding: index == 0
-                        ? EdgeInsets.zero
-                        : EdgeInsets.only(
-                            left: 16,
-                            right: 16,
-                          ),
+                    padding:
+                        //  index == 0
+                        //     ? EdgeInsets.zero
+                        //     :
+                        EdgeInsets.only(
+                      left: 16,
+                      right: 16,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
+                        if (index == 0 &&
+                            snapshot.data.docs.length > 1 &&
+                            task.startTime.hour + task.startTime.minute / 60 >
+                                DateTime.now().hour +
+                                    DateTime.now().minute / 60)
+                          Container(
+                            padding: EdgeInsets.only(
+                              top: 20,
+                              left: 16,
+                            ),
+                            child: Text(
+                              'Next Tasks:',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headline6
+                                  .copyWith(fontWeight: FontWeight.bold),
+                            ),
+                          ),
                         TaskListTileWidget(
                           task: task,
                           stackColor: task.stackColor,
                           enforcedDate: now,
-                          shotTimer: index == 0 &&
+                          showTimer: index == 0 &&
                               task.startTime.isBefore(
                                 DateTime(1970, 1, 1, now.hour, now.minute),
                               ),
+                          showDescription: index == 0,
                         ),
-                        if (index == 0 && snapshot.data.docs.length > 1)
+                        if (index == 0)
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).backgroundColor,
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            margin: EdgeInsets.symmetric(
+                              vertical: 20.0,
+                            ),
+                            child: TextField(
+                              controller: _contentController,
+                              decoration: InputDecoration(
+                                labelText: 'Add note',
+                                hintText: 'The content of the note',
+                                contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 20.0,
+                                  horizontal: 20.0,
+                                ),
+                                alignLabelWithHint: true,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8.0),
+                                  borderSide: BorderSide(width: 1),
+                                ),
+                              ),
+                              textInputAction: TextInputAction.done,
+                              minLines: 2,
+                              maxLines: 100,
+                              onSubmitted: (text) async {
+                                await Note(
+                                  content: text,
+                                  goalRef: task.goalRef,
+                                  stackRef: task.stackRef,
+                                  creationDate: DateTime.now(),
+                                ).save();
+                                _contentController.text = '';
+                                showFlushBar(
+                                    title: 'Note added successfully!',
+                                    message:
+                                        'You can now see your note in notes list.');
+                              },
+                            ),
+                          ),
+                        if (index == 0 &&
+                            snapshot.data.docs.length > 1 &&
+                            task.startTime.hour + task.startTime.minute / 60 <=
+                                DateTime.now().hour +
+                                    DateTime.now().minute / 60)
                           Container(
                             padding: EdgeInsets.only(
-                              top: 32,
+                              top: 20,
                               left: 16,
                             ),
                             child: Text(

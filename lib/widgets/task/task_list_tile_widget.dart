@@ -14,14 +14,16 @@ class TaskListTileWidget extends StatefulWidget {
   final Task task;
   final String stackColor;
   final DateTime enforcedDate;
-  final bool shotTimer;
+  final bool showTimer;
+  final bool showDescription;
 
   const TaskListTileWidget({
     Key key,
     @required this.task,
     @required this.stackColor,
     this.enforcedDate,
-    this.shotTimer: false,
+    this.showTimer: false,
+    this.showDescription: false,
   }) : super(key: key);
 
   @override
@@ -106,6 +108,22 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
 
   @override
   Widget build(BuildContext context) {
+    // print('${widget.task.title}: ${widget.task.dueDates}');
+    bool inSchedule = DateTime(
+          widget.task.startDate.year,
+          widget.task.startDate.month,
+          widget.task.startDate.day,
+          widget.task.startTime.hour,
+          widget.task.startTime.minute,
+        ).isBefore(DateTime.now()) &&
+        DateTime(
+          widget.task.endDate.year,
+          widget.task.endDate.month,
+          widget.task.endDate.day,
+          widget.task.endTime.hour,
+          widget.task.endTime.minute,
+        ).isAfter(DateTime.now());
+
     return AnimatedContainer(
       duration: Duration(milliseconds: 250),
       decoration: BoxDecoration(
@@ -119,7 +137,7 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
         ],
       ),
       margin: EdgeInsets.only(top: 16.0),
-      height: 64.0 + 20,
+      // height: 64.0 + 20,
       child: GestureDetector(
         onTap: () => _editTask(context),
         child: Slidable(
@@ -137,7 +155,6 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
               children: [
                 Row(
                   mainAxisSize: MainAxisSize.max,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Center(
                       child: GestureDetector(
@@ -197,6 +214,7 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                                   .headline6
                                   .copyWith(
                                     fontWeight: FontWeight.w600,
+                                    fontSize: 17,
                                     decoration: widget.task
                                             .isDone(date: widget.enforcedDate)
                                         ? TextDecoration.lineThrough
@@ -209,31 +227,59 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                               overflow: TextOverflow.ellipsis,
                               maxLines: 1,
                             ),
+                            SizedBox(
+                              height: 4,
+                            ),
+                            if (widget.showDescription)
+                              Text(
+                                widget.task.description,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headline6
+                                    .copyWith(
+                                      fontWeight: FontWeight.w300,
+                                      fontSize: 12,
+                                      // decoration: widget.task
+                                      //         .isDone(date: widget.enforcedDate)
+                                      //     ? TextDecoration.lineThrough
+                                      //     : TextDecoration.none,
+                                      // fontStyle: widget.task
+                                      //         .isDone(date: widget.enforcedDate)
+                                      //     ? FontStyle.italic
+                                      //     : FontStyle.normal,
+                                    ),
+                                textAlign: TextAlign.justify,
+                              ),
+                            if (widget.showDescription)
+                              SizedBox(
+                                height: 4,
+                              ),
                             Row(
                               mainAxisSize: MainAxisSize.max,
                               crossAxisAlignment: CrossAxisAlignment.center,
+                              // mainAxisAlignment: MainAxisAlignment.spaceAround,
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.only(right: 8.0),
+                                  padding: const EdgeInsets.only(right: 4.0),
                                   child: Icon(
                                     Icons.calendar_today_outlined,
-                                    color: (widget.task.startDate
-                                                .isBefore(DateTime.now()) &&
-                                            widget.task.endDate
-                                                .isAfter(DateTime.now()))
+                                    color: inSchedule
                                         ? HexColor.fromHex(widget.stackColor)
                                         : Color(0x88000000),
-                                    size: 20,
+                                    size: 16,
                                   ),
                                 ),
                                 Container(
-                                  padding: const EdgeInsets.only(right: 8.0),
+                                  padding: const EdgeInsets.only(
+                                    right: 8.0,
+                                    left: 4,
+                                  ),
                                   child: Icon(
                                     Icons.repeat,
                                     color: widget.task.repetition != null
                                         ? HexColor.fromHex(widget.stackColor)
                                         : Color(0x88000000),
-                                    size: 20,
+                                    size: 16,
                                   ),
                                 ),
                                 Text(
@@ -248,11 +294,7 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                                           : ((widget.task.anyTime
                                                   ? 'Any time, '
                                                   : '') +
-                                              DateFormat((widget.task.anyTime
-                                                          ? ''
-                                                          : 'hh:mm a, ') +
-                                                      'dd MMM yyyy')
-                                                  .format(
+                                              DateFormat('EEE, dd MMM').format(
                                                 widget.enforcedDate != null
                                                     ? DateTime(
                                                         widget
@@ -260,10 +302,6 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                                                         widget
                                                             .enforcedDate.month,
                                                         widget.enforcedDate.day,
-                                                        widget.task.startTime
-                                                            .hour,
-                                                        widget.task.startTime
-                                                            .minute,
                                                       )
                                                     : DateTime(
                                                         widget.task
@@ -275,15 +313,11 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                                                         widget.task
                                                             .nextDueDate()
                                                             .day,
-                                                        widget.task.startTime
-                                                            .hour,
-                                                        widget.task.startTime
-                                                            .minute,
                                                       ),
                                               ))),
                                   style: Theme.of(context)
                                       .textTheme
-                                      .subtitle1
+                                      .subtitle2
                                       .copyWith(
                                         fontWeight: FontWeight.w300,
                                       ),
@@ -294,9 +328,29 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                         ),
                       ),
                     ),
+                    Column(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: Text(
+                            DateFormat('hh:mm a').format(
+                              DateTime(
+                                1970,
+                                1,
+                                1,
+                                widget.task.startTime.hour,
+                                widget.task.startTime.minute,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
-                if (widget.shotTimer)
+                if (widget.showTimer)
                   Positioned(
                     bottom: 0,
                     left: 0,

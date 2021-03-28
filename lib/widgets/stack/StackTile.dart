@@ -86,7 +86,7 @@ class StackListTileWidget extends StatelessWidget {
         ],
       ),
       margin: EdgeInsets.only(top: 16.0),
-      height: 40.0 + 20,
+      // height: 40.0 + 20,
       child: GestureDetector(
         onTap: () => Get.to(
           () => StackDetailsPage(
@@ -104,7 +104,7 @@ class StackListTileWidget extends StatelessWidget {
             ),
             child: Row(
               mainAxisSize: MainAxisSize.max,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+              // crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Center(
                   child: Container(
@@ -117,34 +117,32 @@ class StackListTileWidget extends StatelessWidget {
                     margin: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
                   ),
                 ),
-                Expanded(
-                  child: Container(
-                    margin: EdgeInsets.symmetric(vertical: 16, horizontal: 10),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.max,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          stack.title.toUpperCase(),
-                          style: Theme.of(context)
-                              .textTheme
-                              .headline6
-                              .copyWith(fontWeight: FontWeight.w600),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                        ),
-                        // Text(
-                        //   DateFormat('dd MMM yyyy').format(stack.startDate) +
-                        //       ' - ' +
-                        //       DateFormat('dd MMM yyyy').format(stack.endDate),
-                        //   style: Theme.of(context)
-                        //       .textTheme
-                        //       .subtitle1
-                        //       .copyWith(fontWeight: FontWeight.w300),
-                        // ),
-                      ],
-                    ),
+                Container(
+                  margin: EdgeInsets.symmetric(vertical: 16, horizontal: 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.max,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        stack.title.toUpperCase(),
+                        style: Theme.of(context)
+                            .textTheme
+                            .headline6
+                            .copyWith(fontWeight: FontWeight.w600),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                      // Text(
+                      //   DateFormat('dd MMM yyyy').format(stack.startDate) +
+                      //       ' - ' +
+                      //       DateFormat('dd MMM yyyy').format(stack.endDate),
+                      //   style: Theme.of(context)
+                      //       .textTheme
+                      //       .subtitle1
+                      //       .copyWith(fontWeight: FontWeight.w300),
+                      // ),
+                    ],
                   ),
                 ),
               ],

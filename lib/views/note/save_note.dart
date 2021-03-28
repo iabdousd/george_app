@@ -66,7 +66,8 @@ class _SaveNotePageState extends State<SaveNotePage> {
         imageQuality: 80,
         source: imageSource,
       );
-    } on Exception {
+    } on Exception catch (e) {
+      print(e);
       showFlushBar(
         title: 'Error',
         message: 'Unknown error happened while importing your images.',

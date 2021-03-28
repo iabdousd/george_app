@@ -48,26 +48,17 @@ class _DatePickerWidgetState extends State<DatePickerWidget> {
     );
 
     if (picked != null) {
-      if ((widget.startDate != null &&
-              widget.startDate.day == selectedDate.day &&
-              widget.startDate.month == selectedDate.month &&
-              widget.startDate.year == selectedDate.year &&
-              picked.hour + picked.minute / 60 <=
-                  (widget.startDate?.hour ?? 0) +
-                      (widget.startDate?.minute ?? 0) / 60) ||
-          (widget.endDate != null &&
-              widget.endDate.day == selectedDate.day &&
-              widget.endDate.month == selectedDate.month &&
-              widget.endDate.year == selectedDate.year &&
-              picked.hour + picked.minute / 60 >
-                  (widget.endDate?.hour ?? 24) +
-                      (widget.endDate?.minute ?? 0) / 60)) {
-        if (widget.withTime)
-          showFlushBar(
-            title: 'Malformat dates',
-            message: 'The start date must be before the end date!',
-            success: false,
-          );
+      if ((picked.hour + picked.minute / 60 <
+              (widget.startDate?.hour ?? 0) +
+                  (widget.startDate?.minute ?? 0) / 60) ||
+          (picked.hour + picked.minute / 60 >
+              (widget.endDate?.hour ?? 24) +
+                  (widget.endDate?.minute ?? 0) / 60)) {
+        showFlushBar(
+          title: 'Malformat dates',
+          message: 'The start date must be before the end date!',
+          success: false,
+        );
 
         return;
       }

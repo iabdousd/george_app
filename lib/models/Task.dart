@@ -44,19 +44,27 @@ class Task {
     this.startTime,
     this.endTime,
   }) {
-    if (task_constants.REPETITION_OPTIONS.contains(repetition?.type)) {
-      this.repetition = repetition;
+    if (task_constants.REPETITION_OPTIONS
+        .contains(repetition?.type?.toLowerCase())) {
+      // print("INTP REPETITION");
+      this.repetition = repetition..type.toLowerCase();
       this.dueDates = [];
       DateTime nextDue =
           startDate; // DateTime.now().isAfter(startDate) ? DateTime.now() :
       int i = 0;
-      if (repetition?.type == 'daily' && DateTime.now().isBefore(startDate))
+      if (repetition?.type == 'daily') {
         dueDates.add(startDate);
+      }
       do {
         nextDue = getNextInstanceDate(after: nextDue);
-        if (nextDue == null || nextDue.isAfter(endDate)) break;
+        if (nextDue == null ||
+            nextDue.year * 365 + nextDue.month * 12 + nextDue.day >
+                endDate.year * 365 + endDate.month * 12 + endDate.day) {
+          break;
+        }
 
         dueDates.add(DateTime(nextDue.year, nextDue.month, nextDue.day));
+        // print('ADDED: ${DateTime(nextDue.year, nextDue.month, nextDue.day)}');
         i++;
       } while (nextDue.isBefore(endDate) && i < 1000);
     } else {
@@ -65,10 +73,16 @@ class Task {
       DateTime nextDue = startDate;
       do {
         nextDue = getNextInstanceDate(after: nextDue);
-        if (nextDue == null || nextDue.isAfter(endDate)) break;
+        if (nextDue == null ||
+            nextDue.year * 365 + nextDue.month * 12 + nextDue.day >
+                endDate.year * 365 + endDate.month * 12 + endDate.day) {
+          break;
+        }
 
         dueDates.add(DateTime(nextDue.year, nextDue.month, nextDue.day));
-      } while (nextDue.isBefore(endDate));
+        // print('ADDED: ${DateTime(nextDue.year, nextDue.month, nextDue.day)}');
+      } while (nextDue.year * 365 + nextDue.month * 12 + nextDue.day >
+          endDate.year * 365 + endDate.month * 12 + endDate.day);
     }
   }
 
@@ -152,19 +166,20 @@ class Task {
       (repetition == null && status == 1) ||
       ((donesHistory ?? []).length > 0 &&
           donesHistory.contains(
-            DateTime(
-                (date ??
-                        dueDates.firstWhere(
-                            (element) => element.isAfter(DateTime.now())))
-                    .year,
-                (date ??
-                        dueDates.firstWhere(
-                            (element) => element.isAfter(DateTime.now())))
-                    .month,
-                (date ??
-                        dueDates.firstWhere(
-                            (element) => element.isAfter(DateTime.now())))
-                    .day),
+            (date != null
+                ? DateTime(date.year, date.month, date.day)
+                : dueDates.firstWhere(
+                    (element) => DateTime(
+                      element.year,
+                      element.month,
+                      element.day,
+                      endTime.hour,
+                      endTime.minute,
+                    ).isAfter(
+                      DateTime.now(),
+                    ),
+                    orElse: () => donesHistory.last,
+                  )),
           ));
 
   bool get hasNext => (repetition != null && status != 1);
@@ -181,8 +196,14 @@ class Task {
       // print('donesHistory: ${this.donesHistory}');
       // print('dueDates: ${this.dueDates}');
       for (DateTime due in this.dueDates) {
-        if (!this.donesHistory.contains(due) && due.isAfter(DateTime.now()))
-          return due;
+        if (!this.donesHistory.contains(due) &&
+            DateTime(
+              due.year,
+              due.month,
+              due.day,
+              endTime.hour,
+              endTime.minute,
+            ).isAfter(DateTime.now())) return due;
       }
     }
     return null;

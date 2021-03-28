@@ -51,6 +51,7 @@ class _TimerViewState extends State<TimerView>
     super.build(context);
 
     return ListView(
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       children: [
         Container(
           padding: EdgeInsets.all(32.0),
@@ -98,13 +99,6 @@ class _TimerViewState extends State<TimerView>
                               .copyWith(fontWeight: FontWeight.w100),
                           textAlign: TextAlign.center,
                         ),
-                        // Text(
-                        //   'Before the next task',
-                        //   style: Theme.of(context)
-                        //       .textTheme
-                        //       .subtitle1
-                        //       .copyWith(fontWeight: FontWeight.w200),
-                        // ),
                       ],
                     ),
                   );

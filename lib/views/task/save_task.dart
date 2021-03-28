@@ -72,8 +72,19 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
       );
       return;
     }
+    if (DateTime(endDate.year, endDate.month, endDate.day, endTime.hour,
+            endTime.minute)
+        .isBefore(DateTime.now())) {
+      showFlushBar(
+        title: 'Malformat dates',
+        message:
+            'With the selected dates this date won\'t occurred once! Please make sure you entered the correct dates/times',
+        success: false,
+      );
+      return;
+    }
     toggleLoading(state: true);
-    await Task(
+    Task task = Task(
       goalRef: widget.goalRef,
       repetition: TaskRepetition(
         type: repetition,
@@ -95,7 +106,8 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
       anyTime: anyTime,
       stackColor: widget.stackColor,
       donesHistory: widget.task?.donesHistory ?? [],
-    ).save();
+    );
+    await task.save();
     toggleLoading(state: false);
     Navigator.of(context).pop();
     showFlushBar(
