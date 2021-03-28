@@ -230,7 +230,8 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                             SizedBox(
                               height: 4,
                             ),
-                            if (widget.showDescription)
+                            if (widget.showDescription &&
+                                widget.task.description.isNotEmpty)
                               Text(
                                 widget.task.description,
                                 style: Theme.of(context)
@@ -250,7 +251,8 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                                     ),
                                 textAlign: TextAlign.justify,
                               ),
-                            if (widget.showDescription)
+                            if (widget.showDescription &&
+                                widget.task.description.isNotEmpty)
                               SizedBox(
                                 height: 8,
                               ),

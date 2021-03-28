@@ -26,9 +26,15 @@ class CalendarDayView extends StatelessWidget {
       if (length > maxLength) maxLength = length;
     }
     for (Task task in tasks) {
-      if (!tasksPositions.containsKey(task.startTime.hour))
+      if (task.anyTime && !tasksPositions.containsKey(-1))
+        tasksPositions[-1] = 0;
+      else if (!task.anyTime &&
+          !tasksPositions.containsKey(task.startTime.hour))
         tasksPositions[task.startTime.hour] = 0;
-      int position = tasksPositions[task.startTime.hour];
+
+      int position = task.anyTime
+          ? tasksPositions[-1]
+          : tasksPositions[task.startTime.hour];
       // tasksPositions.forEach((key, value) {
       //   if (key >= task.startTime.hour &&
       //       key <= task.endTime.hour &&
@@ -42,6 +48,9 @@ class CalendarDayView extends StatelessWidget {
           if (!tasksPositions.containsKey(i)) tasksPositions[i] = 0;
           tasksPositions[i] += 1;
         }
+      else {
+        tasksPositions[-1] += 1;
+      }
 
       tasksWidgets.add(
         Positioned(
@@ -70,10 +79,8 @@ class CalendarDayView extends StatelessWidget {
 
     return Container(
       width: MediaQuery.of(context).size.width,
-      height: 93 * 24.0,
       child: SingleChildScrollView(
         child: Stack(
-          fit: StackFit.loose,
           children: <Widget>[
                 Container(
                   width: maxLength <= 1
@@ -82,7 +89,6 @@ class CalendarDayView extends StatelessWidget {
                           (2 * MediaQuery.of(context).size.width / 3 + 8.0) *
                               maxLength,
                   padding: const EdgeInsets.only(top: 78),
-                  height: 93 * 24.0,
                   child: ListView.builder(
                     itemCount: 24,
                     shrinkWrap: true,

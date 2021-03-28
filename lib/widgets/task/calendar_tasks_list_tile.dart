@@ -1,11 +1,8 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:george_project/config/extensions/hex_color.dart';
 import 'package:george_project/models/Task.dart';
 import 'package:george_project/views/task/save_task.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 
 class CalendarTaskListTileWidget extends StatefulWidget {
   final Task task;
@@ -68,6 +65,7 @@ class _CalendarTaskListTileWidgetState
     //       widget.task.endTime.hour,
     //       widget.task.endTime.minute,
     //     ).isAfter(DateTime.now());
+    final now = DateTime.now();
 
     return GestureDetector(
       onTap: () => _editTask(context),
@@ -82,7 +80,33 @@ class _CalendarTaskListTileWidgetState
             width: 1,
             color: HexColor.fromHex(widget.stackColor),
           ),
-          color: Theme.of(context).backgroundColor,
+          // color: Theme.of(context).backgroundColor,
+          color: DateTime(
+                    widget.task.startDate.year,
+                    widget.task.startDate.month,
+                    widget.task.startDate.day,
+                    widget.task.startTime.hour,
+                    widget.task.startTime.minute,
+                  ).isBefore(now) &&
+                  DateTime(
+                    widget.task.endDate.year,
+                    widget.task.endDate.month,
+                    widget.task.endDate.day,
+                    widget.task.endTime.hour,
+                    widget.task.endTime.minute,
+                  ).isAfter(now) &&
+                  !widget.task.anyTime
+              ? HexColor.fromHex(widget.task.stackColor).lighten()
+              : DateTime(
+                        widget.task.endDate.year,
+                        widget.task.endDate.month,
+                        widget.task.endDate.day,
+                        widget.task.endTime.hour,
+                        widget.task.endTime.minute,
+                      ).isBefore(now) &&
+                      !widget.task.anyTime
+                  ? HexColor.fromHex(widget.task.stackColor).darken()
+                  : Theme.of(context).backgroundColor,
           borderRadius: BorderRadius.circular(4.0),
         ),
         child: Column(
@@ -95,6 +119,16 @@ class _CalendarTaskListTileWidgetState
                 style: Theme.of(context).textTheme.headline6.copyWith(
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
+                      color: DateTime(
+                                widget.task.endDate.year,
+                                widget.task.endDate.month,
+                                widget.task.endDate.day,
+                                widget.task.endTime.hour,
+                                widget.task.endTime.minute,
+                              ).isBefore(now) &&
+                              !widget.task.anyTime
+                          ? Colors.white
+                          : Colors.black87,
                       decoration: widget.task.isDone(date: widget.enforcedDate)
                           ? TextDecoration.lineThrough
                           : TextDecoration.none,

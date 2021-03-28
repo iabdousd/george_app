@@ -89,8 +89,6 @@ class _CalendarViewState extends State<CalendarView>
     );
     _dayViewTanController.animateTo(1, duration: Duration.zero);
     _dayViewTanController.addListener(() {
-      print(_dayViewTanController.length);
-      print(_dayViewTanController.index);
       if (_dayViewTanController.index == 2) {
         initDayTabView(DateTime(
           selectedDay.year,
