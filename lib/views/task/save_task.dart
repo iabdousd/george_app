@@ -5,6 +5,7 @@ import 'package:george_project/models/Task.dart';
 import 'package:george_project/services/feed-back/flush_bar.dart';
 import 'package:george_project/services/feed-back/loader.dart';
 import 'package:george_project/widgets/forms/date_picker.dart';
+import 'package:george_project/widgets/forms/time_picker.dart';
 import 'package:george_project/widgets/shared/app_appbar.dart';
 import 'package:george_project/constants/models/task.dart' as task_constants;
 
@@ -116,16 +117,14 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
     );
   }
 
-  _pickStartDate(DateTime pickedDate, DateTime pickedTime) async {
+  _pickStartTime(DateTime pickedTime) async {
     setState(() {
-      startDate = pickedDate;
       startTime = pickedTime;
     });
   }
 
-  _pickEndDate(DateTime pickedDate, DateTime pickedTime) async {
+  _pickEndTime(DateTime pickedTime) async {
     setState(() {
-      endDate = pickedDate;
       endTime = pickedTime;
     });
   }
@@ -288,50 +287,88 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
                   ),
                 ],
               ),
-              DatePickerWidget(
-                title: 'Start:',
-                color: widget.stackColor,
-                onSubmit: anyTime ? _pickStartDateOnly : _pickStartDate,
-                initialDate: DateTime(
-                  startDate.year,
-                  startDate.month,
-                  startDate.day,
-                  startTime.hour,
-                  startTime.minute,
-                ),
-                endDate: DateTime(
-                  endDate.year,
-                  endDate.month,
-                  endDate.day,
-                  endTime.hour,
-                  endTime.minute,
-                ),
-                dateFormat: 'dd MMMM yyyy',
-                withTime: !anyTime,
-                timeFormat: 'hh:mm a',
+              Row(
+                children: [
+                  Expanded(
+                    child: TimePickerWidget(
+                      title: 'Start time',
+                      active: !anyTime,
+                      initialTime: DateTime(
+                        1970,
+                        1,
+                        1,
+                        startTime.hour,
+                        startTime.minute,
+                      ),
+                      color: widget.stackColor,
+                      onSubmit: _pickStartTime,
+                    ),
+                  ),
+                  Expanded(
+                    child: TimePickerWidget(
+                      title: 'End time',
+                      active: !anyTime,
+                      initialTime: DateTime(
+                        1970,
+                        1,
+                        1,
+                        endTime.hour,
+                        endTime.minute,
+                      ),
+                      color: widget.stackColor,
+                      onSubmit: _pickEndTime,
+                    ),
+                  ),
+                ],
               ),
-              DatePickerWidget(
-                title: 'End',
-                color: widget.stackColor,
-                startDate: DateTime(
-                  startDate.year,
-                  startDate.month,
-                  startDate.day,
-                  startTime.hour,
-                  startTime.minute,
-                ),
-                onSubmit: anyTime ? _pickEndDateOnly : _pickEndDate,
-                initialDate: DateTime(
-                  endDate.year,
-                  endDate.month,
-                  endDate.day,
-                  endTime.hour,
-                  endTime.minute,
-                ),
-                dateFormat: 'dd MMMM yyyy',
-                withTime: !anyTime,
-                timeFormat: 'hh:mm a',
-                margin: EdgeInsets.only(top: 8.0),
+              Row(
+                children: [
+                  Expanded(
+                    child: DatePickerWidget(
+                      title: 'Start date',
+                      color: widget.stackColor,
+                      onSubmit: _pickStartDateOnly,
+                      initialDate: DateTime(
+                        startDate.year,
+                        startDate.month,
+                        startDate.day,
+                        startTime.hour,
+                        startTime.minute,
+                      ),
+                      endDate: DateTime(
+                        endDate.year,
+                        endDate.month,
+                        endDate.day,
+                        endTime.hour,
+                        endTime.minute,
+                      ),
+                      dateFormat: 'dd MMMM yyyy',
+                    ),
+                  ),
+                  Expanded(
+                    child: DatePickerWidget(
+                      title: 'End date',
+                      color: widget.stackColor,
+                      startDate: DateTime(
+                        startDate.year,
+                        startDate.month,
+                        startDate.day,
+                        startTime.hour,
+                        startTime.minute,
+                      ),
+                      onSubmit: _pickEndDateOnly,
+                      initialDate: DateTime(
+                        endDate.year,
+                        endDate.month,
+                        endDate.day,
+                        endTime.hour,
+                        endTime.minute,
+                      ),
+                      dateFormat: 'dd MMMM yyyy',
+                      margin: EdgeInsets.only(top: 8.0),
+                    ),
+                  ),
+                ],
               ),
               SizedBox(
                 height: 12,

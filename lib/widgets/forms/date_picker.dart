@@ -11,9 +11,7 @@ class DatePickerWidget extends StatefulWidget {
   final DateTime startDate;
   final DateTime initialDate;
   final DateTime endDate;
-  final bool withTime;
   final String dateFormat;
-  final String timeFormat;
   final CrossAxisAlignment crossAxisAlignment;
   final EdgeInsets margin;
 
@@ -25,9 +23,7 @@ class DatePickerWidget extends StatefulWidget {
     this.startDate,
     this.initialDate,
     this.endDate,
-    this.withTime = false,
     this.dateFormat = 'dd/MM/yyyy',
-    this.timeFormat = 'hh:mm a',
     this.crossAxisAlignment = CrossAxisAlignment.center,
     this.margin = const EdgeInsets.only(top: 8.0),
   }) : super(key: key);
@@ -38,43 +34,6 @@ class DatePickerWidget extends StatefulWidget {
 
 class _DatePickerWidgetState extends State<DatePickerWidget> {
   DateTime selectedDate;
-  bool hideTime;
-
-  Future _selectTime() async {
-    final TimeOfDay picked = await showRoundedTimePicker(
-      context: context,
-      initialTime:
-          TimeOfDay(hour: selectedDate.hour, minute: selectedDate.minute),
-    );
-
-    if (picked != null) {
-      // if ((picked.hour + picked.minute / 60 <
-      //         (widget.startDate?.hour ?? 0) +
-      //             (widget.startDate?.minute ?? 0) / 60) ||
-      //     (picked.hour + picked.minute / 60 >
-      //         (widget.endDate?.hour ?? 24) +
-      //             (widget.endDate?.minute ?? 0) / 60)) {
-      //   showFlushBar(
-      //     title: 'Malformat dates',
-      //     message: 'The start date must be before the end date!',
-      //     success: false,
-      //   );
-
-      //   return;
-      // }
-      selectedDate = DateTime(
-        selectedDate.year,
-        selectedDate.month,
-        selectedDate.day,
-        picked.hour,
-        picked.minute,
-      );
-      widget.onSubmit(
-          DateTime(selectedDate.year, selectedDate.month, selectedDate.day),
-          DateTime(1970, 1, 1, picked.hour, picked.minute));
-    }
-    setState(() {});
-  }
 
   _pickDate() async {
     try {
@@ -107,13 +66,7 @@ class _DatePickerWidgetState extends State<DatePickerWidget> {
             selectedDate.minute,
           );
         });
-        if (widget.withTime)
-          widget.onSubmit(
-            DateTime(selectedDate.year, selectedDate.month, selectedDate.day),
-            DateTime(1970, 1, 1, selectedDate.hour, selectedDate.minute),
-          );
-        else
-          widget.onSubmit(selectedDate);
+        widget.onSubmit(selectedDate);
       }
     } catch (e) {
       print(e);
@@ -129,13 +82,11 @@ class _DatePickerWidgetState extends State<DatePickerWidget> {
   @override
   void initState() {
     super.initState();
-    hideTime = !widget.withTime;
     selectedDate = widget.initialDate ?? DateTime.now();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (widget.withTime) hideTime = false;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -204,42 +155,6 @@ class _DatePickerWidgetState extends State<DatePickerWidget> {
                     ],
                   ),
                 ),
-              ),
-              AnimatedOpacity(
-                duration: Duration(milliseconds: 250),
-                opacity: widget.withTime ? 1 : 0,
-                onEnd: () => setState(() => hideTime = !widget.withTime),
-                child: hideTime
-                    ? Container()
-                    : InkWell(
-                        onTap: _selectTime,
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Icon(
-                                Icons.timer_rounded,
-                                color: HexColor.fromHex(widget.color),
-                                size: 24,
-                              ),
-                            ),
-                            SizedBox(
-                              width: 4,
-                            ),
-                            Text(
-                              DateFormat(widget.timeFormat)
-                                  .format(selectedDate),
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .headline6
-                                  .copyWith(fontSize: 16),
-                            ),
-                            SizedBox(
-                              width: 8,
-                            ),
-                          ],
-                        ),
-                      ),
               ),
             ],
           ),
