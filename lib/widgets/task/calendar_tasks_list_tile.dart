@@ -54,20 +54,20 @@ class _CalendarTaskListTileWidgetState
 
   @override
   Widget build(BuildContext context) {
-    bool inSchedule = DateTime(
-          widget.task.startDate.year,
-          widget.task.startDate.month,
-          widget.task.startDate.day,
-          widget.task.startTime.hour,
-          widget.task.startTime.minute,
-        ).isBefore(DateTime.now()) &&
-        DateTime(
-          widget.task.endDate.year,
-          widget.task.endDate.month,
-          widget.task.endDate.day,
-          widget.task.endTime.hour,
-          widget.task.endTime.minute,
-        ).isAfter(DateTime.now());
+    // bool inSchedule = DateTime(
+    //       widget.task.startDate.year,
+    //       widget.task.startDate.month,
+    //       widget.task.startDate.day,
+    //       widget.task.startTime.hour,
+    //       widget.task.startTime.minute,
+    //     ).isBefore(DateTime.now()) &&
+    //     DateTime(
+    //       widget.task.endDate.year,
+    //       widget.task.endDate.month,
+    //       widget.task.endDate.day,
+    //       widget.task.endTime.hour,
+    //       widget.task.endTime.minute,
+    //     ).isAfter(DateTime.now());
 
     return GestureDetector(
       onTap: () => _editTask(context),

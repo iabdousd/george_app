@@ -1,9 +1,8 @@
+import 'package:date_util/date_util.dart';
 import 'package:flutter/material.dart';
 import 'package:george_project/widgets/shared/app_action_button.dart';
 import 'package:george_project/widgets/task/tasks_list_by_day.dart';
-import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class CalendarView extends StatefulWidget {
@@ -14,20 +13,100 @@ class CalendarView extends StatefulWidget {
 }
 
 class _CalendarViewState extends State<CalendarView>
-    with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin, TickerProviderStateMixin {
+  TabController _dayViewTanController;
   CalendarController _calendarController;
   DateTime selectedDay;
   String currentCalendarView = 'month';
+  List<Widget> tabChildren;
+  int daysInMonth;
+
+  initDaysInMonth(DateTime date) {
+    daysInMonth = DateUtil().daysInMonth(date.month, date.year);
+  }
 
   @override
   void initState() {
     super.initState();
+
     selectedDay = DateTime(
       DateTime.now().year,
       DateTime.now().month,
       DateTime.now().day,
     );
+    initDaysInMonth(selectedDay);
+
+    _dayViewTanController = TabController(
+      vsync: this,
+      length: daysInMonth,
+      initialIndex: selectedDay.day - 1,
+    );
+
+    tabChildren = List<Widget>.generate(
+      daysInMonth,
+      (index) => TasksListByDay(
+        day: DateTime(
+          selectedDay.year,
+          selectedDay.month,
+          index + 1,
+        ),
+        fullScreen: true,
+      ),
+    );
     _calendarController = CalendarController();
+  }
+
+  int oldIndex = 1;
+
+  initDayTabView(DateTime date) {
+    selectedDay = date;
+    tabChildren = [
+      TasksListByDay(
+        day: DateTime(
+          date.year,
+          date.month,
+          date.day - 1,
+        ),
+        fullScreen: true,
+      ),
+      TasksListByDay(
+        day: date,
+        fullScreen: true,
+      ),
+      TasksListByDay(
+        day: DateTime(
+          date.year,
+          date.month,
+          date.day + 1,
+        ),
+        fullScreen: true,
+      ),
+    ];
+    _dayViewTanController = TabController(
+      vsync: this,
+      length: 3,
+      initialIndex: 1,
+    );
+    _dayViewTanController.animateTo(1, duration: Duration.zero);
+    _dayViewTanController.addListener(() {
+      print(_dayViewTanController.length);
+      print(_dayViewTanController.index);
+      if (_dayViewTanController.index == 2) {
+        initDayTabView(DateTime(
+          selectedDay.year,
+          selectedDay.month,
+          selectedDay.day + 1,
+        ));
+      } else if (_dayViewTanController.index == 0) {
+        initDayTabView(DateTime(
+          selectedDay.year,
+          selectedDay.month,
+          selectedDay.day - 1,
+        ));
+      }
+      oldIndex = _dayViewTanController.index;
+    });
+    setState(() {});
   }
 
   _changeCalendarView(String view) {
@@ -45,6 +124,54 @@ class _CalendarViewState extends State<CalendarView>
         }
       case 'day':
         {
+          // _dayViewTanController = TabController(
+          //   vsync: this,
+          //   length: 3,
+          //   initialIndex: 1,
+          // );
+
+          // _dayViewTanController.addListener(() {
+          //   print(_dayViewTanController.length);
+          //   print(_dayViewTanController.index);
+          //   if (_dayViewTanController.index == 2) {
+          //     initDayTabView(DateTime(
+          //       selectedDay.year,
+          //       selectedDay.month,
+          //       selectedDay.day + 1,
+          //     ));
+          //   } else if (_dayViewTanController.index == 0) {
+          //     initDayTabView(DateTime(
+          //       selectedDay.year,
+          //       selectedDay.month,
+          //       selectedDay.day - 1,
+          //     ));
+          //   }
+          //   oldIndex = _dayViewTanController.index;
+          // });
+          _dayViewTanController = TabController(
+            vsync: this,
+            length: daysInMonth,
+            initialIndex: selectedDay.day - 1,
+          );
+
+          tabChildren = List<Widget>.generate(
+            daysInMonth,
+            (index) => TasksListByDay(
+              day: DateTime(
+                selectedDay.year,
+                selectedDay.month,
+                index + 1,
+              ),
+              fullScreen: true,
+            ),
+          );
+          _dayViewTanController.addListener(() {
+            selectedDay = DateTime(
+              selectedDay.year,
+              selectedDay.month,
+              _dayViewTanController.index + 1,
+            );
+          });
           break;
         }
     }
@@ -84,9 +211,13 @@ class _CalendarViewState extends State<CalendarView>
             child: Stack(
               children: [
                 if (currentCalendarView == 'day')
-                  TasksListByDay(
-                    day: selectedDay,
-                    fullScreen: true,
+                  Container(
+                    width: MediaQuery.of(context).size.width,
+                    height: MediaQuery.of(context).size.height,
+                    child: TabBarView(
+                      controller: _dayViewTanController,
+                      children: tabChildren,
+                    ),
                   )
                 else
                   TableCalendar(
