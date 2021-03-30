@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:george_project/services/cache/initializers.dart';
 import 'package:george_project/services/user/user_service.dart';
 import 'package:george_project/views/main.dart';
 import 'package:get/get.dart';
 
 import 'config/theme.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await initializeCache();
   runApp(MyApp());
 }
 
@@ -29,7 +31,11 @@ class MyApp extends StatelessWidget {
 
           if (snapshot.hasError) {
             print('Error: ${snapshot.error}');
-            return Container(color: Colors.red);
+            return Center(
+              child: Container(
+                child: Icon(Icons.error_outline, color: Colors.red),
+              ),
+            );
           }
 
           return Container(

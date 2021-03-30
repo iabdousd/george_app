@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:george_project/providers/cache/cached_image_provider.dart';
 import 'package:george_project/services/feed-back/loader.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -10,17 +11,19 @@ import 'package:photo_view/photo_view_gallery.dart';
 import 'package:george_project/models/Attachment.dart';
 
 class ImagesListView extends StatelessWidget {
+  final List<String> customPathList;
   final List<PickedFile> images;
   final bool readOnly;
   final List<Attachment> networkImages;
   final Function(dynamic) deleteEvent;
-  const ImagesListView(
-      {Key key,
-      @required this.images,
-      @required this.deleteEvent,
-      this.readOnly = false,
-      this.networkImages = const []})
-      : super(key: key);
+  const ImagesListView({
+    Key key,
+    @required this.images,
+    @required this.deleteEvent,
+    this.readOnly = false,
+    this.networkImages = const [],
+    this.customPathList = const [],
+  }) : super(key: key);
 
   _zooImage(file, {PickedFile asset}) async {
     List<File> fileImages = [];
@@ -36,6 +39,7 @@ class ImagesListView extends StatelessWidget {
         initialIndex: file is Attachment
             ? networkImages.indexOf(file)
             : networkImages.length + images.indexOf(asset),
+        customPathList: customPathList,
       ),
     );
   }
@@ -83,8 +87,11 @@ class ImagesListView extends StatelessWidget {
                               child: Stack(
                                 fit: StackFit.expand,
                                 children: [
-                                  Image.network(
-                                    e.path,
+                                  Image(
+                                    image: CachedImageProvider(
+                                      e.path,
+                                      customPathList: customPathList,
+                                    ),
                                     fit: BoxFit.cover,
                                     gaplessPlayback: true,
                                     loadingBuilder: (ctx, _, chunk) =>
@@ -164,11 +171,15 @@ class ImagesListView extends StatelessWidget {
 }
 
 class ZoomedImagesView extends StatelessWidget {
+  final List<String> customPathList;
   final List galleryItems;
   final int initialIndex;
-  const ZoomedImagesView(
-      {Key key, @required this.galleryItems, this.initialIndex = 0})
-      : super(key: key);
+  const ZoomedImagesView({
+    Key key,
+    @required this.galleryItems,
+    this.initialIndex = 0,
+    this.customPathList: const [],
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -182,7 +193,11 @@ class ZoomedImagesView extends StatelessWidget {
           builder: (BuildContext context, int index) {
             return PhotoViewGalleryPageOptions(
               imageProvider: galleryItems[index] is Attachment
-                  ? NetworkImage(galleryItems[index].path)
+                  ? CachedImageProvider(
+                      galleryItems[index].path,
+                      quality: 100,
+                      customPathList: customPathList,
+                    )
                   : FileImage(galleryItems[index]),
               initialScale: PhotoViewComputedScale.contained,
               minScale: PhotoViewComputedScale.contained,

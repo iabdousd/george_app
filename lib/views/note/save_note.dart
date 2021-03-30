@@ -269,6 +269,7 @@ class _SaveNotePageState extends State<SaveNotePage> {
                     : Theme.of(context).accentColor,
               ),
               ImagesListView(
+                customPathList: [widget.goalRef, widget.stackRef],
                 images: images,
                 readOnly: !editing,
                 networkImages: widget.note?.attachments ?? [],
