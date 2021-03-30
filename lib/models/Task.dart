@@ -52,7 +52,11 @@ class Task {
       DateTime nextDue =
           startDate; // DateTime.now().isAfter(startDate) ? DateTime.now() :
       int i = 0;
+      final now = DateTime.now();
       if (repetition?.type == 'daily') {
+        dueDates.add(startDate);
+      } else if (repetition?.type == 'monthly' &&
+          repetition.dayNumber == now.day) {
         dueDates.add(startDate);
       }
       do {
@@ -60,12 +64,10 @@ class Task {
         if (nextDue == null ||
             nextDue.year * 365 + nextDue.month * 30 + nextDue.day >
                 endDate.year * 365 + endDate.month * 30 + endDate.day) {
-          print('FOUND NULL: $nextDue');
           break;
         }
 
         dueDates.add(DateTime(nextDue.year, nextDue.month, nextDue.day));
-        print('ADDED: ${DateTime(nextDue.year, nextDue.month, nextDue.day)}');
         i++;
       } while (nextDue.isBefore(endDate) && i < 1000);
     } else {
@@ -162,6 +164,10 @@ class Task {
   }
 
   double timeToDouble(TimeOfDay myTime) => myTime.hour + myTime.minute / 60.0;
+
+  String get completionRate => this.donesHistory.length > 0
+      ? (this.dueDates.length / this.donesHistory.length).toStringAsFixed(0)
+      : '0';
 
   bool isDone({DateTime date}) =>
       (repetition == null && status == 1) ||

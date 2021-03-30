@@ -1,6 +1,5 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
+import 'package:george_project/services/shared/text/text_to_spans.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'package:george_project/models/Note.dart';
@@ -9,15 +8,23 @@ import 'package:george_project/services/feed-back/loader.dart';
 import 'package:george_project/widgets/shared/app_action_button.dart';
 import 'package:george_project/widgets/shared/app_appbar.dart';
 import 'package:george_project/widgets/shared/images_list_view.dart';
+import 'package:intl/intl.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 
 class SaveNotePage extends StatefulWidget {
   final String goalRef;
   final String stackRef;
   final Note note;
-  SaveNotePage(
-      {Key key, @required this.goalRef, @required this.stackRef, this.note})
-      : super(key: key);
+  final String taskRef;
+  final String taskTitle;
+  SaveNotePage({
+    Key key,
+    @required this.goalRef,
+    @required this.stackRef,
+    this.note,
+    this.taskRef,
+    this.taskTitle,
+  }) : super(key: key);
 
   @override
   _SaveNotePageState createState() => _SaveNotePageState();
@@ -26,6 +33,9 @@ class SaveNotePage extends StatefulWidget {
 class _SaveNotePageState extends State<SaveNotePage> {
   GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   TextEditingController _contentController = TextEditingController();
+
+  List<TextSpan> displaySpans = [];
+
   DateTime startDate = DateTime.now();
   DateTime endDate = DateTime.now();
   List<PickedFile> images = [];
@@ -42,6 +52,8 @@ class _SaveNotePageState extends State<SaveNotePage> {
       goalRef: widget.goalRef,
       stackRef: widget.stackRef,
       id: widget.note?.id,
+      taskRef: widget.taskRef,
+      taskTitle: widget.taskTitle,
       content: _contentController.text,
       creationDate: DateTime.now(),
       attachmentsCount: widget.note?.attachmentsCount ?? 0,
@@ -135,7 +147,27 @@ class _SaveNotePageState extends State<SaveNotePage> {
     super.initState();
     editing = widget.note == null;
     if (widget.note != null) {
-      _contentController.text = widget.note.content ?? '';
+      List<TextSpan> textSpans = textToSpans(
+        widget.note.taskRef != null
+            ? ('%*b' +
+                widget.note.taskTitle +
+                '%*l - Task notes ' +
+                DateFormat('EEE, dd MMM').format(
+                  widget.note.creationDate,
+                ) +
+                '\n%*n' +
+                widget.note.content)
+            : ('%*b' +
+                widget.note.content +
+                '%*l - created ' +
+                DateFormat('EEE, dd MMM').format(
+                  widget.note.creationDate,
+                )),
+        initialTextSize: 16,
+      );
+      displaySpans = textSpans;
+
+      _contentController.text = widget.note.content;
       init();
     }
   }
@@ -171,30 +203,56 @@ class _SaveNotePageState extends State<SaveNotePage> {
                   borderRadius: BorderRadius.circular(8.0),
                 ),
                 margin: EdgeInsets.symmetric(vertical: 8.0),
-                child: TextFormField(
-                  controller: _contentController,
-                  decoration: InputDecoration(
-                    labelText: 'Note content',
-                    hintText: 'The content of the note',
-                    contentPadding: const EdgeInsets.symmetric(
-                      vertical: 20.0,
-                      horizontal: 20.0,
-                    ),
-                    alignLabelWithHint: true,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8.0),
-                      borderSide: BorderSide(width: 1),
-                    ),
-                  ),
-                  enabled: editing,
-                  validator: (t) {
-                    if (t.isEmpty)
-                      return 'Please enter the content of the note first';
-                    return null;
-                  },
-                  minLines: 2,
-                  maxLines: 100,
-                ),
+                child: !editing
+                    ? Container(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 10.0,
+                          horizontal: 10.0,
+                        ),
+                        margin: EdgeInsets.all(8.0),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8.0),
+                          border: Border.all(
+                            width: 1,
+                            color: Color(0x55000000),
+                          ),
+                        ),
+                        child: RichText(
+                          text: TextSpan(
+                            children: displaySpans,
+                            style:
+                                Theme.of(context).textTheme.subtitle1.copyWith(
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 4,
+                        ),
+                      )
+                    : TextFormField(
+                        controller: _contentController,
+                        decoration: InputDecoration(
+                          labelText: 'Note content',
+                          hintText: 'The content of the note',
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 20.0,
+                            horizontal: 20.0,
+                          ),
+                          alignLabelWithHint: true,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                            borderSide: BorderSide(width: 1),
+                          ),
+                        ),
+                        enabled: editing,
+                        validator: (t) {
+                          if (t.isEmpty)
+                            return 'Please enter the content of the note first';
+                          return null;
+                        },
+                        minLines: 2,
+                        maxLines: 100,
+                      ),
               ),
               AppActionButton(
                 onPressed: editing

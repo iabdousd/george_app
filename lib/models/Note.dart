@@ -13,6 +13,8 @@ class Note {
   String id;
   String goalRef;
   String stackRef;
+  String taskRef;
+  String taskTitle;
   DateTime creationDate;
   String content;
   List<Attachment> attachments;
@@ -22,6 +24,8 @@ class Note {
     this.id,
     this.goalRef,
     this.stackRef,
+    this.taskRef,
+    this.taskTitle,
     this.creationDate,
     this.content,
     this.attachments,
@@ -30,6 +34,8 @@ class Note {
 
   Note.fromJson(jsonObject, {String id}) {
     this.id = id;
+    this.taskRef = jsonObject[note_constants.TASK_REF_KEY];
+    this.taskTitle = jsonObject[note_constants.TASK_TITLE_KEY];
     this.creationDate =
         (jsonObject[note_constants.CREATION_DATE_KEY] as Timestamp).toDate();
     this.content = jsonObject[note_constants.CONTENT_KEY];
@@ -38,6 +44,8 @@ class Note {
 
   Map<String, dynamic> toJson() {
     return {
+      note_constants.TASK_REF_KEY: this.taskRef,
+      note_constants.TASK_TITLE_KEY: this.taskTitle,
       note_constants.CONTENT_KEY: this.content,
       note_constants.CREATION_DATE_KEY: this.creationDate,
       note_constants.ATTACHMENTS_COUNT_KEY: this.attachmentsCount,

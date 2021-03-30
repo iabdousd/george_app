@@ -63,7 +63,6 @@ class _TasksTimerListState extends State<TasksTimerList>
               )
               .snapshots(),
           builder: (context, snapshot) {
-            print(snapshot.data);
             final DateTime now = DateTime.now();
             if (snapshot.hasData) if (snapshot.data.docs.isNotEmpty)
               return ListView.builder(
@@ -102,6 +101,19 @@ class _TasksTimerListState extends State<TasksTimerList>
                             ),
                             child: Text(
                               'Next Tasks:',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headline6
+                                  .copyWith(fontWeight: FontWeight.bold),
+                            ),
+                          )
+                        else if (index == 0)
+                          Container(
+                            padding: EdgeInsets.only(
+                              top: 20,
+                            ),
+                            child: Text(
+                              'Current task:',
                               style: Theme.of(context)
                                   .textTheme
                                   .headline6
@@ -147,13 +159,11 @@ class _TasksTimerListState extends State<TasksTimerList>
                               maxLines: 100,
                               onSubmitted: (text) async {
                                 await Note(
-                                  content: 'Task Notes ' +
-                                      DateFormat('EEE dd, MMM')
-                                          .format(DateTime.now()) +
-                                      ' - ' +
-                                      text,
+                                  content: text,
                                   goalRef: task.goalRef,
                                   stackRef: task.stackRef,
+                                  taskRef: task.id,
+                                  taskTitle: task.title,
                                   creationDate: DateTime.now(),
                                 ).save();
                                 _contentController.text = '';

@@ -59,6 +59,7 @@ class _TimerViewState extends State<TimerView>
           child: StreamBuilder<Task>(
               stream: currentTask.stream,
               builder: (context, snapshot) {
+                bool actual = false;
                 if (snapshot.hasData) {
                   DateTime timeNow = DateTime(
                     1970,
@@ -69,9 +70,11 @@ class _TimerViewState extends State<TimerView>
                   );
                   if (snapshot.data != null) if (snapshot.data.startTime
                       .isBefore(timeNow)) {
+                    actual = true;
                     durationBeforeNextTask =
                         snapshot.data.endTime.difference(timeNow);
                   } else {
+                    actual = false;
                     durationBeforeNextTask =
                         snapshot.data.startTime.difference(timeNow);
                   }
@@ -106,13 +109,15 @@ class _TimerViewState extends State<TimerView>
                 }
                 return Column(
                   children: [
-                    // Text(
-                    //   'You have',
-                    //   style: Theme.of(context)
-                    //       .textTheme
-                    //       .subtitle1
-                    //       .copyWith(fontWeight: FontWeight.w100),
-                    // ),
+                    Text(
+                      actual
+                          ? 'Time remaining for current task'
+                          : 'Time till next task',
+                      style: Theme.of(context)
+                          .textTheme
+                          .subtitle1
+                          .copyWith(fontWeight: FontWeight.w100),
+                    ),
                     Text(
                       '${durationBeforeNextTask.inHours.toStringAsFixed(0)}:${durationBeforeNextTask.inMinutes % 60 < 10 ? '0' : ''}${durationBeforeNextTask.inMinutes % 60}',
                       style: Theme.of(context)

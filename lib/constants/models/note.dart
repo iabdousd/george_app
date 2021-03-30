@@ -1,5 +1,7 @@
 const String CREATION_DATE_KEY = 'creationDate';
 const String CONTENT_KEY = 'content';
+const String TASK_REF_KEY = 'taskRef';
+const String TASK_TITLE_KEY = 'taskTitle';
 const String ATTACHMENTS_COUNT_KEY = 'attachmentsCount';
 const String ATTACHMENTS_KEY = 'attachments';
 

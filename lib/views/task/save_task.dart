@@ -8,6 +8,7 @@ import 'package:george_project/widgets/forms/date_picker.dart';
 import 'package:george_project/widgets/forms/time_picker.dart';
 import 'package:george_project/widgets/shared/app_appbar.dart';
 import 'package:george_project/constants/models/task.dart' as task_constants;
+import 'package:intl/intl.dart';
 
 class SaveTaskPage extends StatefulWidget {
   final String goalRef;
@@ -73,6 +74,16 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
       );
       return;
     }
+    toggleLoading(state: true);
+    if (repetition == 'No repetition') {
+      endDate = startDate;
+      if (startTime.isAfter(endTime))
+        endDate = DateTime(
+          startDate.year,
+          startDate.month,
+          startDate.day + 1,
+        );
+    }
     if (DateTime(endDate.year, endDate.month, endDate.day, endTime.hour,
             endTime.minute)
         .isBefore(DateTime.now())) {
@@ -84,7 +95,6 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
       );
       return;
     }
-    toggleLoading(state: true);
     Task task = Task(
       goalRef: widget.goalRef,
       repetition: TaskRepetition(
@@ -345,29 +355,30 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
                       dateFormat: 'dd MMMM yyyy',
                     ),
                   ),
-                  Expanded(
-                    child: DatePickerWidget(
-                      title: 'End date',
-                      color: widget.stackColor,
-                      startDate: DateTime(
-                        startDate.year,
-                        startDate.month,
-                        startDate.day,
-                        startTime.hour,
-                        startTime.minute,
+                  if (repetition != 'No repetition')
+                    Expanded(
+                      child: DatePickerWidget(
+                        title: 'End date',
+                        color: widget.stackColor,
+                        startDate: DateTime(
+                          startDate.year,
+                          startDate.month,
+                          startDate.day,
+                          startTime.hour,
+                          startTime.minute,
+                        ),
+                        onSubmit: _pickEndDateOnly,
+                        initialDate: DateTime(
+                          endDate.year,
+                          endDate.month,
+                          endDate.day,
+                          endTime.hour,
+                          endTime.minute,
+                        ),
+                        dateFormat: 'dd MMMM yyyy',
+                        margin: EdgeInsets.only(top: 8.0),
                       ),
-                      onSubmit: _pickEndDateOnly,
-                      initialDate: DateTime(
-                        endDate.year,
-                        endDate.month,
-                        endDate.day,
-                        endTime.hour,
-                        endTime.minute,
-                      ),
-                      dateFormat: 'dd MMMM yyyy',
-                      margin: EdgeInsets.only(top: 8.0),
                     ),
-                  ),
                 ],
               ),
               SizedBox(

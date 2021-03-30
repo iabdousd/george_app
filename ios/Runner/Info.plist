@@ -45,5 +45,10 @@
 		<string>You need to give the app photos permission to attach images from photos.</string>
 		<key>NSCameraUsageDescription</key>
 		<string>You need to give the app photos permission to attach images from camera</string>
+		<key>LSApplicationQueriesSchemes</key>
+		<array>
+			<string>https</string>
+			<string>http</string>
+		</array>
 	</dict>
 </plist>

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:george_project/models/Note.dart';
 import 'package:george_project/services/feed-back/loader.dart';
+import 'package:george_project/services/shared/text/text_to_spans.dart';
 import 'package:george_project/views/note/save_note.dart';
 import 'package:get/get.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:intl/intl.dart';
 
 class NoteListTileWidget extends StatelessWidget {
   final Note note;
@@ -105,11 +107,31 @@ class NoteListTileWidget extends StatelessWidget {
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    note.content ?? '',
-                    style: Theme.of(context).textTheme.subtitle1.copyWith(
-                          fontWeight: FontWeight.w500,
-                        ),
+                  RichText(
+                    text: TextSpan(
+                      children: textToSpans(
+                        note.taskRef != null
+                            ? ('%*b' +
+                                note.taskTitle +
+                                '%*l - Task notes ' +
+                                DateFormat('EEE, dd MMM').format(
+                                  note.creationDate,
+                                ) +
+                                '\n%*n' +
+                                note.content)
+                            : ('%*b' +
+                                note.content +
+                                '%*l - created ' +
+                                DateFormat('EEE, dd MMM').format(
+                                  note.creationDate,
+                                )),
+                        initialTextSize:
+                            Theme.of(context).textTheme.subtitle1.fontSize,
+                      ),
+                      style: Theme.of(context).textTheme.subtitle1.copyWith(
+                            fontWeight: FontWeight.w500,
+                          ),
+                    ),
                     overflow: TextOverflow.ellipsis,
                     maxLines: 4,
                   ),
