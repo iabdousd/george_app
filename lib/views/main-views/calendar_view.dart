@@ -200,12 +200,14 @@ class _CalendarViewState extends State<CalendarView>
       child: Column(
         children: [
           Container(
-            padding: currentCalendarView == 'day'
-                ? EdgeInsets.zero
-                : const EdgeInsets.symmetric(
-                    horizontal: 16.0,
-                    vertical: 24.0,
-                  ),
+            padding:
+                //  currentCalendarView == 'day'
+                //     ? EdgeInsets.zero
+                //     :
+                EdgeInsets.symmetric(
+              horizontal: currentCalendarView == 'day' ? 0 : 16.0,
+              vertical: 24.0,
+            ),
             child: Stack(
               children: [
                 if (currentCalendarView == 'day')
@@ -372,8 +374,8 @@ class _CalendarViewState extends State<CalendarView>
                   ),
                 if (currentCalendarView == 'day')
                   Positioned(
-                    top: 4,
-                    right: 4,
+                    top: 0,
+                    right: 64,
                     child: AppActionButton(
                       onPressed: _switchCalendarView,
                       icon: Icons.calendar_today_outlined,

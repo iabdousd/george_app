@@ -60,7 +60,7 @@ class TasksListByDay extends StatelessWidget {
             ),
             style: DayViewStyle(
               backgroundColor: Theme.of(context).backgroundColor,
-              headerSize: 80,
+              headerSize: 60,
               backgroundRulesColor: Color(0x88000000),
             ),
             initialTime: HourMinute(hour: day.hour, minute: day.minute),
