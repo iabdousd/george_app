@@ -91,7 +91,6 @@ class _TasksTimerListState extends State<TasksTimerList>
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         if (index == 0 &&
-                            snapshot.data.docs.length > 1 &&
                             task.startTime.hour + task.startTime.minute / 60 >
                                 DateTime.now().hour +
                                     DateTime.now().minute / 60)
@@ -108,7 +107,10 @@ class _TasksTimerListState extends State<TasksTimerList>
                                   .copyWith(fontWeight: FontWeight.bold),
                             ),
                           )
-                        else if (index == 0)
+                        else if (index == 0 &&
+                            task.startTime.hour + task.startTime.minute / 60 <
+                                DateTime.now().hour +
+                                    DateTime.now().minute / 60)
                           Container(
                             padding: EdgeInsets.only(
                               top: 20,
