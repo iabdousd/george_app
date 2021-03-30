@@ -120,11 +120,21 @@ class NoteListTileWidget extends StatelessWidget {
                                 '\n%*n' +
                                 note.content)
                             : ('%*b' +
-                                note.content +
+                                note.content.split('\n').first +
                                 '%*l - created ' +
                                 DateFormat('EEE, dd MMM').format(
                                   note.creationDate,
-                                )),
+                                ) +
+                                (note.content.split('\n').length > 1
+                                    ? '\n%*n' +
+                                        note.content.substring(
+                                          note.content
+                                                  .split('\n')
+                                                  .first
+                                                  .length +
+                                              1,
+                                        )
+                                    : '')),
                         initialTextSize:
                             Theme.of(context).textTheme.subtitle1.fontSize,
                       ),

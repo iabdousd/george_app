@@ -82,25 +82,25 @@ class _CalendarTaskListTileWidgetState
           ),
           // color: Theme.of(context).backgroundColor,
           color: DateTime(
-                    widget.task.startDate.year,
-                    widget.task.startDate.month,
-                    widget.task.startDate.day,
+                    widget.enforcedDate.year,
+                    widget.enforcedDate.month,
+                    widget.enforcedDate.day,
                     widget.task.startTime.hour,
                     widget.task.startTime.minute,
                   ).isBefore(now) &&
                   DateTime(
-                    widget.task.endDate.year,
-                    widget.task.endDate.month,
-                    widget.task.endDate.day,
+                    widget.enforcedDate.year,
+                    widget.enforcedDate.month,
+                    widget.enforcedDate.day,
                     widget.task.endTime.hour,
                     widget.task.endTime.minute,
                   ).isAfter(now) &&
                   !widget.task.anyTime
               ? HexColor.fromHex(widget.task.stackColor).lighten()
               : DateTime(
-                        widget.task.endDate.year,
-                        widget.task.endDate.month,
-                        widget.task.endDate.day,
+                        widget.enforcedDate.year,
+                        widget.enforcedDate.month,
+                        widget.enforcedDate.day,
                         widget.task.endTime.hour,
                         widget.task.endTime.minute,
                       ).isBefore(now) &&

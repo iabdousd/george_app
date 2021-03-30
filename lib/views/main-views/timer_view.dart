@@ -81,28 +81,46 @@ class _TimerViewState extends State<TimerView>
                 }
                 if (durationBeforeNextTask == null) {
                   return Container(
-                    padding: EdgeInsets.only(top: 50),
+                    margin: EdgeInsets.only(top: 50),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).backgroundColor,
+                      borderRadius: BorderRadius.circular(8.0),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color(0x33000000),
+                          blurRadius: 8.0,
+                          offset: Offset(0, 3),
+                        )
+                      ],
+                    ),
+                    height: 2 * MediaQuery.of(context).size.width / 3,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          'Congratulations!',
-                          style: Theme.of(context)
-                              .textTheme
-                              .headline4
-                              .copyWith(fontWeight: FontWeight.bold),
+                          'No task scheduled',
+                          style: Theme.of(context).textTheme.headline6.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
                         ),
-                        SizedBox(
-                          height: 8,
-                        ),
-                        Text(
-                          'There\'s no more tasks for today!',
-                          style: Theme.of(context)
-                              .textTheme
-                              .subtitle1
-                              .copyWith(fontWeight: FontWeight.w100),
-                          textAlign: TextAlign.center,
-                        ),
+                        // Text(
+                        //   'Congratulations!',
+                        //   style: Theme.of(context)
+                        //       .textTheme
+                        //       .headline4
+                        //       .copyWith(fontWeight: FontWeight.bold),
+                        // ),
+                        // SizedBox(
+                        //   height: 8,
+                        // ),
+                        // Text(
+                        //   'There\'s no more tasks for today!',
+                        //   style: Theme.of(context)
+                        //       .textTheme
+                        //       .subtitle1
+                        //       .copyWith(fontWeight: FontWeight.w100),
+                        //   textAlign: TextAlign.center,
+                        // ),
                       ],
                     ),
                   );

@@ -69,6 +69,7 @@ class _TasksTimerListState extends State<TasksTimerList>
                 itemCount: snapshot.data.docs.length,
                 shrinkWrap: true,
                 physics: NeverScrollableScrollPhysics(),
+                padding: EdgeInsets.only(bottom: 12),
                 itemBuilder: (context, index) {
                   Task task = Task.fromJson(
                     snapshot.data.docs[index].data(),
@@ -155,8 +156,8 @@ class _TasksTimerListState extends State<TasksTimerList>
                                 ),
                               ),
                               textInputAction: TextInputAction.done,
-                              minLines: 2,
-                              maxLines: 100,
+                              minLines: 3,
+                              maxLines: 5,
                               onSubmitted: (text) async {
                                 await Note(
                                   content: text,
