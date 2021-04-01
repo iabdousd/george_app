@@ -213,7 +213,8 @@ class _CalendarViewState extends State<CalendarView>
                 if (currentCalendarView == 'day')
                   Container(
                     width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height,
+                    height: MediaQuery.of(context).size.height - 116,
+                    margin: EdgeInsets.only(bottom: 116),
                     child: TabBarView(
                       controller: _dayViewTanController,
                       children: tabChildren,

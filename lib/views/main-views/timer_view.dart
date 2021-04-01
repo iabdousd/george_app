@@ -43,8 +43,8 @@ class _TimerViewState extends State<TimerView>
   @override
   void dispose() {
     super.dispose();
-    currentTask.close();
-    refreshTimer.cancel();
+    currentTask?.close();
+    refreshTimer?.cancel();
   }
 
   @override

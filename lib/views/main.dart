@@ -5,6 +5,7 @@ import 'package:george_project/views/goal/save_goal.dart';
 import 'package:george_project/widgets/home/app_bottom_navigation_bar.dart';
 import 'package:get/get.dart';
 
+import 'main-views/activity_feed_view.dart';
 import 'main-views/calendar_view.dart';
 import 'main-views/home_view.dart';
 import 'main-views/timer_view.dart';
@@ -53,7 +54,7 @@ class _MainViewState extends State<MainView>
             HomeView(),
             CalendarView(),
             TimerView(),
-            Container(),
+            ActivityFeedView(),
           ],
         ),
       ),

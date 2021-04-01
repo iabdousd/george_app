@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:date_util/date_util.dart';
 import 'package:flutter/material.dart';
 import 'package:george_project/constants/models/task.dart' as task_constants;
 import 'package:george_project/constants/user.dart' as user_constants;
@@ -49,14 +50,17 @@ class Task {
       // print("INTP REPETITION");
       this.repetition = repetition..type.toLowerCase();
       this.dueDates = [];
-      DateTime nextDue =
-          startDate; // DateTime.now().isAfter(startDate) ? DateTime.now() :
+      DateTime nextDue = startDate;
       int i = 0;
       final now = DateTime.now();
       if (repetition?.type == 'daily') {
         dueDates.add(startDate);
       } else if (repetition?.type == 'monthly' &&
           repetition.dayNumber == now.day) {
+        dueDates.add(startDate);
+      } else if (repetition?.type == 'weekly' &&
+          repetition.selectedWeekDays
+              .contains(dateTimeToDayNumber(startDate))) {
         dueDates.add(startDate);
       }
       do {
@@ -165,8 +169,9 @@ class Task {
 
   double timeToDouble(TimeOfDay myTime) => myTime.hour + myTime.minute / 60.0;
 
-  String get completionRate => this.donesHistory.length > 0
-      ? (this.dueDates.length / this.donesHistory.length).toStringAsFixed(0)
+  String get completionRate => this.dueDates.length > 0
+      ? (100 * this.donesHistory.length / this.dueDates.length)
+          .toStringAsFixed(0)
       : '0';
 
   bool isDone({DateTime date}) =>
@@ -283,6 +288,7 @@ class Task {
       );
     } else if (repetition.type == 'weekly') {
       bool forced = false;
+
       DateTime next = DateTime(
         startDate.year,
         startDate.month,
@@ -305,10 +311,15 @@ class Task {
         startTime.minute,
       );
       int i = 0;
+      DateUtil util = DateUtil();
       while (forced ||
           (now.isAfter(next) ||
-                  now.year * 365 + now.month * 30 + now.day ==
-                      next.year * 365 + next.month * 30 + next.day) &&
+                  now.year * 365 +
+                          now.month * util.daysInMonth(now.month, now.year) +
+                          now.day ==
+                      next.year * 365 +
+                          next.month * util.daysInMonth(next.month, next.year) +
+                          next.day) &&
               i < 50) {
         i++;
         forced = false;
@@ -333,7 +344,6 @@ class Task {
           startTime.minute,
         );
       }
-      if (i >= 49) print(i);
       return next;
     } else if (repetition.type == 'monthly') {
       if (now.month % repetition.monthsCount == 0 &&

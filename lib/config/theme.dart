@@ -12,7 +12,7 @@ ThemeData lightThemeData(BuildContext context) {
     backgroundColor: Colors.white,
     textTheme: GoogleFonts.interTextTheme(Theme.of(context).textTheme).apply(
       bodyColor: kContentColorLightTheme,
-      fontFamily: GoogleFonts.openSans().fontFamily,
+      fontFamily: GoogleFonts.poppins().fontFamily,
     ),
     colorScheme: ColorScheme.light(
       primary: kPrimaryColor,

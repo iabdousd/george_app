@@ -77,17 +77,22 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
     toggleLoading(state: true);
     if (repetition == 'No repetition') {
       endDate = startDate;
-      if (startTime.isAfter(endTime))
+      if (DateTime(endDate.year, endDate.month, endDate.day, endTime.hour,
+              endTime.minute)
+          .isBefore(DateTime(startDate.year, startDate.month, startDate.day,
+              startTime.hour, startTime.minute))) {
         endDate = DateTime(
           startDate.year,
           startDate.month,
           startDate.day + 1,
         );
+      }
     }
     if (DateTime(endDate.year, endDate.month, endDate.day, endTime.hour,
             endTime.minute)
         .isBefore(DateTime.now())) {
-      showFlushBar(
+      await toggleLoading(state: false);
+      await showFlushBar(
         title: 'Malformat dates',
         message:
             'With the selected dates this date won\'t occurred once! Please make sure you entered the correct dates/times',
