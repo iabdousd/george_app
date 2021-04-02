@@ -58,7 +58,7 @@ class RecurringTaskArticleWidget extends StatelessWidget {
                     ),
                     Text(
                       DateFormat('EEE, dd MMM yyyy   hh:mm a')
-                          .format(task.startDate),
+                          .format(task.creationDate),
                       style: Theme.of(context).textTheme.subtitle2,
                     ),
                   ],
@@ -158,20 +158,4 @@ class RecurringTaskArticleWidget extends StatelessWidget {
       ),
     );
   }
-}
-
-class _ProgressIndicatorClipper extends CustomClipper<Rect> {
-  final double value;
-
-  _ProgressIndicatorClipper({
-    @required this.value,
-  });
-
-  @override
-  getClip(Size size) {
-    return Rect.fromLTWH(0, 0, size.width * value, size.height);
-  }
-
-  @override
-  bool shouldReclip(covariant CustomClipper oldClipper) => false;
 }

@@ -12,9 +12,7 @@ class ArticleSkeletonWidget extends StatelessWidget {
           width: 1,
           color: Color(0x22000000),
         ),
-        borderRadius: BorderRadius.circular(8.0),
       ),
-      margin: const EdgeInsets.only(bottom: 16.0),
       padding: const EdgeInsets.all(4),
       child: Shimmer.fromColors(
         baseColor: Colors.grey[300],
@@ -72,8 +70,19 @@ class ArticleSkeletonWidget extends StatelessWidget {
               margin: const EdgeInsets.only(
                 left: 8.0,
                 right: 8.0,
-                bottom: 8.0,
+                bottom: 2.0,
                 top: 4.0,
+              ),
+              height: 18,
+              color: Theme.of(context).backgroundColor,
+              width: double.infinity,
+            ),
+            Container(
+              margin: const EdgeInsets.only(
+                left: 8.0,
+                right: 8.0,
+                bottom: 8.0,
+                top: 2.0,
               ),
               height: 18,
               color: Theme.of(context).backgroundColor,

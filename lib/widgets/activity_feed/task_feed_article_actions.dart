@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
 import 'package:george_project/models/Task.dart';
 import 'package:george_project/services/feed-back/flush_bar.dart';
 import 'package:george_project/services/shared/sharing/sharing_task.dart';
-import 'package:george_project/views/task/save_task.dart';
-import 'package:get/get.dart';
+import 'package:george_project/views/feed/save_task_feed_article.dart';
 
 class TaskFeedArticleActions extends StatelessWidget {
   final Task task;
@@ -27,10 +28,7 @@ class TaskFeedArticleActions extends StatelessWidget {
           Expanded(
             child: InkWell(
               onTap: () => Get.to(
-                () => SaveTaskPage(
-                  goalRef: task.goalRef,
-                  stackRef: task.stackRef,
-                  stackColor: task.stackColor,
+                () => SaveTaskFeedArticle(
                   task: task,
                 ),
               ),

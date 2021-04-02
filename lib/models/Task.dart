@@ -204,15 +204,20 @@ class Task {
   double timeToDouble(TimeOfDay myTime) => myTime.hour + myTime.minute / 60.0;
 
   int get maxStreak {
+    donesHistory.sort((a, b) => a.compareTo(b));
+    // dueDates.sort((a, b) => a.compareTo(b));
     int streak = 0;
+    int tempStreak = 0;
     int donesIndex = 0;
     for (int index = 0; index < dueDates.length; index++) {
       if (donesIndex == donesHistory.length) break;
       if (dueDates[index] == donesHistory[donesIndex]) {
-        streak++;
+        tempStreak++;
         donesIndex++;
-      } else
-        streak = 0;
+      } else {
+        tempStreak = 0;
+      }
+      if (tempStreak > streak) streak = tempStreak;
     }
 
     return streak;
@@ -549,6 +554,17 @@ class Task {
         .collection(stack_constants.TASKS_KEY)
         .doc(id)
         .delete();
+  }
+
+  Future saveAsFeed() async {
+    await FirebaseFirestore.instance
+        .collection(user_constants.USERS_KEY)
+        .doc(getCurrentUser().uid)
+        .collection(feed_constants.FEED_KEY)
+        .doc(
+          id,
+        )
+        .set(toJson());
   }
 
   Future deleteAsFeed() async {

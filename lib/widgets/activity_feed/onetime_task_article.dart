@@ -56,7 +56,7 @@ class OnetimeTaskArticleWidget extends StatelessWidget {
                     ),
                     Text(
                       DateFormat('EEE, dd MMM yyyy   hh:mm a')
-                          .format(task.startDate),
+                          .format(task.creationDate),
                       style: Theme.of(context).textTheme.subtitle2,
                     ),
                   ],

@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:george_project/models/Task.dart';
 import 'package:george_project/services/user/user_service.dart';
+import 'package:george_project/widgets/activity_feed/article_skeleton.dart';
 import 'package:george_project/widgets/activity_feed/onetime_task_article.dart';
 import 'package:george_project/widgets/activity_feed/recurring_task_article.dart';
 import 'package:george_project/widgets/activity_feed/today_tasks.dart';
@@ -26,7 +27,7 @@ class _ActivityFeedViewState extends State<ActivityFeedView>
   Widget build(BuildContext context) {
     super.build(context);
     return ListView(
-      padding: EdgeInsets.symmetric(vertical: 32.0),
+      padding: EdgeInsets.only(top: 32.0),
       children: [
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12.0 + 20.0),
@@ -51,7 +52,7 @@ class _ActivityFeedViewState extends State<ActivityFeedView>
             ],
           ),
         ),
-        TodayTasks(),
+        // TodayTasks(),
         WeekProgress(),
         StreamBuilder<QuerySnapshot>(
           stream: FirebaseFirestore.instance
@@ -124,7 +125,12 @@ class _ActivityFeedViewState extends State<ActivityFeedView>
                 },
               );
             }
-            return Container();
+            return ListView.builder(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              itemCount: 3,
+              itemBuilder: (context, index) => ArticleSkeletonWidget(),
+            );
           },
         ),
       ],
