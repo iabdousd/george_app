@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:george_project/models/Task.dart';
 import 'package:george_project/providers/cache/cached_image_provider.dart';
-import 'package:george_project/services/shared/sharing/sharing_task.dart';
-import 'package:george_project/views/task/save_task.dart';
-import 'package:get/get.dart';
+import 'package:george_project/widgets/activity_feed/task_feed_article_actions.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 
 class OnetimeTaskArticleWidget extends StatelessWidget {
-  final String profilePicture;
+  final String name, profilePicture;
   final Task task;
 
   const OnetimeTaskArticleWidget({
     Key key,
+    this.name,
     this.profilePicture,
     this.task,
   }) : super(key: key);
@@ -26,9 +25,7 @@ class OnetimeTaskArticleWidget extends StatelessWidget {
           width: 1,
           color: Color(0x22000000),
         ),
-        borderRadius: BorderRadius.circular(8.0),
       ),
-      margin: const EdgeInsets.only(bottom: 16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -48,13 +45,21 @@ class OnetimeTaskArticleWidget extends StatelessWidget {
                   ),
                 ),
                 SizedBox(width: 12),
-                Text(
-                  DateFormat('EEE, dd MMM yyyy').format(task.startDate) +
-                      '   ' +
-                      DateFormat('hh a').format(task.startTime) +
-                      ' - ' +
-                      DateFormat('hh a').format(task.endTime),
-                  style: Theme.of(context).textTheme.subtitle1,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: Theme.of(context).textTheme.subtitle1.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                    Text(
+                      DateFormat('EEE, dd MMM yyyy   hh:mm a')
+                          .format(task.startDate),
+                      style: Theme.of(context).textTheme.subtitle2,
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -64,23 +69,26 @@ class OnetimeTaskArticleWidget extends StatelessWidget {
             child: Text(
               task.title,
               style: Theme.of(context).textTheme.headline6.copyWith(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w500,
                     decoration: task.status == 1
                         ? TextDecoration.lineThrough
                         : TextDecoration.none,
                   ),
             ),
           ),
-          Container(
-            padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 4.0),
-            child: Text(
-              task.description,
-              style: Theme.of(context).textTheme.subtitle1.copyWith(
-                    decoration: task.status == 1
-                        ? TextDecoration.lineThrough
-                        : TextDecoration.none,
-                  ),
+          if (task.description != '')
+            Container(
+              padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 0.0),
+              child: Text(
+                task.description,
+                style: Theme.of(context).textTheme.subtitle2.copyWith(
+                      decoration: task.status == 1
+                          ? TextDecoration.lineThrough
+                          : TextDecoration.none,
+                    ),
+              ),
             ),
-          ),
           Container(
             padding: const EdgeInsets.only(
               left: 16.0,
@@ -118,101 +126,22 @@ class OnetimeTaskArticleWidget extends StatelessWidget {
                         ],
                       ),
                     );
-                  return Text(
-                    data,
-                    style: Theme.of(context).textTheme.subtitle2.copyWith(),
-                  );
+                  if (data == '')
+                    return Container();
+                  else
+                    return Text(
+                      data,
+                      style: Theme.of(context).textTheme.subtitle1.copyWith(),
+                    );
                 },
               ),
             ),
           ),
-          Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            decoration: BoxDecoration(
-              border: Border(
-                top: BorderSide(
-                  width: 1,
-                  color: Color(0x22000000),
-                ),
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                InkWell(
-                  onTap: () => Get.to(
-                    () => SaveTaskPage(
-                      goalRef: task.goalRef,
-                      stackRef: task.stackRef,
-                      stackColor: task.stackColor,
-                      task: task,
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.edit,
-                        size: 24,
-                      ),
-                      Text(
-                        'Edit',
-                        style: Theme.of(context).textTheme.bodyText2,
-                      ),
-                    ],
-                  ),
-                ),
-                InkWell(
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.more_horiz,
-                        size: 24,
-                      ),
-                      Text(
-                        'See more',
-                        style: Theme.of(context).textTheme.bodyText2,
-                      ),
-                    ],
-                  ),
-                ),
-                InkWell(
-                  onTap: () => shareTask(task),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.share,
-                        size: 24,
-                      ),
-                      Text(
-                        'Share',
-                        style: Theme.of(context).textTheme.bodyText2,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+          TaskFeedArticleActions(
+            task: task,
           ),
         ],
       ),
     );
   }
-}
-
-class _ProgressIndicatorClipper extends CustomClipper<Rect> {
-  final double value;
-
-  _ProgressIndicatorClipper({
-    @required this.value,
-  });
-
-  @override
-  getClip(Size size) {
-    return Rect.fromLTWH(0, 0, size.width * value, size.height);
-  }
-
-  @override
-  bool shouldReclip(covariant CustomClipper oldClipper) => false;
 }

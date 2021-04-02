@@ -5,6 +5,7 @@ import 'package:george_project/constants/models/task.dart' as task_constants;
 import 'package:george_project/constants/user.dart' as user_constants;
 import 'package:george_project/constants/models/stack.dart' as stack_constants;
 import 'package:george_project/constants/models/goal.dart' as goal_constants;
+import 'package:george_project/constants/feed.dart' as feed_constants;
 import 'package:george_project/services/user/user_service.dart';
 import 'package:intl/intl.dart';
 
@@ -278,11 +279,39 @@ class Task {
 
   accomplish({DateTime customDate, bool unChecking: false}) async {
     if (repetition == null) {
-      status = status == 1 ? 0 : 1;
-      await save();
-      return;
+      if (status == 1) {
+        status = 0;
+        await save();
+        await FirebaseFirestore.instance
+            .collection(user_constants.USERS_KEY)
+            .doc(getCurrentUser().uid)
+            .collection(feed_constants.FEED_KEY)
+            .doc(
+              id + DateFormat('yyyy_MM_dd').format(startDate),
+            )
+            .delete();
+        return;
+      } else {
+        status = 1;
+        await save();
+        await FirebaseFirestore.instance
+            .collection(user_constants.USERS_KEY)
+            .doc(getCurrentUser().uid)
+            .collection(feed_constants.FEED_KEY)
+            .doc(
+              id + DateFormat('yyyy_MM_dd').format(startDate),
+            )
+            .set(
+          {
+            ...toJson(),
+            task_constants.CREATION_DATE_KEY: DateTime.now(),
+          },
+        );
+        return;
+      }
     }
     if (this.donesHistory == null) this.donesHistory = [];
+
     DateTime now =
         customDate ?? (unChecking ? this.donesHistory.last : nextDueDate());
 
@@ -293,13 +322,37 @@ class Task {
     );
 
     if (this.donesHistory.contains(accompishedDate)) {
+      // UNCHECKED!
       if (this.donesHistory.length == this.dueDates.length) this.status = 0;
       this.donesHistory.remove(accompishedDate);
+      await save();
+      await FirebaseFirestore.instance
+          .collection(user_constants.USERS_KEY)
+          .doc(getCurrentUser().uid)
+          .collection(feed_constants.FEED_KEY)
+          .doc(
+            id + DateFormat('yyyy_MM_dd').format(accompishedDate),
+          )
+          .delete();
     } else {
+      // CHECKED!
       this.donesHistory.add(accompishedDate);
       if (this.donesHistory.length == this.dueDates.length) this.status = 1;
+      await save();
+      await FirebaseFirestore.instance
+          .collection(user_constants.USERS_KEY)
+          .doc(getCurrentUser().uid)
+          .collection(feed_constants.FEED_KEY)
+          .doc(
+            id + DateFormat('yyyy_MM_dd').format(accompishedDate),
+          )
+          .set(
+        {
+          ...toJson(),
+          task_constants.CREATION_DATE_KEY: DateTime.now(),
+        },
+      );
     }
-    await save();
   }
 
   int dateTimeToDayNumber(DateTime dateTime) {
@@ -457,6 +510,7 @@ class Task {
           .collection(stack_constants.TASKS_KEY)
           .doc(docRef.id)
           .set(toJson());
+      this.id = docRef.id;
     } else {
       DocumentReference docRef = FirebaseFirestore.instance
           .collection(user_constants.USERS_KEY)
@@ -494,6 +548,17 @@ class Task {
         .doc(getCurrentUser().uid)
         .collection(stack_constants.TASKS_KEY)
         .doc(id)
+        .delete();
+  }
+
+  Future deleteAsFeed() async {
+    await FirebaseFirestore.instance
+        .collection(user_constants.USERS_KEY)
+        .doc(getCurrentUser().uid)
+        .collection(feed_constants.FEED_KEY)
+        .doc(
+          id,
+        )
         .delete();
   }
 }

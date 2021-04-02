@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:george_project/models/Task.dart';
 import 'package:george_project/providers/cache/cached_image_provider.dart';
-import 'package:george_project/services/shared/sharing/sharing_task.dart';
-import 'package:george_project/views/task/save_task.dart';
-import 'package:get/get.dart';
+import 'package:george_project/widgets/activity_feed/task_feed_article_actions.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 
+import 'task_progress_indicator.dart';
+
 class RecurringTaskArticleWidget extends StatelessWidget {
-  final String profilePicture;
+  final String name, profilePicture;
   final Task task;
 
   const RecurringTaskArticleWidget({
     Key key,
+    this.name,
     this.profilePicture,
     this.task,
   }) : super(key: key);
@@ -26,9 +27,7 @@ class RecurringTaskArticleWidget extends StatelessWidget {
           width: 1,
           color: Color(0x22000000),
         ),
-        borderRadius: BorderRadius.circular(8.0),
       ),
-      margin: const EdgeInsets.only(bottom: 16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -48,13 +47,21 @@ class RecurringTaskArticleWidget extends StatelessWidget {
                   ),
                 ),
                 SizedBox(width: 12),
-                Text(
-                  DateFormat('EEE, dd MMM yyyy').format(task.startDate) +
-                      '   ' +
-                      DateFormat('hh a').format(task.startTime) +
-                      ' - ' +
-                      DateFormat('hh a').format(task.endTime),
-                  style: Theme.of(context).textTheme.subtitle1,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: Theme.of(context).textTheme.subtitle1.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                    Text(
+                      DateFormat('EEE, dd MMM yyyy   hh:mm a')
+                          .format(task.startDate),
+                      style: Theme.of(context).textTheme.subtitle2,
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -63,7 +70,10 @@ class RecurringTaskArticleWidget extends StatelessWidget {
             padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 4.0),
             child: Text(
               task.title,
-              style: Theme.of(context).textTheme.headline6,
+              style: Theme.of(context)
+                  .textTheme
+                  .headline6
+                  .copyWith(fontSize: 24, fontWeight: FontWeight.w500),
             ),
           ),
           Container(
@@ -75,7 +85,10 @@ class RecurringTaskArticleWidget extends StatelessWidget {
             ),
             child: Text(
               '${task.completionRate}% completion  |  ${task.maxStreak} days streak',
-              style: Theme.of(context).textTheme.subtitle1,
+              style: Theme.of(context)
+                  .textTheme
+                  .subtitle1
+                  .copyWith(fontWeight: FontWeight.w900),
             ),
           ),
           Container(
@@ -83,29 +96,9 @@ class RecurringTaskArticleWidget extends StatelessWidget {
                 const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 8.0),
             child: LayoutBuilder(builder: (context, constraints) {
               return Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  color: Color(0x10000000),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: ClipRect(
-                    clipper: _ProgressIndicatorClipper(
-                      value: task.completionPercent,
-                    ),
-                    child: Container(
-                      width: constraints.maxWidth,
-                      height: 12,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Theme.of(context).primaryColor,
-                            Colors.greenAccent[400]
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+                child: TaskProgressIndicator(
+                  total: task.dueDates.length,
+                  done: task.donesHistory.length,
                 ),
               );
             }),
@@ -147,82 +140,19 @@ class RecurringTaskArticleWidget extends StatelessWidget {
                         ],
                       ),
                     );
-                  return Text(
-                    data,
-                    style: Theme.of(context).textTheme.subtitle2.copyWith(),
-                  );
+                  if (data == '')
+                    return Container();
+                  else
+                    return Text(
+                      data,
+                      style: Theme.of(context).textTheme.subtitle2.copyWith(),
+                    );
                 },
               ),
             ),
           ),
-          Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            decoration: BoxDecoration(
-              border: Border(
-                top: BorderSide(
-                  width: 1,
-                  color: Color(0x22000000),
-                ),
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                InkWell(
-                  onTap: () => Get.to(
-                    () => SaveTaskPage(
-                      goalRef: task.goalRef,
-                      stackRef: task.stackRef,
-                      stackColor: task.stackColor,
-                      task: task,
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.edit,
-                        size: 24,
-                      ),
-                      Text(
-                        'Edit',
-                        style: Theme.of(context).textTheme.bodyText2,
-                      ),
-                    ],
-                  ),
-                ),
-                InkWell(
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.more_horiz,
-                        size: 24,
-                      ),
-                      Text(
-                        'See more',
-                        style: Theme.of(context).textTheme.bodyText2,
-                      ),
-                    ],
-                  ),
-                ),
-                InkWell(
-                  onTap: () => shareTask(task),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.share,
-                        size: 24,
-                      ),
-                      Text(
-                        'Share',
-                        style: Theme.of(context).textTheme.bodyText2,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+          TaskFeedArticleActions(
+            task: task,
           ),
         ],
       ),

@@ -161,6 +161,8 @@ class _TasksTimerListState extends State<TasksTimerList>
                               minLines: 3,
                               maxLines: 5,
                               onSubmitted: (text) async {
+                                if (text.replaceAll('\n', '').trim() == '')
+                                  return;
                                 Note note = Note(
                                   content: text,
                                   goalRef: task.goalRef,
