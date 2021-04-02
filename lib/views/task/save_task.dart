@@ -122,6 +122,7 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
       anyTime: anyTime,
       stackColor: widget.stackColor,
       donesHistory: widget.task?.donesHistory ?? [],
+      taskNotes: widget.task?.taskNotes ?? [],
     );
     await task.save();
     toggleLoading(state: false);

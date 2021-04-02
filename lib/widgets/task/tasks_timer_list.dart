@@ -161,14 +161,16 @@ class _TasksTimerListState extends State<TasksTimerList>
                               minLines: 3,
                               maxLines: 5,
                               onSubmitted: (text) async {
-                                await Note(
+                                Note note = Note(
                                   content: text,
                                   goalRef: task.goalRef,
                                   stackRef: task.stackRef,
                                   taskRef: task.id,
                                   taskTitle: task.title,
                                   creationDate: DateTime.now(),
-                                ).save();
+                                );
+                                await note.save();
+                                await task.addNote(note.id);
                                 _contentController.text = '';
                                 showFlushBar(
                                     title: 'Note added successfully!',

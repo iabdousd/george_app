@@ -4,6 +4,7 @@ const String STACK_REF_KEY = 'stackRef';
 const String STACK_COLOR_KEY = 'stackColor';
 const String TITLE_KEY = 'title';
 const String DESCRIPTION_KEY = 'description';
+const String TASK_NOTES_KEY = 'taskNotes';
 const String STATUS_KEY = 'status';
 const String ANY_TIME_KEY = 'anyTime';
 const String CREATION_DATE_KEY = 'creationDate';

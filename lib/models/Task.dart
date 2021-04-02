@@ -8,11 +8,14 @@ import 'package:george_project/constants/models/goal.dart' as goal_constants;
 import 'package:george_project/services/user/user_service.dart';
 import 'package:intl/intl.dart';
 
+import 'Note.dart';
+
 class Task {
   String id;
   String goalRef;
   String stackRef;
   TaskRepetition repetition;
+  List<String> taskNotes;
   String title;
   String description;
   int status;
@@ -27,6 +30,9 @@ class Task {
 
   String stackColor;
 
+  bool notesFetched = false;
+  List<Note> detailedTaskNotes = [];
+
   Task({
     this.id,
     this.goalRef,
@@ -34,6 +40,7 @@ class Task {
     this.stackColor,
     this.title,
     this.description,
+    this.taskNotes,
     this.status,
     this.anyTime,
     TaskRepetition repetition,
@@ -47,7 +54,6 @@ class Task {
   }) {
     if (task_constants.REPETITION_OPTIONS
         .contains(repetition?.type?.toLowerCase())) {
-      // print("INTP REPETITION");
       this.repetition = repetition..type.toLowerCase();
       this.dueDates = [];
       DateTime nextDue = startDate;
@@ -87,7 +93,6 @@ class Task {
         }
 
         dueDates.add(DateTime(nextDue.year, nextDue.month, nextDue.day));
-        // print('ADDED: ${DateTime(nextDue.year, nextDue.month, nextDue.day)}');
       } while (nextDue.year * 365 + nextDue.month * 12 + nextDue.day >
           endDate.year * 365 + endDate.month * 12 + endDate.day);
     }
@@ -103,6 +108,11 @@ class Task {
     this.stackColor = jsonObject[task_constants.STACK_COLOR_KEY];
     this.title = jsonObject[task_constants.TITLE_KEY];
     this.description = jsonObject[task_constants.DESCRIPTION_KEY];
+
+    if (jsonObject[task_constants.TASK_NOTES_KEY] != null &&
+        jsonObject[task_constants.TASK_NOTES_KEY].length > 0)
+      this.taskNotes =
+          List<String>.from(jsonObject[task_constants.TASK_NOTES_KEY]);
 
     this.status = jsonObject[task_constants.STATUS_KEY];
     this.anyTime = jsonObject[task_constants.ANY_TIME_KEY];
@@ -157,6 +167,7 @@ class Task {
           task_constants.REPETITION_OPTIONS.contains(repetition?.type)
               ? repetition.toJson()
               : null,
+      task_constants.TASK_NOTES_KEY: taskNotes,
       task_constants.CREATION_DATE_KEY: creationDate,
       task_constants.DUE_DATES_KEY: dueDates,
       task_constants.DONES_HISTORY_KEY: donesHistory,
@@ -167,7 +178,58 @@ class Task {
     };
   }
 
+  Future<String> fetchNotes({bool forced: false}) async {
+    if ((!notesFetched || forced) && (taskNotes ?? []).length != 0) {
+      detailedTaskNotes = [];
+      for (String noteKey in taskNotes) {
+        var data = await FirebaseFirestore.instance
+            .collection(user_constants.USERS_KEY)
+            .doc(getCurrentUser().uid)
+            .collection(goal_constants.GOALS_KEY)
+            .doc(goalRef)
+            .collection(goal_constants.STACKS_KEY)
+            .doc(stackRef)
+            .collection(stack_constants.NOTES_KEY)
+            .doc(noteKey)
+            .get();
+        detailedTaskNotes.add(
+          Note.fromJson(data.data()),
+        );
+      }
+    }
+    return notesText;
+  }
+
   double timeToDouble(TimeOfDay myTime) => myTime.hour + myTime.minute / 60.0;
+
+  int get maxStreak {
+    int streak = 0;
+    int donesIndex = 0;
+    for (int index = 0; index < dueDates.length; index++) {
+      if (donesIndex == donesHistory.length) break;
+      if (dueDates[index] == donesHistory[donesIndex]) {
+        streak++;
+        donesIndex++;
+      } else
+        streak = 0;
+    }
+
+    return streak;
+  }
+
+  String get notesText {
+    String text = '';
+    if ((taskNotes?.length ?? 0) > 0) {
+      for (Note note in detailedTaskNotes) {
+        text += note.content + (note == detailedTaskNotes.last ? '' : '\n');
+      }
+    }
+    return text;
+  }
+
+  double get completionPercent => this.dueDates.length > 0
+      ? this.donesHistory.length / this.dueDates.length
+      : 0;
 
   String get completionRate => this.dueDates.length > 0
       ? (100 * this.donesHistory.length / this.dueDates.length)
@@ -207,26 +269,14 @@ class Task {
               : startDate;
     }
     if (this.dueDates.length > 0) {
-      // print('donesHistory: ${this.donesHistory}');
-      // print('dueDates: ${this.dueDates}');
       for (DateTime due in this.dueDates) {
-        if (!this.donesHistory.contains(due)
-            //  &&
-            //     DateTime(
-            //       due.year,
-            //       due.month,
-            //       due.day,
-            //       endTime.hour,
-            //       endTime.minute,
-            //     ).isAfter(DateTime.now())
-            ) return due;
+        if (!this.donesHistory.contains(due)) return due;
       }
     }
     return null;
   }
 
   accomplish({DateTime customDate, bool unChecking: false}) async {
-    print(dueDates);
     if (repetition == null) {
       status = status == 1 ? 0 : 1;
       await save();
@@ -381,6 +431,12 @@ class Task {
     }
 
     return null;
+  }
+
+  addNote(String noteId) async {
+    if (this.taskNotes == null) this.taskNotes = [];
+    this.taskNotes.add(noteId);
+    await this.save();
   }
 
   Future save() async {
