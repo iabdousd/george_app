@@ -1,6 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:george_project/repositories/feed/statistics.dart';
 import 'package:intl/intl.dart';
+import 'package:george_project/constants/feed.dart' as feed_constants;
 
 class WeekProgress extends StatefulWidget {
   @override
@@ -10,6 +13,7 @@ class WeekProgress extends StatefulWidget {
 class WeekProgressState extends State<WeekProgress> {
   final now = DateTime.now();
   int selectedWeek = 11;
+  int maxTasks = 1;
   List<DateTime> weeks = [];
   List<double> weeksValues = [];
 
@@ -22,7 +26,7 @@ class WeekProgressState extends State<WeekProgress> {
       start.month,
       start.day,
     ));
-    weeksValues.add(.5);
+    weeksValues.add(0);
     for (var i = 1; i < 12; i++) {
       weeks.insert(
         0,
@@ -32,9 +36,11 @@ class WeekProgressState extends State<WeekProgress> {
           start.subtract(Duration(days: 7 * i)).day,
         ),
       );
-      weeksValues.add(.5);
+      weeksValues.add(0);
     }
   }
+
+  final weeklyAccsStream = getWeeklyAccomlishements();
 
   @override
   Widget build(BuildContext context) {
@@ -44,9 +50,26 @@ class WeekProgressState extends State<WeekProgress> {
     ];
 
     final size = MediaQuery.of(context).size;
-    return StreamBuilder<Object>(
-        stream: null,
-        builder: (context, snapshot) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: weeklyAccsStream,
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          for (var item in snapshot.data.docs) {
+            if (weeks.contains(
+                item.data()[feed_constants.WEEK_START_DATE_KEY].toDate())) {
+              int cIndex = weeks.indexOf(
+                  item.data()[feed_constants.WEEK_START_DATE_KEY].toDate());
+              weeksValues[cIndex] =
+                  item.data()[feed_constants.ACCOMPLISHED_TASKS_KEY] is int
+                      ? item
+                          .data()[feed_constants.ACCOMPLISHED_TASKS_KEY]
+                          .toDouble()
+                      : item.data()[feed_constants.ACCOMPLISHED_TASKS_KEY];
+              if (weeksValues[cIndex] >= maxTasks) {
+                maxTasks = weeksValues[cIndex].toInt() + 1;
+              }
+            }
+          }
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -112,7 +135,7 @@ class WeekProgressState extends State<WeekProgress> {
                                   ),
                                   getTitles: (value) {
                                     if (value.toInt() == selectedWeek) {
-                                      return '${(weeksValues[value.toInt()] * 100).toStringAsFixed(0)}%';
+                                      return '${weeksValues[value.toInt()].toStringAsFixed(0)} tasks';
                                     }
                                     return '';
                                   },
@@ -144,10 +167,7 @@ class WeekProgressState extends State<WeekProgress> {
                                     fontSize: 15,
                                   ),
                                   getTitles: (value) {
-                                    if (value == 0) return '0%';
-                                    if (value == .5) return '50%';
-                                    if (value == 1) return '100%';
-                                    return '';
+                                    return value.toStringAsFixed(0);
                                   },
                                   reservedSize: 28,
                                   margin: 12,
@@ -163,7 +183,7 @@ class WeekProgressState extends State<WeekProgress> {
                               minX: 0,
                               maxX: 11,
                               minY: 0,
-                              maxY: 1,
+                              maxY: maxTasks.toDouble(),
                               lineBarsData: [
                                 LineChartBarData(
                                   spots: weeks
@@ -209,8 +229,9 @@ class WeekProgressState extends State<WeekProgress> {
                                   getTooltipItems: (items) => items
                                       .map(
                                         (e) => LineTooltipItem(
-                                          '${(e.y * 100).toStringAsFixed(0)}%',
-                                          Theme.of(context).textTheme.subtitle2,
+                                          DateFormat('dd, MMM')
+                                              .format(weeks[e.x.toInt()]),
+                                          Theme.of(context).textTheme.subtitle1,
                                         ),
                                       )
                                       .toList(),
@@ -236,7 +257,10 @@ class WeekProgressState extends State<WeekProgress> {
               ),
             ],
           );
-        });
+        }
+        return Container();
+      },
+    );
   }
 }
 // import 'package:fl_chart/fl_chart.dart';

@@ -6,6 +6,7 @@ import 'package:george_project/constants/user.dart' as user_constants;
 import 'package:george_project/constants/models/stack.dart' as stack_constants;
 import 'package:george_project/constants/models/goal.dart' as goal_constants;
 import 'package:george_project/constants/feed.dart' as feed_constants;
+import 'package:george_project/repositories/feed/statistics.dart';
 import 'package:george_project/services/user/user_service.dart';
 import 'package:intl/intl.dart';
 
@@ -295,6 +296,7 @@ class Task {
               id + DateFormat('yyyy_MM_dd').format(startDate),
             )
             .delete();
+        await removeTaskAccomplishment(this);
         return;
       } else {
         status = 1;
@@ -312,6 +314,7 @@ class Task {
             task_constants.CREATION_DATE_KEY: DateTime.now(),
           },
         );
+        await addTaskAccomplishment(this);
         return;
       }
     }
@@ -339,6 +342,7 @@ class Task {
             id + DateFormat('yyyy_MM_dd').format(accompishedDate),
           )
           .delete();
+      await removeTaskAccomplishment(this);
     } else {
       // CHECKED!
       this.donesHistory.add(accompishedDate);
@@ -357,6 +361,7 @@ class Task {
           task_constants.CREATION_DATE_KEY: DateTime.now(),
         },
       );
+      await addTaskAccomplishment(this);
     }
   }
 
