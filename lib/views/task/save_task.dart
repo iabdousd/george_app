@@ -36,7 +36,7 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
   TextEditingController _descriptionController = TextEditingController();
   List<int> selectedWeekDays = [];
   DateTime startDate = DateTime.now();
-  DateTime endDate = DateTime.now().add(Duration(hours: 2));
+  DateTime endDate = DateTime.now().add(Duration(days: 1));
   DateTime startTime = DateTime(
     1970,
     1,
@@ -351,13 +351,15 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
                         startTime.hour,
                         startTime.minute,
                       ),
-                      endDate: DateTime(
-                        endDate.year,
-                        endDate.month,
-                        endDate.day,
-                        endTime.hour,
-                        endTime.minute,
-                      ),
+                      endDate: repetition == 'No repetition'
+                          ? DateTime.now().add(Duration(days: 365))
+                          : DateTime(
+                              endDate.year,
+                              endDate.month,
+                              endDate.day,
+                              endTime.hour,
+                              endTime.minute,
+                            ),
                       dateFormat: 'dd MMMM yyyy',
                     ),
                   ),

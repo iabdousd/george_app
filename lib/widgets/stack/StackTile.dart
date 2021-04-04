@@ -117,32 +117,26 @@ class StackListTileWidget extends StatelessWidget {
                     margin: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
                   ),
                 ),
-                Container(
-                  margin: EdgeInsets.symmetric(vertical: 16, horizontal: 10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        stack.title.toUpperCase(),
-                        style: Theme.of(context)
-                            .textTheme
-                            .headline6
-                            .copyWith(fontWeight: FontWeight.w600),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                      ),
-                      // Text(
-                      //   DateFormat('dd MMM yyyy').format(stack.startDate) +
-                      //       ' - ' +
-                      //       DateFormat('dd MMM yyyy').format(stack.endDate),
-                      //   style: Theme.of(context)
-                      //       .textTheme
-                      //       .subtitle1
-                      //       .copyWith(fontWeight: FontWeight.w300),
-                      // ),
-                    ],
+                Expanded(
+                  child: Container(
+                    margin: EdgeInsets.symmetric(vertical: 16, horizontal: 10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Hero(
+                          tag: stack.id,
+                          child: Text(
+                            stack.title.toUpperCase(),
+                            style: Theme.of(context)
+                                .textTheme
+                                .headline6
+                                .copyWith(fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],

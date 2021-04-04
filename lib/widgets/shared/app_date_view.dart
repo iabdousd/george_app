@@ -22,13 +22,13 @@ class AppDateView extends StatelessWidget {
           Text(
             label,
             style: Theme.of(context).textTheme.subtitle2.copyWith(
-                  fontWeight: FontWeight.w400,
+                  fontWeight: FontWeight.w300,
                 ),
           ),
           Text(
             DateFormat(format).format(date),
             style: Theme.of(context).textTheme.subtitle1.copyWith(
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w600,
                 ),
           ),
         ],

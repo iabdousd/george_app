@@ -92,6 +92,7 @@ flutter:
     - assets/images/icons/file.svg
     - assets/images/icons/done.svg
     - assets/images/icons/completion.svg
+    - assets/images/tasks_empty.svg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

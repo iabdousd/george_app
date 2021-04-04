@@ -13,7 +13,7 @@ class ArticleSkeletonWidget extends StatelessWidget {
           color: Color(0x22000000),
         ),
       ),
-      padding: const EdgeInsets.all(4),
+      padding: const EdgeInsets.all(8),
       child: Shimmer.fromColors(
         baseColor: Colors.grey[300],
         highlightColor: Colors.grey[100],

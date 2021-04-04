@@ -102,22 +102,27 @@ class _StackDetailsPageState extends State<StackDetailsPage> {
                   onTap: () => Get.back(),
                   child: Container(
                     margin: EdgeInsets.only(bottom: 4.0),
-                    child: Text(
-                      widget.goalTitle.toUpperCase() + ' > ',
-                      style: Theme.of(context).textTheme.bodyText2.copyWith(
-                            fontWeight: FontWeight.w900,
-                          ),
+                    child: Hero(
+                      tag: widget.stack.goalRef,
+                      child: Text(
+                        widget.goalTitle.toUpperCase() + ' >',
+                        style: Theme.of(context).textTheme.bodyText2.copyWith(
+                              fontWeight: FontWeight.w500,
+                            ),
+                      ),
                     ),
                   ),
                 ),
                 Row(
                   children: [
                     Expanded(
-                      child: Text(
-                        widget.stack.title.toUpperCase(),
-                        style: Theme.of(context).textTheme.headline5.copyWith(
-                              fontWeight: FontWeight.w900,
-                            ),
+                      child: Hero(
+                        tag: widget.stack.id,
+                        child: Text(
+                          widget.stack.title.toUpperCase(),
+                          style:
+                              Theme.of(context).textTheme.headline5.copyWith(),
+                        ),
                       ),
                     ),
                     AppActionButton(

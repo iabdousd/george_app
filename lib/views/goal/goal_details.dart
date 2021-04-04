@@ -107,11 +107,14 @@ class _GoalDetailsPageState extends State<GoalDetailsPage> {
             Row(
               children: [
                 Expanded(
-                  child: Text(
-                    widget.goal.title.toUpperCase(),
-                    style: Theme.of(context).textTheme.headline5.copyWith(
-                          fontWeight: FontWeight.w900,
-                        ),
+                  child: Hero(
+                    tag: widget.goal.id,
+                    child: Text(
+                      widget.goal.title.toUpperCase(),
+                      style: Theme.of(context).textTheme.headline5.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
                   ),
                 ),
               ],

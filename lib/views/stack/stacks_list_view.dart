@@ -35,7 +35,7 @@ class StacksListView extends StatelessWidget {
               Text(
                 'Stacks:',
                 style: Theme.of(context).textTheme.headline5.copyWith(
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w500,
                     ),
               ),
               InkWell(
@@ -84,7 +84,10 @@ class StacksListView extends StatelessWidget {
                     },
                   );
                 else
-                  return AppErrorWidget(status: 404);
+                  return AppErrorWidget(
+                    status: 404,
+                    customMessage: 'No tasks added yet',
+                  );
               }
 
               return LoadingWidget();

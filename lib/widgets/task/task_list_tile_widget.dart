@@ -220,25 +220,25 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
-                                    widget.task.title,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .headline6
-                                        .copyWith(
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 17,
-                                          decoration: widget.task.isDone(
-                                                  date: widget.enforcedDate)
-                                              ? TextDecoration.lineThrough
-                                              : TextDecoration.none,
-                                          fontStyle: widget.task.isDone(
-                                                  date: widget.enforcedDate)
-                                              ? FontStyle.italic
-                                              : FontStyle.normal,
-                                        ),
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
+                                  Expanded(
+                                    child: Text(
+                                      widget.task.title,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .headline6
+                                          .copyWith(
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 17,
+                                            decoration: widget.task.isDone(
+                                                    date: widget.enforcedDate)
+                                                ? TextDecoration.lineThrough
+                                                : TextDecoration.none,
+                                            fontStyle: widget.task.isDone(
+                                                    date: widget.enforcedDate)
+                                                ? FontStyle.italic
+                                                : FontStyle.normal,
+                                          ),
+                                    ),
                                   ),
                                   Column(
                                     mainAxisSize: MainAxisSize.max,

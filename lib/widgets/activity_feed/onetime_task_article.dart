@@ -57,7 +57,7 @@ class OnetimeTaskArticleWidget extends StatelessWidget {
                     Text(
                       DateFormat('EEE, dd MMM yyyy   hh:mm a')
                           .format(task.creationDate),
-                      style: Theme.of(context).textTheme.subtitle2,
+                      style: Theme.of(context).textTheme.bodyText2,
                     ),
                   ],
                 ),
@@ -70,7 +70,7 @@ class OnetimeTaskArticleWidget extends StatelessWidget {
               task.title,
               style: Theme.of(context).textTheme.headline6.copyWith(
                     fontSize: 24,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                     decoration: task.status == 1
                         ? TextDecoration.lineThrough
                         : TextDecoration.none,
@@ -79,10 +79,11 @@ class OnetimeTaskArticleWidget extends StatelessWidget {
           ),
           if (task.description != '')
             Container(
-              padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 0.0),
+              padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 6),
               child: Text(
                 task.description,
-                style: Theme.of(context).textTheme.subtitle2.copyWith(
+                style: Theme.of(context).textTheme.bodyText1.copyWith(
+                      fontSize: 18,
                       decoration: task.status == 1
                           ? TextDecoration.lineThrough
                           : TextDecoration.none,
@@ -106,7 +107,7 @@ class OnetimeTaskArticleWidget extends StatelessWidget {
                   if (data == null)
                     return Shimmer.fromColors(
                       baseColor: Colors.grey[300],
-                      highlightColor: Colors.white,
+                      highlightColor: Theme.of(context).backgroundColor,
                       child: Column(
                         children: [
                           Container(
@@ -129,9 +130,14 @@ class OnetimeTaskArticleWidget extends StatelessWidget {
                   if (data == '')
                     return Container();
                   else
-                    return Text(
-                      data,
-                      style: Theme.of(context).textTheme.subtitle1.copyWith(),
+                    return Container(
+                      padding: EdgeInsets.only(top: 8.0),
+                      child: Text(
+                        data,
+                        style: Theme.of(context).textTheme.bodyText2.copyWith(
+                              fontSize: 16,
+                            ),
+                      ),
                     );
                 },
               ),

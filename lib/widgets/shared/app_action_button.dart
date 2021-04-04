@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class AppActionButton extends StatelessWidget {
   final VoidCallback onPressed;
-  final IconData icon;
+  final icon;
   final String label;
   final Color backgroundColor;
   final Alignment alignment;
@@ -11,6 +11,8 @@ class AppActionButton extends StatelessWidget {
   final Color iconColor;
   final List<BoxShadow> shadows;
   final EdgeInsets margin;
+  final EdgeInsets padding;
+  final EdgeInsets iconPadding;
   const AppActionButton({
     Key key,
     @required this.onPressed,
@@ -29,6 +31,9 @@ class AppActionButton extends StatelessWidget {
       )
     ],
     this.margin = const EdgeInsets.all(8.0),
+    this.padding = const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10),
+    this.iconPadding =
+        const EdgeInsets.symmetric(horizontal: 12.0, vertical: 14),
   }) : super(key: key);
 
   @override
@@ -44,29 +49,33 @@ class AppActionButton extends StatelessWidget {
             ? InkWell(
                 onTap: onPressed,
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 14),
+                  padding: iconPadding,
                   decoration: BoxDecoration(
                     color: backgroundColor,
                   ),
-                  child: Icon(
-                    icon,
-                    color: iconColor ?? Theme.of(context).backgroundColor,
-                    size: iconSize,
-                  ),
+                  child: icon is IconData
+                      ? Icon(
+                          icon,
+                          color: iconColor ?? Theme.of(context).backgroundColor,
+                          size: iconSize,
+                        )
+                      : icon,
                 ),
               )
             : TextButton.icon(
                 onPressed: onPressed,
-                icon: Icon(
-                  icon,
-                  color: iconColor ?? Theme.of(context).backgroundColor,
-                  size: iconSize,
-                ),
+                icon: icon is IconData
+                    ? Icon(
+                        icon,
+                        color: iconColor ?? Theme.of(context).backgroundColor,
+                        size: iconSize,
+                      )
+                    : icon,
                 style: ButtonStyle(
                   alignment: alignment,
                   backgroundColor: MaterialStateProperty.all(backgroundColor),
                   padding: MaterialStateProperty.all(
-                    EdgeInsets.symmetric(horizontal: 10.0, vertical: 10),
+                    padding,
                   ),
                 ),
                 label: Text(

@@ -100,27 +100,10 @@ class _TimerViewState extends State<TimerView>
                         Text(
                           'No task scheduled',
                           style: Theme.of(context).textTheme.headline6.copyWith(
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 20,
                               ),
                         ),
-                        // Text(
-                        //   'Congratulations!',
-                        //   style: Theme.of(context)
-                        //       .textTheme
-                        //       .headline4
-                        //       .copyWith(fontWeight: FontWeight.bold),
-                        // ),
-                        // SizedBox(
-                        //   height: 8,
-                        // ),
-                        // Text(
-                        //   'There\'s no more tasks for today!',
-                        //   style: Theme.of(context)
-                        //       .textTheme
-                        //       .subtitle1
-                        //       .copyWith(fontWeight: FontWeight.w100),
-                        //   textAlign: TextAlign.center,
-                        // ),
                       ],
                     ),
                   );
@@ -143,13 +126,6 @@ class _TimerViewState extends State<TimerView>
                           .headline2
                           .copyWith(fontWeight: FontWeight.bold),
                     ),
-                    // Text(
-                    //   'Before the next task',
-                    //   style: Theme.of(context)
-                    //       .textTheme
-                    //       .subtitle1
-                    //       .copyWith(fontWeight: FontWeight.w200),
-                    // ),
                   ],
                 );
               }),

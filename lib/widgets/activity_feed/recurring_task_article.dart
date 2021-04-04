@@ -59,7 +59,7 @@ class RecurringTaskArticleWidget extends StatelessWidget {
                     Text(
                       DateFormat('EEE, dd MMM yyyy   hh:mm a')
                           .format(task.creationDate),
-                      style: Theme.of(context).textTheme.subtitle2,
+                      style: Theme.of(context).textTheme.bodyText2,
                     ),
                   ],
                 ),
@@ -70,10 +70,10 @@ class RecurringTaskArticleWidget extends StatelessWidget {
             padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 4.0),
             child: Text(
               task.title,
-              style: Theme.of(context)
-                  .textTheme
-                  .headline6
-                  .copyWith(fontSize: 24, fontWeight: FontWeight.w500),
+              style: Theme.of(context).textTheme.headline6.copyWith(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w600,
+                  ),
             ),
           ),
           Container(
@@ -88,18 +88,16 @@ class RecurringTaskArticleWidget extends StatelessWidget {
               style: Theme.of(context)
                   .textTheme
                   .subtitle1
-                  .copyWith(fontWeight: FontWeight.w900),
+                  .copyWith(fontWeight: FontWeight.w300),
             ),
           ),
           Container(
             padding:
                 const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 8.0),
             child: LayoutBuilder(builder: (context, constraints) {
-              return Container(
-                child: TaskProgressIndicator(
-                  total: task.dueDates.length,
-                  done: task.donesHistory.length,
-                ),
+              return TaskProgressIndicator(
+                total: task.dueDates.length,
+                done: task.donesHistory.length,
               );
             }),
           ),
@@ -143,9 +141,14 @@ class RecurringTaskArticleWidget extends StatelessWidget {
                   if (data == '')
                     return Container();
                   else
-                    return Text(
-                      data,
-                      style: Theme.of(context).textTheme.subtitle2.copyWith(),
+                    return Container(
+                      padding: EdgeInsets.only(top: 4.0),
+                      child: Text(
+                        data,
+                        style: Theme.of(context).textTheme.bodyText2.copyWith(
+                              fontSize: 16,
+                            ),
+                      ),
                     );
                 },
               ),

@@ -1,18 +1,11 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:george_project/models/Task.dart';
-import 'package:george_project/services/user/user_service.dart';
-import 'package:george_project/widgets/activity_feed/article_skeleton.dart';
-import 'package:george_project/widgets/activity_feed/onetime_task_article.dart';
-import 'package:george_project/widgets/activity_feed/recurring_task_article.dart';
-import 'package:george_project/widgets/activity_feed/today_tasks.dart';
+import 'package:george_project/providers/cache/cached_image_provider.dart';
+import 'package:george_project/views/feed/feed_articles_list.dart';
+import 'package:george_project/views/feed/goals_summary.dart';
+import 'package:george_project/views/profile/profile_page.dart';
 import 'package:george_project/widgets/activity_feed/week_progress.dart';
-import 'package:george_project/constants/user.dart' as user_constants;
-import 'package:george_project/constants/feed.dart' as feed_constants;
-import 'package:intl/intl.dart';
-// import 'package:george_project/constants/models/task.dart' as task_constants;
-// import 'package:george_project/constants/models/stack.dart' as stack_constants;
+import 'package:get/get.dart';
 
 class ActivityFeedView extends StatefulWidget {
   ActivityFeedView({Key key}) : super(key: key);
@@ -22,118 +15,113 @@ class ActivityFeedView extends StatefulWidget {
 }
 
 class _ActivityFeedViewState extends State<ActivityFeedView>
-    with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
+  ScrollController _scrollViewController;
+  TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollViewController = ScrollController();
+    _tabController = TabController(vsync: this, length: 2);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
     super.build(context);
-    return ListView(
-      padding: EdgeInsets.only(top: 32.0),
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12.0 + 20.0),
-          margin: const EdgeInsets.only(top: 8.0, bottom: 16.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                child: Text(
-                  "Activity feed",
-                  style: Theme.of(context)
-                      .textTheme
-                      .headline5
-                      .copyWith(fontWeight: FontWeight.w900),
+    return NestedScrollView(
+      controller: _scrollViewController,
+      headerSliverBuilder: (context, bool) => [
+        SliverAppBar(
+          pinned: false,
+          backgroundColor: Colors.white,
+          flexibleSpace: FlexibleSpaceBar(
+            collapseMode: CollapseMode.pin,
+            background: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  margin: const EdgeInsets.only(top: 32.0, bottom: 12.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Container(
+                        child: Text(
+                          "Activity feed",
+                          style: Theme.of(context)
+                              .textTheme
+                              .headline5
+                              .copyWith(fontWeight: FontWeight.w900),
+                        ),
+                      ),
+                      InkWell(
+                        onTap: () => Get.to(
+                          () => ProfilePage(name: "George"),
+                          transition: Transition.rightToLeft,
+                        ),
+                        child: Hero(
+                          tag: 'progile_logo',
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(64),
+                            child: Image(
+                              image: CachedImageProvider(
+                                  'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500'),
+                              fit: BoxFit.cover,
+                              width: 36,
+                              height: 36,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // TodayTasks(),
+                WeekProgress(),
+              ],
+            ),
+          ),
+          expandedHeight: size.width / 1.7 + 180,
+          bottom: TabBar(
+            indicatorColor: Colors.black,
+            labelColor: Colors.black,
+            indicatorSize: TabBarIndicatorSize.label,
+            tabs: [
+              Tab(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.article_outlined),
+                    Text(' Activity'),
+                  ],
                 ),
               ),
-              Icon(
-                CupertinoIcons.person_circle_fill,
-                size: 36,
+              Tab(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.stacked_bar_chart),
+                    Text(' Goals summary'),
+                  ],
+                ),
               ),
             ],
+            controller: _tabController,
           ),
         ),
-        // TodayTasks(),
-        WeekProgress(),
-        StreamBuilder<QuerySnapshot>(
-          stream: FirebaseFirestore.instance
-              .collection(user_constants.USERS_KEY)
-              .doc(getCurrentUser().uid)
-              .collection(feed_constants.FEED_KEY)
-              .orderBy(
-                feed_constants.CREATION_DATE_KEY,
-                descending: true,
-              )
-              .snapshots(),
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              DateTime lastDate;
-              return ListView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: snapshot.data.docs.length,
-                itemBuilder: (context, index) {
-                  Task task = Task.fromJson(
-                    snapshot.data.docs[index].data(),
-                    id: snapshot.data.docs[index].id,
-                  );
-                  bool showDate = false;
-                  if (lastDate == null) {
-                    lastDate = task.creationDate;
-                    showDate = true;
-                  } else
-                    showDate = !(lastDate.day == task.creationDate.day &&
-                        lastDate.month == task.creationDate.month &&
-                        lastDate.year == task.creationDate.year);
-
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (showDate)
-                        Container(
-                          margin: EdgeInsets.only(
-                            left: 16.0,
-                            top: 16.0,
-                            bottom: 4.0,
-                          ),
-                          child: Text(
-                            DateFormat('EEEE, dd MMMM')
-                                .format(task.creationDate),
-                            style: Theme.of(context)
-                                .textTheme
-                                .headline6
-                                .copyWith(fontWeight: FontWeight.w900),
-                          ),
-                        ),
-                      if (task.repetition == null)
-                        OnetimeTaskArticleWidget(
-                          key: Key(task.id),
-                          name: 'George',
-                          profilePicture:
-                              'https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
-                          task: task,
-                        )
-                      else
-                        RecurringTaskArticleWidget(
-                          key: Key(task.id),
-                          name: 'George',
-                          profilePicture:
-                              'https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
-                          task: task,
-                        ),
-                    ],
-                  );
-                },
-              );
-            }
-            return ListView.builder(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              itemCount: 3,
-              itemBuilder: (context, index) => ArticleSkeletonWidget(),
-            );
-          },
-        ),
       ],
+      body: Container(
+        child: TabBarView(
+          controller: _tabController,
+          physics: NeverScrollableScrollPhysics(),
+          children: [
+            FeedArticlesList(),
+            GoalsSummaryView(),
+          ],
+        ),
+      ),
     );
   }
 

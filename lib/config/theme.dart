@@ -10,9 +10,8 @@ ThemeData lightThemeData(BuildContext context) {
     appBarTheme: appBarTheme,
     iconTheme: IconThemeData(color: kContentColorLightTheme),
     backgroundColor: Colors.white,
-    textTheme: GoogleFonts.interTextTheme(Theme.of(context).textTheme).apply(
+    textTheme: GoogleFonts.poppinsTextTheme(Theme.of(context).textTheme).apply(
       bodyColor: kContentColorLightTheme,
-      fontFamily: GoogleFonts.poppins().fontFamily,
     ),
     colorScheme: ColorScheme.light(
       primary: kPrimaryColor,

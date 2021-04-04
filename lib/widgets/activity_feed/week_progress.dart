@@ -79,7 +79,7 @@ class WeekProgressState extends State<WeekProgress> {
                 child: Text(
                   "Last 12 weeks",
                   style: Theme.of(context).textTheme.headline6.copyWith(
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w500,
                         fontSize: 18,
                       ),
                 ),
@@ -102,7 +102,7 @@ class WeekProgressState extends State<WeekProgress> {
                           padding: const EdgeInsets.only(
                             right: 18.0,
                             left: 12.0,
-                            top: 24,
+                            top: 4,
                             bottom: 12,
                           ),
                           child: LineChart(

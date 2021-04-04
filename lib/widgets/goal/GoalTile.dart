@@ -79,8 +79,8 @@ class GoalListTileWidget extends StatelessWidget {
           )
         ],
       ),
+      width: MediaQuery.of(context).size.width,
       margin: EdgeInsets.only(top: 16.0),
-      // height: 64.0 + 20,
       child: GestureDetector(
         onTap: () => Get.to(() => GoalDetailsPage(
               goal: goal,
@@ -93,48 +93,53 @@ class GoalListTileWidget extends StatelessWidget {
               color: Theme.of(context).backgroundColor,
               borderRadius: BorderRadius.circular(8.0),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.max,
-              // crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Container(
-                  width: 12.0,
-                  height: 64.0,
-                  decoration: BoxDecoration(
-                    color: HexColor.fromHex(goal.color),
-                    borderRadius: BorderRadius.circular(2.0),
+            child: IntrinsicHeight(
+              child: Row(
+                mainAxisSize: MainAxisSize.max,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Container(
+                    width: 12.0,
+                    height: 64.0,
+                    decoration: BoxDecoration(
+                      color: HexColor.fromHex(goal.color),
+                      borderRadius: BorderRadius.circular(2.0),
+                    ),
+                    margin: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
                   ),
-                  margin: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-                ),
-                Container(
-                  margin: EdgeInsets.symmetric(vertical: 16, horizontal: 10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        goal.title.toUpperCase(),
-                        style: Theme.of(context)
-                            .textTheme
-                            .headline6
-                            .copyWith(fontWeight: FontWeight.w600),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
+                  Expanded(
+                    child: Container(
+                      margin:
+                          EdgeInsets.symmetric(vertical: 16, horizontal: 10),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Hero(
+                            tag: goal.id,
+                            child: Text(
+                              goal.title.toUpperCase(),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headline6
+                                  .copyWith(fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                          Text(
+                            DateFormat('MMM yyyy').format(goal.startDate) +
+                                ' - ' +
+                                DateFormat('MMM yyyy').format(goal.endDate),
+                            style: Theme.of(context)
+                                .textTheme
+                                .subtitle1
+                                .copyWith(fontWeight: FontWeight.w300),
+                          ),
+                        ],
                       ),
-                      Text(
-                        DateFormat('MMM yyyy').format(goal.startDate) +
-                            ' - ' +
-                            DateFormat('MMM yyyy').format(goal.endDate),
-                        style: Theme.of(context)
-                            .textTheme
-                            .subtitle1
-                            .copyWith(fontWeight: FontWeight.w300),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           secondaryActions: <Widget>[
