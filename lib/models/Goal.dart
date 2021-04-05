@@ -1,10 +1,12 @@
 import 'package:george_project/models/Stack.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:george_project/models/goal_summary.dart';
 import 'package:george_project/services/user/user_service.dart';
 import 'package:george_project/constants/models/goal.dart' as goal_constants;
 import 'package:george_project/constants/user.dart' as user_constants;
 
-import 'Task.dart';
+import 'package:george_project/constants/models/goal_summary.dart'
+    as goal_summary_constants;
 
 class Goal {
   String id;
@@ -121,6 +123,17 @@ class Goal {
         stack.id = docRef.id;
         stack.goalRef = id;
       }
+      await GoalSummary(
+        id: id,
+        title: title,
+        color: color,
+        creationDate: creationDate,
+        status: status,
+        stacksSummaries: [],
+        allocatedTime: Duration(),
+        tasksTotal: 0,
+        tasksAccomlished: 0,
+      ).save();
     } else {
       await FirebaseFirestore.instance
           .collection(user_constants.USERS_KEY)
@@ -128,6 +141,11 @@ class Goal {
           .collection(goal_constants.GOALS_KEY)
           .doc(id)
           .update(toJson());
+      await GoalSummary(
+        id: id,
+      ).save(update: true, data: {
+        goal_summary_constants.TITLE_KEY: title,
+      });
     }
     return this;
   }
@@ -158,5 +176,8 @@ class Goal {
         .collection(goal_constants.GOALS_KEY)
         .doc(id)
         .delete();
+    await GoalSummary(
+      id: id,
+    ).delete();
   }
 }

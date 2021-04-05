@@ -6,6 +6,7 @@ import 'package:george_project/constants/user.dart' as user_constants;
 
 import 'Note.dart';
 import 'Task.dart';
+import 'goal_summary.dart';
 
 class Stack {
   String id;
@@ -64,6 +65,10 @@ class Stack {
           .add(toJson());
 
       id = documentReference.id;
+      await GoalSummary(id: goalRef).addStack(
+        this,
+        withFetch: true,
+      );
     } else {
       await FirebaseFirestore.instance
           .collection(user_constants.USERS_KEY)
@@ -73,6 +78,10 @@ class Stack {
           .collection(goal_constants.STACKS_KEY)
           .doc(id)
           .update(toJson());
+      await GoalSummary(id: goalRef).saveStack(
+        this,
+        withFetch: true,
+      );
     }
   }
 
@@ -86,5 +95,9 @@ class Stack {
         .collection(goal_constants.STACKS_KEY)
         .doc(id)
         .delete();
+    await GoalSummary(id: goalRef).deleteStack(
+      this,
+      withFetch: true,
+    );
   }
 }

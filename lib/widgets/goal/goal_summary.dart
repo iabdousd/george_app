@@ -1,10 +1,14 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
-import 'package:george_project/models/Goal.dart';
+import 'package:george_project/config/extensions/hex_color.dart';
+import 'package:george_project/models/goal_summary.dart';
+import 'package:george_project/models/stack_summary.dart';
 import 'package:george_project/providers/cache/cached_image_provider.dart';
 import 'package:intl/intl.dart';
 
 class GoalSummaryWidget extends StatelessWidget {
-  final Goal goal;
+  final GoalSummary goal;
   final String name, profilePicture;
   const GoalSummaryWidget({
     Key key,
@@ -15,12 +19,19 @@ class GoalSummaryWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    int stackIndex = 0;
     return Container(
+      margin: EdgeInsets.all(12),
       decoration: BoxDecoration(
-        border: Border.all(
-          width: 1,
-          color: Color(0x22000000),
-        ),
+        color: Theme.of(context).backgroundColor,
+        borderRadius: BorderRadius.circular(12.0),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0x22000000),
+            blurRadius: 16.0,
+            offset: Offset(0, 5),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -51,8 +62,7 @@ class GoalSummaryWidget extends StatelessWidget {
                           ),
                     ),
                     Text(
-                      DateFormat('EEE, dd MMM yyyy   hh:mm a')
-                          .format(goal.creationDate),
+                      DateFormat('EEE, dd MMM').format(goal.creationDate),
                       style: Theme.of(context).textTheme.bodyText2,
                     ),
                   ],
@@ -63,61 +73,141 @@ class GoalSummaryWidget extends StatelessWidget {
           Container(
             padding:
                 const EdgeInsets.symmetric(horizontal: 16.0, vertical: 0.0),
-            child: Table(
-              columnWidths: {
-                0: FractionColumnWidth(.25),
-              },
-              border: TableBorder(
-                verticalInside: BorderSide(
-                  color: Color(0x22000000),
-                ),
-                horizontalInside: BorderSide(
-                  color: Color(0x22000000),
-                ),
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                TableRow(
-                  children: [
-                    FittedBox(
-                      child: Text(
-                        'Time allocated',
-                        style: Theme.of(context).textTheme.bodyText2,
+                Text(
+                  goal.title,
+                  style: Theme.of(context).textTheme.headline6.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF535353),
+                      ),
+                ),
+                Text(
+                  'Time allocated: ${goal.allocatedTime.inHours.toStringAsFixed(0)} hours ${(goal.allocatedTime.inMinutes % 60).toStringAsFixed(0)} minutes',
+                  style: Theme.of(context).textTheme.bodyText1.copyWith(
+                        fontWeight: FontWeight.w300,
+                        color: Color(0xFF868686),
+                      ),
+                ),
+                Container(
+                  padding: EdgeInsets.only(top: 4.0, bottom: 0.0),
+                  child: Text(
+                    '${(goal.completionPercentage * 100).toStringAsFixed(0)}%',
+                    style: Theme.of(context).textTheme.headline4.copyWith(
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFF000000),
+                        ),
+                  ),
+                ),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(6.0),
+                  child: LinearProgressIndicator(
+                    value: goal.completionPercentage,
+                    minHeight: 6,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      HexColor.fromHex(goal.color),
+                    ),
+                    backgroundColor: Color(0xFFE3E3E3),
+                  ),
+                ),
+                if (goal.stacksSummaries != null &&
+                    goal.stacksSummaries.length > 0)
+                  Container(
+                    padding: EdgeInsets.only(top: 16, bottom: 20),
+                    child: Table(
+                      defaultVerticalAlignment: TableCellVerticalAlignment.top,
+                      children: List.generate(
+                        max(1, goal.stacksSummaries.length ~/ 2),
+                        (index) {
+                          List<StackSummary> stacks = goal.stacksSummaries
+                              .sublist(
+                                  stackIndex,
+                                  min(goal.stacksSummaries.length,
+                                      stackIndex + 2));
+                          stackIndex += 2;
+                          int i = -1;
+                          return TableRow(
+                            children: stacks.map(
+                              (stack) {
+                                i++;
+                                return Container(
+                                  margin: EdgeInsets.only(
+                                    left: i == 1 ? 4 : 0,
+                                    right: i == 1 ? 0 : 4,
+                                    top: 12,
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: [
+                                      Text(
+                                        stack.title,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .headline6
+                                            .copyWith(
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: 16,
+                                              color: Color(0xFF535353),
+                                            ),
+                                      ),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.end,
+                                        children: [
+                                          Text(
+                                            '${stack.allocatedTime.inHours.toStringAsFixed(0)} hours ${(stack.allocatedTime.inMinutes % 60).toStringAsFixed(0)} minutes',
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodyText2
+                                                .copyWith(
+                                                  fontWeight: FontWeight.w300,
+                                                  color: Color(0xFF757575),
+                                                ),
+                                          ),
+                                          Text(
+                                            '${(stack.completionPercentage * 100).toStringAsFixed(0)}%',
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodyText2
+                                                .copyWith(fontSize: 12),
+                                          ),
+                                        ],
+                                      ),
+                                      Container(
+                                        padding: EdgeInsets.only(
+                                            top: 4.0, bottom: 0.0),
+                                        child: ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(6.0),
+                                          child: LinearProgressIndicator(
+                                            value: stack.completionPercentage,
+                                            minHeight: 6,
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
+                                              HexColor.fromHex(goal.color),
+                                            ),
+                                            backgroundColor: Color(0xFFE3E3E3),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ).toList(),
+                          );
+                        },
                       ),
                     ),
-                    Container(),
-                    Container(),
-                  ],
-                ),
-                TableRow(
-                  children: [
-                    Container(
-                      padding:
-                          EdgeInsets.symmetric(vertical: 16, horizontal: 8.0),
-                      child: Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4.0),
-                            child: Text(
-                              'Goal 1 is too bigG!!',
-                              style: Theme.of(context).textTheme.subtitle1,
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                          Text(
-                            '2h 45m',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyText2
-                                .copyWith(fontWeight: FontWeight.bold),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(),
-                    Container(),
-                  ],
-                ),
+                  )
+                else
+                  SizedBox(
+                    height: 20,
+                  ),
               ],
             ),
           ),

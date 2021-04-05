@@ -6,6 +6,7 @@ import 'package:george_project/constants/user.dart' as user_constants;
 import 'package:george_project/constants/models/stack.dart' as stack_constants;
 import 'package:george_project/constants/models/goal.dart' as goal_constants;
 import 'package:george_project/constants/feed.dart' as feed_constants;
+import 'package:george_project/models/goal_summary.dart';
 import 'package:george_project/repositories/feed/statistics.dart';
 import 'package:george_project/services/user/user_service.dart';
 import 'package:intl/intl.dart';
@@ -21,6 +22,8 @@ class Task {
   String title;
   String description;
   int status;
+  int oldDueDatesCount;
+  Duration oldDuration;
   bool anyTime;
   DateTime creationDate;
   List<DateTime> dueDates;
@@ -44,6 +47,8 @@ class Task {
     this.description,
     this.taskNotes,
     this.status,
+    this.oldDueDatesCount,
+    this.oldDuration,
     this.anyTime,
     TaskRepetition repetition,
     this.creationDate,
@@ -297,6 +302,8 @@ class Task {
             )
             .delete();
         await removeTaskAccomplishment(this);
+        await GoalSummary(id: goalRef)
+            .accomplishTask(-1, stackRef, withFetch: true);
         return;
       } else {
         status = 1;
@@ -315,6 +322,8 @@ class Task {
           },
         );
         await addTaskAccomplishment(this);
+        await GoalSummary(id: goalRef)
+            .accomplishTask(1, stackRef, withFetch: true);
         return;
       }
     }
@@ -343,6 +352,8 @@ class Task {
           )
           .delete();
       await removeTaskAccomplishment(this);
+      await GoalSummary(id: goalRef)
+          .accomplishTask(-1, stackRef, withFetch: true);
     } else {
       // CHECKED!
       this.donesHistory.add(accompishedDate);
@@ -362,6 +373,8 @@ class Task {
         },
       );
       await addTaskAccomplishment(this);
+      await GoalSummary(id: goalRef)
+          .accomplishTask(1, stackRef, withFetch: true);
     }
   }
 
@@ -380,17 +393,6 @@ class Task {
 
   DateTime getNextInstanceDate({DateTime after}) {
     DateTime now = after ?? DateTime.now();
-
-    // if (repetition == null) {
-    //   return null;
-    //  DateTime(
-    //   endDate.year,
-    //   endDate.month,
-    //   endDate.day,
-    //   startTime.hour,
-    //   startTime.minute,
-    // );
-    // } else
     if (repetition == null || repetition.type == 'daily') {
       return DateTime(
         now.year,
@@ -502,7 +504,7 @@ class Task {
     await this.save();
   }
 
-  Future save() async {
+  Future save({bool updateSummaries: false}) async {
     assert(goalRef != null && stackRef != null);
     if (id == null) {
       DocumentReference docRef = await FirebaseFirestore.instance
@@ -521,6 +523,14 @@ class Task {
           .doc(docRef.id)
           .set(toJson());
       this.id = docRef.id;
+
+      if (updateSummaries)
+        await GoalSummary(id: goalRef).addTasks(
+          this.dueDates.length,
+          endTime.difference(startTime).abs(),
+          stackRef,
+          withFetch: true,
+        );
     } else {
       DocumentReference docRef = FirebaseFirestore.instance
           .collection(user_constants.USERS_KEY)
@@ -539,6 +549,14 @@ class Task {
           .collection(stack_constants.TASKS_KEY)
           .doc(id);
       await standAloneDocRef.set(toJson());
+
+      if (updateSummaries)
+        await GoalSummary(id: goalRef).addTasks(
+          this.dueDates.length - oldDueDatesCount,
+          endTime.difference(startTime).abs() - oldDuration.abs(),
+          stackRef,
+          withFetch: true,
+        );
     }
   }
 
@@ -559,6 +577,18 @@ class Task {
         .collection(stack_constants.TASKS_KEY)
         .doc(id)
         .delete();
+
+    await GoalSummary(id: goalRef).deleteTask(
+      this.dueDates.length,
+      repetition == null
+          ? status == 1
+              ? 1
+              : 0
+          : this.donesHistory.length,
+      endTime.difference(startTime).abs(),
+      stackRef,
+      withFetch: true,
+    );
   }
 
   Future saveAsFeed() async {

@@ -123,8 +123,14 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
       stackColor: widget.stackColor,
       donesHistory: widget.task?.donesHistory ?? [],
       taskNotes: widget.task?.taskNotes ?? [],
+      oldDueDatesCount: widget.task?.dueDates?.length ?? 0,
+      oldDuration: widget.task != null
+          ? widget.task.endTime.difference(widget.task.startTime)
+          : Duration(),
     );
-    await task.save();
+    await task.save(
+      updateSummaries: true,
+    );
     toggleLoading(state: false);
     Navigator.of(context).pop();
     showFlushBar(

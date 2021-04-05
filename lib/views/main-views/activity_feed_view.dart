@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:george_project/providers/cache/cached_image_provider.dart';
 import 'package:george_project/views/feed/feed_articles_list.dart';
-import 'package:george_project/views/feed/goals_summary.dart';
+import 'package:george_project/views/feed/goal_summary_list.dart';
 import 'package:george_project/views/profile/profile_page.dart';
 import 'package:george_project/widgets/activity_feed/week_progress.dart';
 import 'package:get/get.dart';

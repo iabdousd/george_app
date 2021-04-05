@@ -1,0 +1,10 @@
+const String ID_KEY = 'id';
+const String TITLE_KEY = 'title';
+const String COLOR_KEY = 'color';
+const String STATUS_KEY = 'status';
+const String TASKS_TOTAL_KEY = 'tasksTotal';
+const String TASKS_ACCOMPLISHED_KEY = 'tasksAccomlished';
+const String CREATION_DATE_KEY = 'creationDate';
+const String ALLOCATED_TIME_KEY = 'allocatedTime';
+const String COMPLETION_PERCENTAGE_KEY = 'completionPercentage';
+const String STACKS_SUMMARIES_KEY = 'stacksSummaries';
