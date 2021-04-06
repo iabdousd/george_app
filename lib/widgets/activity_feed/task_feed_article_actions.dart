@@ -5,22 +5,19 @@ import 'package:george_project/models/Task.dart';
 import 'package:george_project/services/feed-back/flush_bar.dart';
 import 'package:george_project/services/shared/sharing/sharing_task.dart';
 import 'package:george_project/views/feed/save_task_feed_article.dart';
+import 'package:screenshot/screenshot.dart';
 
 class TaskFeedArticleActions extends StatelessWidget {
   final Task task;
-  const TaskFeedArticleActions({Key key, this.task}) : super(key: key);
+  final ScreenshotController screenshotController;
+  const TaskFeedArticleActions(
+      {Key key, @required this.task, @required this.screenshotController})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-          // border: Border(
-          //   top: BorderSide(
-          //     width: 1,
-          //     color: Color(0x22000000),
-          //   ),
-          // ),
-          ),
+      decoration: BoxDecoration(),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -77,7 +74,7 @@ class TaskFeedArticleActions extends StatelessWidget {
           ),
           Expanded(
             child: InkWell(
-              onTap: () => shareTask(task),
+              onTap: () => shareTask(task, screenshotController),
               child: Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),

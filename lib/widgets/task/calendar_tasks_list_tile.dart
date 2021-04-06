@@ -40,8 +40,10 @@ class _CalendarTaskListTileWidgetState
     Get.to(
       () => SaveTaskPage(
         task: widget.task,
-        stackRef: widget.task.stackRef,
         goalRef: widget.task.goalRef,
+        stackRef: widget.task.stackRef,
+        goalTitle: widget.task.goalTitle,
+        stackTitle: widget.task.stackTitle,
         stackColor: widget.task.stackColor,
       ),
       popGesture: true,

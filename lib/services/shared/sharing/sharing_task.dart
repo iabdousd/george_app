@@ -1,8 +1,41 @@
+import 'dart:io';
+
 import 'package:george_project/models/Task.dart';
+import 'package:george_project/models/goal_summary.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:screenshot/screenshot.dart';
 import 'package:share/share.dart';
 
-shareTask(Task task) async {
-  await Share.share(
-    'I have just reached ${task.completionRate}% of my task ${task.title}!',
+shareTask(Task task, ScreenshotController screenshotController) async {
+  Directory tempDir = await getTemporaryDirectory();
+  String tempPath = tempDir.path;
+  File screenshot = File(tempPath + '/${task.id}.jpg');
+  if (!screenshot.existsSync()) screenshot.createSync();
+
+  screenshot.writeAsBytesSync(
+      (await screenshotController.capture()).buffer.asUint8List());
+
+  await Share.shareFiles(
+    [screenshot.path],
+    text: task.repetition != null
+        ? 'I have just reached ${task.completionRate}% of my task ${task.title}!'
+        : 'I just completed my task ${task.title}. Check it out!',
+  );
+}
+
+shareGoal(
+    GoalSummary goalSummary, ScreenshotController screenshotController) async {
+  Directory tempDir = await getTemporaryDirectory();
+  String tempPath = tempDir.path;
+  File screenshot = File(tempPath + '/${goalSummary.id}.jpg');
+  if (!screenshot.existsSync()) screenshot.createSync();
+
+  screenshot.writeAsBytesSync(
+      (await screenshotController.capture()).buffer.asUint8List());
+
+  await Share.shareFiles(
+    [screenshot.path],
+    text:
+        'I have just reached ${(goalSummary.completionPercentage * 100).toStringAsFixed(0)}% of my goal ${goalSummary.title}!',
   );
 }

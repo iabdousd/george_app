@@ -74,10 +74,10 @@ class StacksListView extends StatelessWidget {
                     physics: NeverScrollableScrollPhysics(),
                     itemBuilder: (context, index) {
                       return StackListTileWidget(
-                        goalTitle: goal.title,
                         stack: stack_model.Stack.fromJson(
                           snapshot.data.docs[index].data(),
                           goalRef: goal.id,
+                          goalTitle: goal.title,
                           id: snapshot.data.docs[index].id,
                         ),
                       );

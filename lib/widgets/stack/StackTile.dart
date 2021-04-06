@@ -8,12 +8,12 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:george_project/models/Stack.dart' as stack_model;
 
 class StackListTileWidget extends StatelessWidget {
-  final String goalTitle;
   final stack_model.Stack stack;
 
-  const StackListTileWidget(
-      {Key key, @required this.stack, @required this.goalTitle})
-      : super(key: key);
+  const StackListTileWidget({
+    Key key,
+    @required this.stack,
+  }) : super(key: key);
 
   _deleteGoal(context) {
     showDialog(
@@ -90,7 +90,6 @@ class StackListTileWidget extends StatelessWidget {
       child: GestureDetector(
         onTap: () => Get.to(
           () => StackDetailsPage(
-            goalTitle: goalTitle,
             stack: stack,
           ),
         ),

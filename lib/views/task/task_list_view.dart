@@ -64,6 +64,8 @@ class _TaskListViewState extends State<TaskListView>
                     () => SaveTaskPage(
                       goalRef: widget.stack.goalRef,
                       stackRef: widget.stack.id,
+                      goalTitle: widget.stack.goalTitle,
+                      stackTitle: widget.stack.title,
                       stackColor: widget.stack.color,
                     ),
                   ),

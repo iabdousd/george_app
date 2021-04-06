@@ -74,7 +74,7 @@ class GoalSummary {
     };
   }
 
-  get completionPercentage => tasksAccomlished / max(1, tasksTotal);
+  double get completionPercentage => tasksAccomlished / max(1.0, tasksTotal);
 
   fetchGoal() async {
     DocumentSnapshot snapshot = await FirebaseFirestore.instance

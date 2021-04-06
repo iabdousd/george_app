@@ -17,6 +17,8 @@ class Task {
   String id;
   String goalRef;
   String stackRef;
+  String goalTitle;
+  String stackTitle;
   TaskRepetition repetition;
   List<String> taskNotes;
   String title;
@@ -42,6 +44,8 @@ class Task {
     this.id,
     this.goalRef,
     this.stackRef,
+    this.goalTitle,
+    this.stackTitle,
     this.stackColor,
     this.title,
     this.description,
@@ -112,6 +116,8 @@ class Task {
     this.id = id;
     this.goalRef = jsonObject[task_constants.GOAL_REF_KEY];
     this.stackRef = jsonObject[task_constants.STACK_REF_KEY];
+    this.goalTitle = jsonObject[task_constants.GOAL_TITLE_KEY];
+    this.stackTitle = jsonObject[task_constants.STACK_TITLE_KEY];
     this.stackColor = jsonObject[task_constants.STACK_COLOR_KEY];
     this.title = jsonObject[task_constants.TITLE_KEY];
     this.description = jsonObject[task_constants.DESCRIPTION_KEY];
@@ -165,6 +171,8 @@ class Task {
     return {
       task_constants.GOAL_REF_KEY: goalRef,
       task_constants.STACK_REF_KEY: stackRef,
+      if (goalTitle != null) task_constants.GOAL_TITLE_KEY: goalTitle,
+      if (stackTitle != null) task_constants.STACK_TITLE_KEY: stackTitle,
       task_constants.STACK_COLOR_KEY: stackColor,
       task_constants.TITLE_KEY: title,
       task_constants.DESCRIPTION_KEY: description,

@@ -49,13 +49,13 @@ class _FeedArticlesListState extends State<FeedArticlesList>
                 );
                 bool showDate = false;
                 if (lastDate == null) {
-                  lastDate = task.creationDate;
                   showDate = true;
                 } else
                   showDate = !(lastDate.day == task.creationDate.day &&
                       lastDate.month == task.creationDate.month &&
                       lastDate.year == task.creationDate.year);
 
+                lastDate = task.creationDate;
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

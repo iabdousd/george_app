@@ -8,17 +8,21 @@ import 'package:george_project/widgets/forms/date_picker.dart';
 import 'package:george_project/widgets/forms/time_picker.dart';
 import 'package:george_project/widgets/shared/app_appbar.dart';
 import 'package:george_project/constants/models/task.dart' as task_constants;
-import 'package:intl/intl.dart';
 
 class SaveTaskPage extends StatefulWidget {
   final String goalRef;
   final String stackRef;
+  final String goalTitle;
+  final String stackTitle;
+
   final String stackColor;
   final Task task;
   SaveTaskPage(
       {Key key,
       @required this.goalRef,
       @required this.stackRef,
+      @required this.goalTitle,
+      @required this.stackTitle,
       @required this.stackColor,
       this.task})
       : super(key: key);
@@ -100,8 +104,13 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
       );
       return;
     }
+
     Task task = Task(
+      id: widget.task?.id,
       goalRef: widget.goalRef,
+      stackRef: widget.stackRef,
+      goalTitle: widget.goalTitle,
+      stackTitle: widget.stackTitle,
       repetition: TaskRepetition(
         type: repetition,
         weeksCount: int.tryParse(_weeksCountController.text),
@@ -109,8 +118,6 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
         monthsCount: int.tryParse(_monthsCountController.text),
         dayNumber: int.tryParse(_dayInMonthController.text),
       ),
-      stackRef: widget.stackRef,
-      id: widget.task?.id,
       title: _titleController.text,
       description: _descriptionController.text,
       creationDate: DateTime.now(),

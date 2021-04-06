@@ -1,6 +1,8 @@
 const String ID_KEY = 'id';
 const String GOAL_REF_KEY = 'gooalRef';
 const String STACK_REF_KEY = 'stackRef';
+const String GOAL_TITLE_KEY = 'gooalTitle';
+const String STACK_TITLE_KEY = 'stackTitle';
 const String STACK_COLOR_KEY = 'stackColor';
 const String TITLE_KEY = 'title';
 const String DESCRIPTION_KEY = 'description';

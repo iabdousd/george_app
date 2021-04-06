@@ -11,6 +11,7 @@ import 'goal_summary.dart';
 class Stack {
   String id;
   String goalRef;
+  String goalTitle;
   String title;
   String color;
   int status;
@@ -22,6 +23,7 @@ class Stack {
   Stack({
     this.id,
     this.goalRef,
+    this.goalTitle,
     this.title,
     this.color,
     this.status = 0,
@@ -32,10 +34,12 @@ class Stack {
   Stack.fromJson(
     Map<String, dynamic> jsonObject, {
     String goalRef,
+    String goalTitle,
     String id,
   }) {
     this.id = id;
     this.goalRef = goalRef;
+    this.goalTitle = goalTitle;
     this.title = jsonObject[stack_constants.TITLE_KEY];
     this.color = jsonObject[stack_constants.COLOR_KEY];
     this.status = jsonObject[stack_constants.STATUS_KEY];

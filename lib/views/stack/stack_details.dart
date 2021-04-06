@@ -4,17 +4,14 @@ import 'package:george_project/views/stack/save_stack.dart';
 import 'package:george_project/views/task/stack_body_view.dart';
 import 'package:george_project/widgets/shared/app_action_button.dart';
 import 'package:george_project/widgets/shared/app_appbar.dart';
-import 'package:george_project/widgets/shared/app_date_view.dart';
 import 'package:get/get.dart';
 import 'package:george_project/models/Stack.dart' as stack_model;
 
 class StackDetailsPage extends StatefulWidget {
-  final String goalTitle;
   final stack_model.Stack stack;
 
   StackDetailsPage({
     Key key,
-    @required this.goalTitle,
     @required this.stack,
   }) : super(key: key);
 
@@ -105,7 +102,7 @@ class _StackDetailsPageState extends State<StackDetailsPage> {
                     child: Hero(
                       tag: widget.stack.goalRef,
                       child: Text(
-                        widget.goalTitle.toUpperCase() + ' >',
+                        widget.stack.goalTitle.toUpperCase() + ' >',
                         style: Theme.of(context).textTheme.bodyText2.copyWith(
                               fontWeight: FontWeight.w500,
                             ),

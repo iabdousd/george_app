@@ -86,6 +86,8 @@ class TasksListByDay extends StatelessWidget {
                         () => SaveTaskPage(
                           goalRef: e.goalRef,
                           stackRef: e.stackRef,
+                          goalTitle: e.goalTitle,
+                          stackTitle: e.stackTitle,
                           stackColor: e.stackColor,
                           task: e,
                         ),
