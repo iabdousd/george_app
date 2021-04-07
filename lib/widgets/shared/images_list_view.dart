@@ -1,14 +1,14 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:george_project/providers/cache/cached_image_provider.dart';
-import 'package:george_project/services/feed-back/loader.dart';
+import 'package:plandoraslist/providers/cache/cached_image_provider.dart';
+import 'package:plandoraslist/services/feed-back/loader.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 
-import 'package:george_project/models/Attachment.dart';
+import 'package:plandoraslist/models/Attachment.dart';
 
 class ImagesListView extends StatelessWidget {
   final List<String> customPathList;

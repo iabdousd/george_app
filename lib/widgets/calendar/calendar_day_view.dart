@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:george_project/models/Task.dart';
-import 'package:george_project/widgets/task/calendar_tasks_list_tile.dart';
+import 'package:plandoraslist/models/Task.dart';
+import 'package:plandoraslist/widgets/task/calendar_tasks_list_tile.dart';
 import 'package:intl/intl.dart';
 
 class CalendarDayView extends StatelessWidget {

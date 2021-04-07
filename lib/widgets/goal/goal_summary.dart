@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:george_project/config/extensions/hex_color.dart';
-import 'package:george_project/models/goal_summary.dart';
-import 'package:george_project/providers/cache/cached_image_provider.dart';
-import 'package:george_project/services/shared/sharing/sharing_task.dart';
+import 'package:plandoraslist/config/extensions/hex_color.dart';
+import 'package:plandoraslist/models/goal_summary.dart';
+import 'package:plandoraslist/providers/cache/cached_image_provider.dart';
+import 'package:plandoraslist/services/shared/sharing/sharing_task.dart';
 import 'package:intl/intl.dart';
 import 'package:screenshot/screenshot.dart';
 

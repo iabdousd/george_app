@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:george_project/models/Goal.dart';
-import 'package:george_project/services/user/user_service.dart';
-import 'package:george_project/constants/models/goal.dart' as goal_constants;
-import 'package:george_project/constants/user.dart' as user_constants;
+import 'package:plandoraslist/models/Goal.dart';
+import 'package:plandoraslist/services/user/user_service.dart';
+import 'package:plandoraslist/constants/models/goal.dart' as goal_constants;
+import 'package:plandoraslist/constants/user.dart' as user_constants;
 
 Future<List<Goal>> fetchGoals({DocumentSnapshot after}) async {
   if (after != null)

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:george_project/models/Task.dart';
-import 'package:george_project/providers/cache/cached_image_provider.dart';
-import 'package:george_project/widgets/activity_feed/task_feed_article_actions.dart';
+import 'package:plandoraslist/models/Task.dart';
+import 'package:plandoraslist/providers/cache/cached_image_provider.dart';
+import 'package:plandoraslist/widgets/activity_feed/task_feed_article_actions.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:screenshot/screenshot.dart';

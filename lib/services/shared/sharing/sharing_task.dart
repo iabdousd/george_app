@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:george_project/models/Task.dart';
-import 'package:george_project/models/goal_summary.dart';
+import 'package:plandoraslist/models/Task.dart';
+import 'package:plandoraslist/models/goal_summary.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:share/share.dart';

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_rounded_date_picker/flutter_rounded_date_picker.dart';
-import 'package:george_project/config/extensions/hex_color.dart';
-import 'package:george_project/services/feed-back/flush_bar.dart';
+import 'package:plandoraslist/config/extensions/hex_color.dart';
+import 'package:plandoraslist/services/feed-back/flush_bar.dart';
 import 'package:intl/intl.dart';
 
 class DatePickerWidget extends StatefulWidget {

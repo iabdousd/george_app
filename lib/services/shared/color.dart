@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:george_project/config/extensions/hex_color.dart';
+import 'package:plandoraslist/config/extensions/hex_color.dart';
 import 'package:get/get.dart';
 
 const List<String> availableColors = [

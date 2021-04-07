@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:george_project/models/Stack.dart' as stack_model;
-import 'package:george_project/services/feed-back/flush_bar.dart';
-import 'package:george_project/services/feed-back/loader.dart';
-import 'package:george_project/widgets/shared/app_appbar.dart';
+import 'package:plandoraslist/models/Stack.dart' as stack_model;
+import 'package:plandoraslist/services/feed-back/flush_bar.dart';
+import 'package:plandoraslist/services/feed-back/loader.dart';
+import 'package:plandoraslist/widgets/shared/app_appbar.dart';
 
 class SaveStackPage extends StatefulWidget {
   final String goalRef;

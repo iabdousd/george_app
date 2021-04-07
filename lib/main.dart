@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:george_project/services/cache/initializers.dart';
-import 'package:george_project/services/user/user_service.dart';
-import 'package:george_project/views/main.dart';
+import 'package:plandoraslist/services/cache/initializers.dart';
+import 'package:plandoraslist/services/user/user_service.dart';
+import 'package:plandoraslist/views/main.dart';
 import 'package:get/get.dart';
 
 import 'config/theme.dart';

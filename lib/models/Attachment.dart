@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import 'package:george_project/constants/models/note.dart' as note_constants;
+import 'package:plandoraslist/constants/models/note.dart' as note_constants;
 
 class Attachment {
   String id;

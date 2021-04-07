@@ -2,15 +2,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'package:george_project/constants/user.dart' as user_constants;
-import 'package:george_project/constants/models/task.dart' as task_constants;
-import 'package:george_project/constants/models/stack.dart' as stack_constants;
-import 'package:george_project/models/Note.dart';
-import 'package:george_project/models/Task.dart';
-import 'package:george_project/services/feed-back/flush_bar.dart';
-import 'package:george_project/services/feed-back/loader.dart';
-import 'package:george_project/services/user/user_service.dart';
-import 'package:george_project/widgets/task/task_list_tile_widget.dart';
+import 'package:plandoraslist/constants/user.dart' as user_constants;
+import 'package:plandoraslist/constants/models/task.dart' as task_constants;
+import 'package:plandoraslist/constants/models/stack.dart' as stack_constants;
+import 'package:plandoraslist/models/Note.dart';
+import 'package:plandoraslist/models/Task.dart';
+import 'package:plandoraslist/services/feed-back/flush_bar.dart';
+import 'package:plandoraslist/services/feed-back/loader.dart';
+import 'package:plandoraslist/services/user/user_service.dart';
+import 'package:plandoraslist/widgets/task/task_list_tile_widget.dart';
 import 'package:intl/intl.dart';
 
 class TasksTimerList extends StatefulWidget {

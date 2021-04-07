@@ -1,7 +1,7 @@
 import 'package:date_util/date_util.dart';
 import 'package:flutter/material.dart';
-import 'package:george_project/widgets/shared/app_action_button.dart';
-import 'package:george_project/widgets/task/tasks_list_by_day.dart';
+import 'package:plandoraslist/widgets/shared/app_action_button.dart';
+import 'package:plandoraslist/widgets/task/tasks_list_by_day.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 

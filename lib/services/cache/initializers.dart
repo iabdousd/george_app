@@ -1,7 +1,7 @@
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-import 'package:george_project/models/cache/cached_image.dart';
+import 'package:plandoraslist/models/cache/cached_image.dart';
 import 'images/removers.dart';
 
 initializeCache() async {

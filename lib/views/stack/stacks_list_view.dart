@@ -1,17 +1,17 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:george_project/config/extensions/hex_color.dart';
+import 'package:plandoraslist/config/extensions/hex_color.dart';
 
-import 'package:george_project/constants/models/goal.dart' as goal_constants;
-import 'package:george_project/constants/user.dart' as user_constants;
-import 'package:george_project/constants/models/stack.dart' as stack_constants;
-import 'package:george_project/models/Stack.dart' as stack_model;
-import 'package:george_project/models/Goal.dart';
-import 'package:george_project/services/feed-back/loader.dart';
-import 'package:george_project/services/user/user_service.dart';
-import 'package:george_project/views/stack/save_stack.dart';
-import 'package:george_project/widgets/shared/app_error_widget.dart';
-import 'package:george_project/widgets/stack/StackTile.dart';
+import 'package:plandoraslist/constants/models/goal.dart' as goal_constants;
+import 'package:plandoraslist/constants/user.dart' as user_constants;
+import 'package:plandoraslist/constants/models/stack.dart' as stack_constants;
+import 'package:plandoraslist/models/Stack.dart' as stack_model;
+import 'package:plandoraslist/models/Goal.dart';
+import 'package:plandoraslist/services/feed-back/loader.dart';
+import 'package:plandoraslist/services/user/user_service.dart';
+import 'package:plandoraslist/views/stack/save_stack.dart';
+import 'package:plandoraslist/widgets/shared/app_error_widget.dart';
+import 'package:plandoraslist/widgets/stack/StackTile.dart';
 import 'package:get/get.dart';
 
 class StacksListView extends StatelessWidget {

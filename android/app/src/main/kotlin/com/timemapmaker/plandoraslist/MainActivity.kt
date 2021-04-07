@@ -1,4 +1,4 @@
-package com.example.george_project
+package com.timemapmaker.plandoraslist
 
 import io.flutter.embedding.android.FlutterActivity
 

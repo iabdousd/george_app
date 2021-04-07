@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:george_project/config/extensions/clippers.dart';
-import 'package:george_project/providers/cache/cached_image_provider.dart';
-import 'package:george_project/widgets/shared/app_action_button.dart';
+import 'package:plandoraslist/config/extensions/clippers.dart';
+import 'package:plandoraslist/providers/cache/cached_image_provider.dart';
+import 'package:plandoraslist/widgets/shared/app_action_button.dart';
 
 class ProfilePage extends StatefulWidget {
   final String name;

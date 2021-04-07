@@ -1,9 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:george_project/repositories/feed/statistics.dart';
+import 'package:plandoraslist/repositories/feed/statistics.dart';
 import 'package:intl/intl.dart';
-import 'package:george_project/constants/feed.dart' as feed_constants;
+import 'package:plandoraslist/constants/feed.dart' as feed_constants;
 
 class WeekProgress extends StatefulWidget {
   @override
@@ -265,7 +265,7 @@ class WeekProgressState extends State<WeekProgress> {
 }
 // import 'package:fl_chart/fl_chart.dart';
 // import 'package:flutter/material.dart';
-// import 'package:george_project/widgets/shared/dashed_divider.dart';
+// import 'package:plandoraslist/widgets/shared/dashed_divider.dart';
 
 // class WeekProgress extends StatefulWidget {
 //   @override

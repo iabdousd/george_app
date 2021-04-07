@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:george_project/views/goal/save_goal.dart';
-import 'package:george_project/widgets/home/app_bottom_navigation_bar.dart';
+import 'package:plandoraslist/views/goal/save_goal.dart';
+import 'package:plandoraslist/widgets/home/app_bottom_navigation_bar.dart';
 import 'package:get/get.dart';
 
 import 'main-views/activity_feed_view.dart';

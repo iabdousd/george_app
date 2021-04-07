@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:george_project/config/extensions/hex_color.dart';
-import 'package:george_project/models/Task.dart';
-import 'package:george_project/services/feed-back/loader.dart';
-import 'package:george_project/views/task/save_task.dart';
+import 'package:plandoraslist/config/extensions/hex_color.dart';
+import 'package:plandoraslist/models/Task.dart';
+import 'package:plandoraslist/services/feed-back/loader.dart';
+import 'package:plandoraslist/views/task/save_task.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';

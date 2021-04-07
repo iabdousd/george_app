@@ -1,13 +1,13 @@
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:george_project/models/Task.dart';
+import 'package:plandoraslist/models/Task.dart';
 
-import 'package:george_project/services/user/user_service.dart';
-import 'package:george_project/constants/user.dart' as user_constants;
-import 'package:george_project/constants/feed.dart' as feed_constants;
-// import 'package:george_project/constants/models/task.dart' as task_constants;
-// import 'package:george_project/constants/models/stack.dart' as stack_constants;
+import 'package:plandoraslist/services/user/user_service.dart';
+import 'package:plandoraslist/constants/user.dart' as user_constants;
+import 'package:plandoraslist/constants/feed.dart' as feed_constants;
+// import 'package:plandoraslist/constants/models/task.dart' as task_constants;
+// import 'package:plandoraslist/constants/models/stack.dart' as stack_constants;
 
 addTaskAccomplishment(Task task) async {
   DateTime start = DateTime(

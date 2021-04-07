@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:george_project/models/Goal.dart';
-import 'package:george_project/services/feed-back/loader.dart';
-import 'package:george_project/views/goal/save_goal.dart';
-import 'package:george_project/views/stack/stacks_list_view.dart';
-import 'package:george_project/widgets/shared/app_action_button.dart';
-import 'package:george_project/widgets/shared/app_appbar.dart';
-import 'package:george_project/widgets/shared/app_date_view.dart';
+import 'package:plandoraslist/models/Goal.dart';
+import 'package:plandoraslist/services/feed-back/loader.dart';
+import 'package:plandoraslist/views/goal/save_goal.dart';
+import 'package:plandoraslist/views/stack/stacks_list_view.dart';
+import 'package:plandoraslist/widgets/shared/app_action_button.dart';
+import 'package:plandoraslist/widgets/shared/app_appbar.dart';
+import 'package:plandoraslist/widgets/shared/app_date_view.dart';
 import 'package:get/get.dart';
 
 class GoalDetailsPage extends StatefulWidget {
