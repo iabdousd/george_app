@@ -199,8 +199,8 @@ class EmailLoginViewState extends State<EmailLoginView> {
   _login() async {
     if (!_formKey.currentState.validate()) return;
     if (!RegExp(
-            "^[a-zA-Z0-9.!#\$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?)*\$")
-        .hasMatch(_emailController.text)) {
+            r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+        .hasMatch(_emailController.text.trim())) {
       showFlushBar(
         title: 'Wrong email',
         message: 'Please make sure of the format of your email.',
@@ -211,7 +211,7 @@ class EmailLoginViewState extends State<EmailLoginView> {
     try {
       await toggleLoading(state: true);
       await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _emailController.text,
+        email: _emailController.text.trim(),
         password: _passwordController.text,
       );
       await toggleLoading(state: false);

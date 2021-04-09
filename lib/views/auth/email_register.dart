@@ -223,8 +223,8 @@ class EmailRegisterViewState extends State<EmailRegisterView> {
   _register() async {
     if (!_formKey.currentState.validate()) return;
     if (!RegExp(
-            "^[a-zA-Z0-9.!#\$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?)*\$")
-        .hasMatch(_emailController.text)) {
+            r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+        .hasMatch(_emailController.text.trim())) {
       showFlushBar(
         title: 'Malformed email',
         message: 'Please make sure of the format of your email.',
@@ -244,7 +244,7 @@ class EmailRegisterViewState extends State<EmailRegisterView> {
       await toggleLoading(state: true);
 
       await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: _emailController.text,
+        email: _emailController.text.trim(),
         password: _passwordController.text,
       );
       User user = FirebaseAuth.instance.currentUser;
