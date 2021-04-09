@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:plandoraslist/providers/cache/cached_image_provider.dart';
 import 'package:plandoraslist/views/feed/feed_articles_list.dart';
 import 'package:plandoraslist/views/feed/goal_summary_list.dart';
@@ -53,25 +55,35 @@ class _ActivityFeedViewState extends State<ActivityFeedView>
                           style: Theme.of(context)
                               .textTheme
                               .headline5
-                              .copyWith(fontWeight: FontWeight.w900),
+                              .copyWith(fontWeight: FontWeight.w700),
                         ),
                       ),
                       InkWell(
                         onTap: () => Get.to(
-                          () => ProfilePage(name: "George"),
+                          () => ProfilePage(),
                           transition: Transition.rightToLeft,
                         ),
                         child: Hero(
                           tag: 'progile_logo',
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(64),
-                            child: Image(
-                              image: CachedImageProvider(
-                                  'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500'),
-                              fit: BoxFit.cover,
-                              width: 36,
-                              height: 36,
-                            ),
+                            child: FirebaseAuth.instance.currentUser.photoURL !=
+                                    null
+                                ? Image(
+                                    image: CachedImageProvider(
+                                      FirebaseAuth
+                                          .instance.currentUser.photoURL,
+                                    ),
+                                    fit: BoxFit.cover,
+                                    width: 36,
+                                    height: 36,
+                                  )
+                                : SvgPicture.asset(
+                                    'assets/images/profile.svg',
+                                    fit: BoxFit.cover,
+                                    width: 36,
+                                    height: 36,
+                                  ),
                           ),
                         ),
                       ),

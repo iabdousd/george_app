@@ -6,12 +6,13 @@ ThemeData lightThemeData(BuildContext context) {
   return ThemeData.light().copyWith(
     primaryColor: kPrimaryColor,
     accentColor: kSecondaryColor,
-    scaffoldBackgroundColor: Color(0xFFF1F1F1),
+    scaffoldBackgroundColor: kScaffoldBackgroundLignTheme,
     appBarTheme: appBarTheme,
     iconTheme: IconThemeData(color: kContentColorLightTheme),
     backgroundColor: Colors.white,
-    textTheme: GoogleFonts.poppinsTextTheme(Theme.of(context).textTheme).apply(
+    textTheme: GoogleFonts.interTextTheme(Theme.of(context).textTheme).apply(
       bodyColor: kContentColorLightTheme,
+      fontFamily: 'Poppins',
     ),
     colorScheme: ColorScheme.light(
       primary: kPrimaryColor,
@@ -32,12 +33,14 @@ ThemeData darkThemeData(BuildContext context) {
   return ThemeData.dark().copyWith(
     primaryColor: kPrimaryColor,
     accentColor: kSecondaryColor,
-    scaffoldBackgroundColor: kContentColorLightTheme,
+    scaffoldBackgroundColor: kScaffoldBackgroundDarkTheme,
     appBarTheme: appBarTheme,
     iconTheme: IconThemeData(color: kContentColorDarkTheme),
     backgroundColor: Color(0xFF111111),
-    textTheme: GoogleFonts.interTextTheme(Theme.of(context).textTheme)
-        .apply(bodyColor: kContentColorDarkTheme),
+    textTheme: GoogleFonts.interTextTheme(Theme.of(context).textTheme).apply(
+      bodyColor: kContentColorDarkTheme,
+      fontFamily: 'Poppins',
+    ),
     colorScheme: ColorScheme.dark().copyWith(
       primary: kPrimaryColor,
       secondary: kSecondaryColor,

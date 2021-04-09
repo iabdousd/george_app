@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:plandoraslist/models/goal_summary.dart';
 import 'package:plandoraslist/services/feed-back/loader.dart';
@@ -33,9 +34,8 @@ class _GoalsSummaryViewState extends State<GoalsSummaryView> {
               (e) {
                 GoalSummary goalSummary = GoalSummary.fromJson(e.data());
                 return GoalSummaryWidget(
-                  name: 'George',
-                  profilePicture:
-                      'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
+                  name: FirebaseAuth.instance.currentUser.displayName,
+                  profilePicture: FirebaseAuth.instance.currentUser.photoURL,
                   goal: goalSummary,
                 );
               },

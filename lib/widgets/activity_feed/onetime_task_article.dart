@@ -63,7 +63,7 @@ class OnetimeTaskArticleWidget extends StatelessWidget {
                                   .textTheme
                                   .subtitle1
                                   .copyWith(
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: FontWeight.w600,
                                   ),
                             ),
                             Text(
@@ -82,7 +82,7 @@ class OnetimeTaskArticleWidget extends StatelessWidget {
                       '${task.goalTitle} > ${task.stackTitle}',
                       style: Theme.of(context).textTheme.subtitle2.copyWith(
                             fontSize: 12,
-                            fontWeight: FontWeight.w200,
+                            fontWeight: FontWeight.w400,
                           ),
                     ),
                   ),

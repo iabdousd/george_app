@@ -11,7 +11,6 @@ import 'package:plandoraslist/services/feed-back/flush_bar.dart';
 import 'package:plandoraslist/services/feed-back/loader.dart';
 import 'package:plandoraslist/services/user/user_service.dart';
 import 'package:plandoraslist/widgets/task/task_list_tile_widget.dart';
-import 'package:intl/intl.dart';
 
 class TasksTimerList extends StatefulWidget {
   final Function(Task) emitFirstTask;
@@ -104,7 +103,7 @@ class _TasksTimerListState extends State<TasksTimerList>
                               style: Theme.of(context)
                                   .textTheme
                                   .headline6
-                                  .copyWith(fontWeight: FontWeight.bold),
+                                  .copyWith(fontWeight: FontWeight.w600),
                             ),
                           )
                         else if (index == 0 &&
@@ -120,7 +119,7 @@ class _TasksTimerListState extends State<TasksTimerList>
                               style: Theme.of(context)
                                   .textTheme
                                   .headline6
-                                  .copyWith(fontWeight: FontWeight.bold),
+                                  .copyWith(fontWeight: FontWeight.w600),
                             ),
                           ),
                         TaskListTileWidget(

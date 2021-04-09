@@ -37,23 +37,56 @@ class _HomeViewState extends State<HomeView>
   Widget build(BuildContext context) {
     super.build(context);
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 16.0,
-        vertical: 24.0,
-      ),
       child: Column(
         children: [
           Container(
-            child: Text(
-              'Goals',
-              style: Theme.of(context).textTheme.headline5.copyWith(
-                    fontWeight: FontWeight.w900,
-                  ),
+            padding: const EdgeInsets.only(
+              left: 16.0,
+              right: 16.0,
+              top: 24.0,
+              bottom: 12.0,
+            ),
+            child: Row(
+              children: [
+                Text(
+                  'PandorasList',
+                  style: Theme.of(context).textTheme.headline4.copyWith(
+                        fontFamily: 'logo',
+                        color: Theme.of(context).primaryColor,
+                      ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ),
           ),
+          // Divider(
+          //   color: Color(0xFF000000),
+          //   height: 1.5,
+          // ),
+          // Container(
+          //   padding: const EdgeInsets.only(
+          //     left: 16.0,
+          //     right: 16.0,
+          //     top: 12.0,
+          //     bottom: 0.0,
+          //   ),
+          //   child: Row(
+          //     children: [
+          //       Text(
+          //         'Goals',
+          //         style: Theme.of(context).textTheme.headline5.copyWith(
+          //               fontWeight: FontWeight.w600,
+          //             ),
+          //       ),
+          //     ],
+          //   ),
+          // ),
           Expanded(
             child: Container(
-              margin: const EdgeInsets.symmetric(vertical: 12.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+              ),
+              margin: const EdgeInsets.symmetric(vertical: 4.0),
               child: StreamBuilder<QuerySnapshot>(
                 stream: FirebaseFirestore.instance
                     .collection(user_constants.USERS_KEY)

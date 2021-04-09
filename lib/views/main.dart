@@ -1,91 +1,42 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:plandoraslist/views/goal/save_goal.dart';
-import 'package:plandoraslist/widgets/home/app_bottom_navigation_bar.dart';
-import 'package:get/get.dart';
+import 'package:plandoraslist/services/user/user_service.dart';
 
-import 'main-views/activity_feed_view.dart';
-import 'main-views/calendar_view.dart';
-import 'main-views/home_view.dart';
-import 'main-views/timer_view.dart';
+import 'auth/main.dart';
+import 'main-views/main.dart';
 
-class MainView extends StatefulWidget {
+class AppViews extends StatefulWidget {
+  AppViews({Key key}) : super(key: key);
+
   @override
-  _MainViewState createState() => _MainViewState();
+  _AppViewsState createState() => _AppViewsState();
 }
 
-class _MainViewState extends State<MainView>
-    with SingleTickerProviderStateMixin {
-  final pageIndexStreamController = StreamController<int>.broadcast();
-  TabController _tabController;
-
-  @override
-  void initState() {
-    pageIndexStreamController.add(0);
-    _tabController = _tabController = TabController(length: 4, vsync: this);
-    super.initState();
-  }
-
-  void _changePage(int index) {
-    pageIndexStreamController.add(index);
-    _tabController.animateTo(
-      index,
-      duration: Duration(milliseconds: 500),
-      curve: Curves.easeInOut,
-    );
-  }
-
-  @override
-  void dispose() {
-    pageIndexStreamController.close();
-    super.dispose();
-  }
+class _AppViewsState extends State<AppViews> {
+  final Future<bool> _initialization = checkAuthorization();
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).backgroundColor,
-      body: SafeArea(
-        child: TabBarView(
-          controller: _tabController,
-          physics: NeverScrollableScrollPhysics(),
-          children: [
-            HomeView(),
-            CalendarView(),
-            TimerView(),
-            ActivityFeedView(),
-          ],
-        ),
-      ),
-      floatingActionButton: StreamBuilder<int>(
-          stream: pageIndexStreamController.stream,
-          builder: (context, snapshot) {
-            int index = snapshot.data ?? 0;
-            if (index == 0)
-              return FloatingActionButton(
-                onPressed: () => Get.to(() => SaveGoalPage()),
-                child: Icon(
-                  Icons.add,
-                  size: 32.0,
-                  color: Theme.of(context).backgroundColor,
-                ),
-                backgroundColor: Theme.of(context).primaryColor,
-              );
-            return Container();
-          }),
-      bottomNavigationBar: StreamBuilder<int>(
-        stream: pageIndexStreamController.stream,
-        builder: (context, snapshot) {
-          int index = 0;
-          if (snapshot.hasData) index = snapshot.data;
+    return FutureBuilder<bool>(
+      future: _initialization,
+      builder: (context, snapshot) {
+        if (snapshot.hasData) if (snapshot.data)
+          return MainView();
+        else
+          return AuthViews();
 
-          return AppBottomNavigationBar(
-            index: index,
-            changePage: _changePage,
+        if (snapshot.hasError) {
+          print('Error: ${snapshot.error}');
+          return Center(
+            child: Container(
+              child: Icon(Icons.error_outline, color: Colors.red),
+            ),
           );
-        },
-      ),
+        }
+
+        return Container(
+          color: Colors.white,
+        );
+      },
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:plandoraslist/widgets/activity_feed/feed_articles_empty.dart';
@@ -77,17 +78,17 @@ class _FeedArticlesListState extends State<FeedArticlesList>
                     if (task.repetition == null)
                       OnetimeTaskArticleWidget(
                         key: Key(task.id),
-                        name: 'George',
+                        name: FirebaseAuth.instance.currentUser.displayName,
                         profilePicture:
-                            'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
+                            FirebaseAuth.instance.currentUser.photoURL,
                         task: task,
                       )
                     else
                       RecurringTaskArticleWidget(
                         key: Key(task.id),
-                        name: 'George',
+                        name: FirebaseAuth.instance.currentUser.displayName,
                         profilePicture:
-                            'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
+                            FirebaseAuth.instance.currentUser.photoURL,
                         task: task,
                       ),
                   ],

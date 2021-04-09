@@ -66,7 +66,7 @@ class GoalSummaryWidget extends StatelessWidget {
                                   .textTheme
                                   .subtitle1
                                   .copyWith(
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: FontWeight.w600,
                                   ),
                             ),
                             Text(
@@ -111,14 +111,14 @@ class GoalSummaryWidget extends StatelessWidget {
                   Text(
                     goal.title,
                     style: Theme.of(context).textTheme.headline6.copyWith(
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w600,
                           color: Color(0xFF535353),
                         ),
                   ),
                   Text(
                     'Time allocated: ${goal.allocatedTime.inHours.toStringAsFixed(0)} hours ${(goal.allocatedTime.inMinutes % 60).toStringAsFixed(0)} minutes',
                     style: Theme.of(context).textTheme.bodyText1.copyWith(
-                          fontWeight: FontWeight.w300,
+                          fontWeight: FontWeight.w400,
                           color: Color(0xFF868686),
                         ),
                   ),
@@ -127,7 +127,7 @@ class GoalSummaryWidget extends StatelessWidget {
                     child: Text(
                       '${(goal.completionPercentage * 100).toStringAsFixed(0)}%',
                       style: Theme.of(context).textTheme.headline4.copyWith(
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w700,
                             color: Color(0xFF000000),
                             height: 1,
                           ),
@@ -186,7 +186,7 @@ class GoalSummaryWidget extends StatelessWidget {
                                                 .textTheme
                                                 .bodyText2
                                                 .copyWith(
-                                                  fontWeight: FontWeight.w300,
+                                                  fontWeight: FontWeight.w400,
                                                   color: Color(0xFF757575),
                                                 ),
                                           ),

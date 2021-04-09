@@ -117,14 +117,14 @@ class _TimerViewState extends State<TimerView>
                       style: Theme.of(context)
                           .textTheme
                           .subtitle1
-                          .copyWith(fontWeight: FontWeight.w100),
+                          .copyWith(fontWeight: FontWeight.w300),
                     ),
                     Text(
                       '${durationBeforeNextTask.inHours.toStringAsFixed(0)}:${durationBeforeNextTask.inMinutes % 60 < 10 ? '0' : ''}${durationBeforeNextTask.inMinutes % 60}',
                       style: Theme.of(context)
                           .textTheme
                           .headline2
-                          .copyWith(fontWeight: FontWeight.bold),
+                          .copyWith(fontWeight: FontWeight.w600),
                     ),
                   ],
                 );

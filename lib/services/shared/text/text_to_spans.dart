@@ -37,7 +37,7 @@ List<TextSpan> textToSpans(
       fontWeight = FontWeight.bold;
       thePart = thePart.substring(1);
     } else if (thePart[0] == 'l') {
-      fontWeight = FontWeight.w200;
+      fontWeight = FontWeight.w300;
       fontStyle = FontStyle.italic;
       thePart = thePart.substring(1);
     } else if (thePart[0] == 'n') {

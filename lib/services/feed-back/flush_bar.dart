@@ -8,7 +8,13 @@ showFlushBar({
 }) {
   Get.showSnackbar(
     GetBar(
-      title: title,
+      titleText: Text(
+        title,
+        style: Theme.of(Get.context).textTheme.headline6.copyWith(
+              color: Colors.white,
+              fontSize: 18,
+            ),
+      ),
       message: message,
       icon: success
           ? Icon(
