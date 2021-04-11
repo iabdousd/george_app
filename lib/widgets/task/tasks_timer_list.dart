@@ -1,13 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import 'package:plandoraslist/constants/user.dart' as user_constants;
 import 'package:plandoraslist/constants/models/task.dart' as task_constants;
 import 'package:plandoraslist/constants/models/stack.dart' as stack_constants;
-import 'package:plandoraslist/models/Note.dart';
 import 'package:plandoraslist/models/Task.dart';
-import 'package:plandoraslist/services/feed-back/flush_bar.dart';
 import 'package:plandoraslist/services/feed-back/loader.dart';
 import 'package:plandoraslist/services/user/user_service.dart';
 import 'package:plandoraslist/widgets/task/task_list_tile_widget.dart';
@@ -22,8 +19,6 @@ class TasksTimerList extends StatefulWidget {
 
 class _TasksTimerListState extends State<TasksTimerList>
     with AutomaticKeepAliveClientMixin {
-  TextEditingController _contentController = TextEditingController();
-
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -78,38 +73,14 @@ class _TasksTimerListState extends State<TasksTimerList>
                     widget.emitFirstTask(task);
                   }
                   return Container(
-                    padding:
-                        //  index == 0
-                        //     ? EdgeInsets.zero
-                        //     :
-                        EdgeInsets.only(
+                    padding: EdgeInsets.only(
                       left: 16,
                       right: 16,
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        if (index == 0 &&
-                            task.startTime.hour + task.startTime.minute / 60 >
-                                DateTime.now().hour +
-                                    DateTime.now().minute / 60)
-                          Container(
-                            padding: EdgeInsets.only(
-                              top: 20,
-                              left: 16,
-                            ),
-                            child: Text(
-                              'Next Tasks:',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .headline6
-                                  .copyWith(fontWeight: FontWeight.w600),
-                            ),
-                          )
-                        else if (index == 0 &&
-                            task.startTime.hour + task.startTime.minute / 60 <
-                                DateTime.now().hour +
-                                    DateTime.now().minute / 60)
+                        if (index == 0)
                           Container(
                             padding: EdgeInsets.only(
                               top: 20,
@@ -122,6 +93,61 @@ class _TasksTimerListState extends State<TasksTimerList>
                                   .copyWith(fontWeight: FontWeight.w600),
                             ),
                           ),
+                        if (index == 0 &&
+                            task.startTime.hour + task.startTime.minute / 60 >
+                                DateTime.now().hour +
+                                    DateTime.now().minute / 60)
+                          Container(
+                            margin: EdgeInsets.only(top: 16),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).backgroundColor,
+                              borderRadius: BorderRadius.circular(8.0),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Color(0x33000000),
+                                  blurRadius: 8.0,
+                                  offset: Offset(0, 3),
+                                )
+                              ],
+                            ),
+                            height: 2 * MediaQuery.of(context).size.width / 3,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'No task',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headline6
+                                      .copyWith(
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 20,
+                                      ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        if (index == 0 &&
+                            task.startTime.hour + task.startTime.minute / 60 >
+                                DateTime.now().hour +
+                                    DateTime.now().minute / 60)
+                          Container(
+                            padding: EdgeInsets.only(
+                              top: 24,
+                              left: 0,
+                            ),
+                            child: Text(
+                              'Next Tasks:',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headline6
+                                  .copyWith(fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                        // else if (index == 0 &&
+                        //     task.startTime.hour + task.startTime.minute / 60 <
+                        //         DateTime.now().hour +
+                        //             DateTime.now().minute / 60)
                         TaskListTileWidget(
                           task: task,
                           stackColor: task.stackColor,
@@ -130,56 +156,12 @@ class _TasksTimerListState extends State<TasksTimerList>
                               task.startTime.isBefore(
                                 DateTime(1970, 1, 1, now.hour, now.minute),
                               ),
-                          showDescription: index == 0,
-                        ),
-                        if (index == 0)
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).backgroundColor,
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
-                            margin: EdgeInsets.symmetric(
-                              vertical: 20.0,
-                            ),
-                            child: TextField(
-                              controller: _contentController,
-                              decoration: InputDecoration(
-                                labelText: 'Task Notes',
-                                hintText: 'The content of the note',
-                                contentPadding: const EdgeInsets.symmetric(
-                                  vertical: 20.0,
-                                  horizontal: 20.0,
-                                ),
-                                alignLabelWithHint: true,
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8.0),
-                                  borderSide: BorderSide(width: 1),
-                                ),
+                          showNoteInput: index == 0 &&
+                              task.startTime.isBefore(
+                                DateTime(1970, 1, 1, now.hour, now.minute),
                               ),
-                              textInputAction: TextInputAction.done,
-                              minLines: 3,
-                              maxLines: 5,
-                              onSubmitted: (text) async {
-                                if (text.replaceAll('\n', '').trim() == '')
-                                  return;
-                                Note note = Note(
-                                  content: text,
-                                  goalRef: task.goalRef,
-                                  stackRef: task.stackRef,
-                                  taskRef: task.id,
-                                  taskTitle: task.title,
-                                  creationDate: DateTime.now(),
-                                );
-                                await note.save();
-                                await task.addNote(note.id);
-                                _contentController.text = '';
-                                showFlushBar(
-                                    title: 'Note added successfully!',
-                                    message:
-                                        'You can now see your note in notes list.');
-                              },
-                            ),
-                          ),
+                          showDescription: true,
+                        ),
                         if (index == 0 &&
                             snapshot.data.docs.length > 1 &&
                             task.startTime.hour + task.startTime.minute / 60 <=
@@ -187,8 +169,8 @@ class _TasksTimerListState extends State<TasksTimerList>
                                     DateTime.now().minute / 60)
                           Container(
                             padding: EdgeInsets.only(
-                              top: 20,
-                              left: 16,
+                              top: 24,
+                              left: 0,
                             ),
                             child: Text(
                               'Next Tasks:',
