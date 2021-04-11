@@ -40,7 +40,7 @@ class _AuthViewsState extends State<AuthViews> {
                     ),
                   ),
                   Text(
-                    'PandorasList',
+                    'Stackedtasks',
                     style: Theme.of(context).textTheme.headline4.copyWith(
                           fontFamily: 'logo',
                           color: Theme.of(context).primaryColor,
@@ -170,7 +170,7 @@ class _AuthViewsState extends State<AuthViews> {
                     margin: EdgeInsets.only(top: 12.0),
                     child: RichText(
                       text: TextSpan(
-                        text: 'By continuing you agree to PandorasList\'s ',
+                        text: 'By continuing you agree to Stackedtasks\'s ',
                         style: Theme.of(context).textTheme.bodyText2.copyWith(
                               fontSize: 12,
                               letterSpacing: .5,

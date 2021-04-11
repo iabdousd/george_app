@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:plandoraslist/services/user/user_service.dart';
 
-import 'auth/main.dart';
 import 'main-views/main.dart';
+import 'start_guide/guides_screen.dart';
 
 class AppViews extends StatefulWidget {
   AppViews({Key key}) : super(key: key);
@@ -22,7 +22,7 @@ class _AppViewsState extends State<AppViews> {
         if (snapshot.hasData) if (snapshot.data)
           return MainView();
         else
-          return AuthViews();
+          return GuidesScreen();
 
         if (snapshot.hasError) {
           print('Error: ${snapshot.error}');

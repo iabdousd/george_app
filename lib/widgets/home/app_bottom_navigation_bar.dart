@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class AppBottomNavigationBar extends StatelessWidget {
+  final List<GlobalKey> keys;
   final int index;
   final Function(int) changePage;
   const AppBottomNavigationBar({
     Key key,
     @required this.index,
     @required this.changePage,
+    @required this.keys,
   }) : super(key: key);
 
   @override
@@ -26,6 +28,7 @@ class AppBottomNavigationBar extends StatelessWidget {
           ),
           activeIcon: SvgPicture.asset(
             'assets/images/icons/home.svg',
+            key: keys[0],
             width: 22,
             height: 22,
             color: Theme.of(context).primaryColor,
@@ -36,6 +39,7 @@ class AppBottomNavigationBar extends StatelessWidget {
         BottomNavigationBarItem(
           icon: SvgPicture.asset(
             'assets/images/icons/calendar.svg',
+            key: keys[1],
             width: 22,
             height: 22,
           ),
@@ -51,6 +55,7 @@ class AppBottomNavigationBar extends StatelessWidget {
         BottomNavigationBarItem(
           icon: SvgPicture.asset(
             'assets/images/icons/timer.svg',
+            key: keys[2],
             width: 22,
             height: 22,
           ),
@@ -66,6 +71,7 @@ class AppBottomNavigationBar extends StatelessWidget {
         BottomNavigationBarItem(
           icon: SvgPicture.asset(
             'assets/images/icons/activity.svg',
+            key: keys[3],
             width: 22,
             height: 22,
           ),

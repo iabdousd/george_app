@@ -51,7 +51,42 @@ class TaskFeedArticleActions extends StatelessWidget {
           ),
           Expanded(
             child: InkWell(
-              onTap: () => _showMoreOptions(context),
+              onTap: () => showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: Text('Delete Article'),
+                  content: Text(
+                    'Are you sure you want to delete the article \"${task.title}\" ?',
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () async {
+                        Navigator.of(context).pop();
+                      },
+                      child: Text(
+                        'Cancel',
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () async {
+                        Navigator.of(context).pop();
+                        await task.deleteAsFeed();
+                        showFlushBar(
+                          title: 'Feed deleted',
+                          message: 'This feed was deleted successfully!',
+                          success: true,
+                        );
+                      },
+                      child: Text(
+                        'Delete',
+                        style: TextStyle(
+                          color: Colors.red[700],
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              ),
               child: Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -59,12 +94,12 @@ class TaskFeedArticleActions extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
-                      Icons.more_horiz_outlined,
+                      Icons.delete_outline,
                       size: 18,
                       color: Colors.black38,
                     ),
                     Text(
-                      ' See more',
+                      ' Delete',
                       style: Theme.of(context).textTheme.bodyText2,
                     ),
                   ],
@@ -97,35 +132,6 @@ class TaskFeedArticleActions extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-
-  _showMoreOptions(context) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) {
-        return Container(
-          child: ListView(
-            shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
-            children: [
-              ListTile(
-                onTap: () async {
-                  Navigator.pop(context);
-                  await task.deleteAsFeed();
-                  showFlushBar(
-                    title: 'Feed deleted',
-                    message: 'This feed was deleted successfully!',
-                    success: true,
-                  );
-                },
-                leading: Icon(Icons.delete_outline),
-                title: Text('Delete'),
-              )
-            ],
-          ),
-        );
-      },
     );
   }
 }

@@ -49,7 +49,7 @@ class _HomeViewState extends State<HomeView>
             child: Row(
               children: [
                 Text(
-                  'PandorasList',
+                  'Stackedtasks',
                   style: Theme.of(context).textTheme.headline4.copyWith(
                         fontFamily: 'logo',
                         color: Theme.of(context).primaryColor,

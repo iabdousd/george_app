@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:plandoraslist/config/extensions/hex_color.dart';
 import 'package:plandoraslist/models/goal_summary.dart';
 import 'package:plandoraslist/providers/cache/cached_image_provider.dart';
@@ -49,12 +50,19 @@ class GoalSummaryWidget extends StatelessWidget {
                       children: [
                         ClipRRect(
                           borderRadius: BorderRadius.circular(42.0),
-                          child: Image(
-                            image: CachedImageProvider(profilePicture),
-                            fit: BoxFit.cover,
-                            width: 42,
-                            height: 42,
-                          ),
+                          child: profilePicture != null
+                              ? Image(
+                                  image: CachedImageProvider(profilePicture),
+                                  fit: BoxFit.cover,
+                                  width: 42,
+                                  height: 42,
+                                )
+                              : SvgPicture.asset(
+                                  'assets/images/profile.svg',
+                                  fit: BoxFit.cover,
+                                  width: 42,
+                                  height: 42,
+                                ),
                         ),
                         SizedBox(width: 12),
                         Column(

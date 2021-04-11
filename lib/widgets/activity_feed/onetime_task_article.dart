@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:plandoraslist/models/Task.dart';
 import 'package:plandoraslist/providers/cache/cached_image_provider.dart';
 import 'package:plandoraslist/widgets/activity_feed/task_feed_article_actions.dart';
@@ -46,12 +47,19 @@ class OnetimeTaskArticleWidget extends StatelessWidget {
                       children: [
                         ClipRRect(
                           borderRadius: BorderRadius.circular(42.0),
-                          child: Image(
-                            image: CachedImageProvider(profilePicture),
-                            fit: BoxFit.cover,
-                            width: 42,
-                            height: 42,
-                          ),
+                          child: profilePicture != null
+                              ? Image(
+                                  image: CachedImageProvider(profilePicture),
+                                  fit: BoxFit.cover,
+                                  width: 42,
+                                  height: 42,
+                                )
+                              : SvgPicture.asset(
+                                  'assets/images/profile.svg',
+                                  fit: BoxFit.cover,
+                                  width: 42,
+                                  height: 42,
+                                ),
                         ),
                         SizedBox(width: 12),
                         Column(
