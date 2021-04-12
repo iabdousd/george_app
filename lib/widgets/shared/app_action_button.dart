@@ -13,10 +13,11 @@ class AppActionButton extends StatelessWidget {
   final EdgeInsets margin;
   final EdgeInsets padding;
   final EdgeInsets iconPadding;
+  final double radius;
   const AppActionButton({
     Key key,
     @required this.onPressed,
-    @required this.icon,
+    this.icon,
     this.label,
     @required this.backgroundColor,
     this.alignment = Alignment.centerLeft,
@@ -34,6 +35,7 @@ class AppActionButton extends StatelessWidget {
     this.padding = const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10),
     this.iconPadding =
         const EdgeInsets.symmetric(horizontal: 12.0, vertical: 14),
+    this.radius: 4,
   }) : super(key: key);
 
   @override
@@ -41,10 +43,12 @@ class AppActionButton extends StatelessWidget {
     return Container(
       margin: margin,
       decoration: BoxDecoration(
+        color: backgroundColor,
         boxShadow: shadows,
+        borderRadius: BorderRadius.circular(radius),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(12.0),
+        borderRadius: BorderRadius.circular(radius),
         child: label == null
             ? InkWell(
                 onTap: onPressed,
@@ -62,30 +66,54 @@ class AppActionButton extends StatelessWidget {
                       : icon,
                 ),
               )
-            : TextButton.icon(
-                onPressed: onPressed,
-                icon: icon is IconData
-                    ? Icon(
-                        icon,
-                        color: iconColor ?? Theme.of(context).backgroundColor,
-                        size: iconSize,
-                      )
-                    : icon,
-                style: ButtonStyle(
-                  alignment: alignment,
-                  backgroundColor: MaterialStateProperty.all(backgroundColor),
-                  padding: MaterialStateProperty.all(
-                    padding,
+            : icon != null
+                ? TextButton.icon(
+                    onPressed: onPressed,
+                    icon: icon is IconData
+                        ? Icon(
+                            icon,
+                            color:
+                                iconColor ?? Theme.of(context).backgroundColor,
+                            size: iconSize,
+                          )
+                        : icon,
+                    style: ButtonStyle(
+                      alignment: alignment,
+                      backgroundColor:
+                          MaterialStateProperty.all(backgroundColor),
+                      padding: MaterialStateProperty.all(
+                        padding,
+                      ),
+                    ),
+                    label: Text(
+                      label,
+                      style: textStyle ??
+                          Theme.of(context).textTheme.subtitle1.copyWith(
+                                color: Theme.of(context).backgroundColor,
+                              ),
+                    ),
+                  )
+                : Center(
+                    child: TextButton(
+                      onPressed: onPressed,
+                      style: ButtonStyle(
+                        alignment: alignment,
+                        backgroundColor:
+                            MaterialStateProperty.all(backgroundColor),
+                        padding: MaterialStateProperty.all(
+                          padding,
+                        ),
+                      ),
+                      child: Text(
+                        label,
+                        style: textStyle ??
+                            Theme.of(context).textTheme.subtitle1.copyWith(
+                                  color: Theme.of(context).backgroundColor,
+                                ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
                   ),
-                ),
-                label: Text(
-                  label,
-                  style: textStyle ??
-                      Theme.of(context).textTheme.subtitle1.copyWith(
-                            color: Theme.of(context).backgroundColor,
-                          ),
-                ),
-              ),
       ),
     );
   }

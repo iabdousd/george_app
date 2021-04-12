@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 
 class AppTextField extends StatelessWidget {
   final String label, hint, ifRequiredMessage;
-  final bool isRequired, obscureText;
+  final bool isRequired, obscureText, autoFocus;
   final TextEditingController controller;
   final BoxDecoration containerDecoration;
   final EdgeInsets margin;
   final EdgeInsets contentPadding;
   final TextInputAction textInputAction;
+  final int minLines, maxLines;
   const AppTextField({
     Key key,
     @required this.controller,
@@ -23,6 +24,9 @@ class AppTextField extends StatelessWidget {
     ),
     this.obscureText: false,
     this.textInputAction: TextInputAction.done,
+    this.autoFocus: false,
+    this.minLines,
+    this.maxLines,
   }) : super(key: key);
 
   @override
@@ -36,6 +40,7 @@ class AppTextField extends StatelessWidget {
       margin: margin,
       child: TextFormField(
         controller: controller,
+        autofocus: autoFocus,
         decoration: InputDecoration(
           labelText: label,
           hintText: hint,
@@ -49,6 +54,8 @@ class AppTextField extends StatelessWidget {
           return null;
         },
         textInputAction: textInputAction,
+        minLines: minLines,
+        maxLines: maxLines,
       ),
     );
   }

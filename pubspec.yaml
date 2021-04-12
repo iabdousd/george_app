@@ -63,6 +63,7 @@ dependencies:
   image_picker: ^0.7.3
   file_picker: ^3.0.0
   flutter_rounded_date_picker: ^2.0.0
+  country_code_picker: ^2.0.1
 
   # STORAGE RELATED
   crypto: ^3.0.1
@@ -111,6 +112,8 @@ flutter:
     - assets/images/profile.svg
     - assets/images/login_bg.svg
     - assets/images/tasks_empty.svg
+    - assets/images/contact_us.svg
+    - assets/images/report_issue.svg
     - assets/images/welcome/page_0.svg
     - assets/images/welcome/page_1.svg
     - assets/images/welcome/page_2.svg

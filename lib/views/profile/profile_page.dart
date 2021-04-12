@@ -6,9 +6,15 @@ import 'package:get/get.dart';
 import 'package:plandoraslist/config/extensions/clippers.dart';
 import 'package:plandoraslist/providers/cache/cached_image_provider.dart';
 import 'package:plandoraslist/services/feed-back/loader.dart';
+import 'package:plandoraslist/services/feed-back/reports.dart';
 import 'package:plandoraslist/views/auth/main.dart';
+import 'package:plandoraslist/views/profile/contact_us.dart';
+import 'package:plandoraslist/views/profile/report_issue.dart';
+import 'package:plandoraslist/views/profile/settings.dart';
 import 'package:plandoraslist/widgets/shared/app_action_button.dart';
 import 'package:plandoraslist/widgets/shared/photo_view.dart';
+
+import 'about_us.dart';
 
 class ProfilePage extends StatefulWidget {
   ProfilePage({Key key}) : super(key: key);
@@ -112,7 +118,7 @@ class _ProfilePageState extends State<ProfilePage>
                   ),
                 ),
                 AppActionButton(
-                  onPressed: () {},
+                  onPressed: () => Get.to(() => SettingsScreen()),
                   icon: Container(
                     decoration: BoxDecoration(
                       color: Theme.of(context).primaryColor,
@@ -158,7 +164,7 @@ class _ProfilePageState extends State<ProfilePage>
                       ),
                 ),
                 AppActionButton(
-                  onPressed: () {},
+                  onPressed: () => Get.to(() => ContactScreen()),
                   icon: Container(
                     decoration: BoxDecoration(
                       color: Theme.of(context).primaryColor.withOpacity(.75),
@@ -181,7 +187,7 @@ class _ProfilePageState extends State<ProfilePage>
                       ),
                 ),
                 AppActionButton(
-                  onPressed: () {},
+                  onPressed: () => Get.to(() => AboutUsScreen()),
                   icon: Container(
                     decoration: BoxDecoration(
                       color: Theme.of(context).primaryColor.withOpacity(.75),
@@ -204,7 +210,7 @@ class _ProfilePageState extends State<ProfilePage>
                       ),
                 ),
                 AppActionButton(
-                  onPressed: () {},
+                  onPressed: () => Get.to(() => ReportIssue()),
                   icon: Container(
                     decoration: BoxDecoration(
                       color: Theme.of(context).accentColor,
