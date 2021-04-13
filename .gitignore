@@ -17,6 +17,7 @@
 
 # Firease
 /android/app/google-services.json
+/android/stackedlist.keystore
 
 
 # The .vscode folder contains launch configuration and tasks you configure in
