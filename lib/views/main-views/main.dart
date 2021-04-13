@@ -143,7 +143,12 @@ A pro tip is to add maintaining your task management system itself as one of you
         print("finish");
       },
       onClickTarget: (target) {
-        print(target);
+        if (target.identify == 0)
+          _changePage(2);
+        else if (target.identify == 2)
+          _changePage(3);
+        else
+          _changePage(0);
       },
       onSkip: () {
         print("skip");

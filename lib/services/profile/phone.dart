@@ -1,6 +1,7 @@
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:plandoraslist/services/feed-back/flush_bar.dart';
 import 'package:plandoraslist/services/feed-back/loader.dart';
 import 'package:plandoraslist/widgets/shared/app_action_button.dart';
@@ -21,16 +22,94 @@ _updatePhone(CountryCode country, String phone, String password) async {
       email: FirebaseAuth.instance.currentUser.email,
       password: password,
     );
-    toggleLoading(state: false);
-    toggleLoading(state: false);
-    showFlushBar(
-      title: 'Phone Number Added',
-      message:
-          'Don\'t forget to use your new email instead of the old one while logging in.',
+    await FirebaseAuth.instance.verifyPhoneNumber(
+      phoneNumber: country.dialCode + phone,
+      verificationCompleted: (credential) async {
+        await FirebaseAuth.instance.currentUser.linkWithCredential(credential);
+      },
+      verificationFailed: (exception) {
+        print('EXCEPTION: $exception');
+        if (exception.code == 'invalid-phone-number') {
+          toggleLoading(state: false);
+          showFlushBar(
+            title: 'Verification Failure',
+            message: 'The provided phone number is not valid.',
+            success: false,
+          );
+        }
+        toggleLoading(state: false);
+        showFlushBar(
+          title: 'Verification Failure',
+          message: 'We couldn\'t send SMS code to this number.',
+          success: false,
+        );
+      },
+      codeSent: (String verificationId, int resendToken) {
+        final _codeController = TextEditingController();
+        toggleLoading(state: false);
+        toggleLoading(state: false);
+        showDialog(
+          context: Get.context,
+          builder: (context) {
+            return AlertDialog(
+              title: Text('Provide you SMS code'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  AppTextField(
+                    controller: _codeController,
+                    label: 'Verification Code',
+                  ),
+                  AppActionButton(
+                    onPressed: () async {
+                      try {
+                        toggleLoading(state: true);
+                        PhoneAuthCredential credential =
+                            PhoneAuthProvider.credential(
+                          verificationId: verificationId,
+                          smsCode: _codeController.text,
+                        );
+                        if (FirebaseAuth.instance.currentUser.phoneNumber !=
+                            null)
+                          await FirebaseAuth.instance.currentUser
+                              .updatePhoneNumber(credential);
+                        else
+                          await FirebaseAuth.instance.currentUser
+                              .linkWithCredential(credential);
+
+                        toggleLoading(state: false);
+                        toggleLoading(state: false);
+                        showFlushBar(
+                          title: 'Phone Number Added',
+                          message:
+                              'Your phone number has been linked to your account successfully!',
+                        );
+                      } catch (e) {
+                        toggleLoading(state: false);
+                        showFlushBar(
+                          title: 'Verification Error',
+                          message: e.message ??
+                              'The code inserted has been expired or is incorrect.',
+                          success: false,
+                        );
+                      }
+                    },
+                    backgroundColor: Theme.of(context).primaryColor,
+                    label: 'Confirm',
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+      codeAutoRetrievalTimeout: (code) {
+        //
+      },
     );
   } catch (e) {
     print(e);
-    if (e?.code == 'email-already-in-use') {
+    if (e is FirebaseAuthException && e.code == 'email-already-in-use') {
       await toggleLoading(state: false);
       showFlushBar(
         title: 'Already registered',
@@ -42,7 +121,7 @@ _updatePhone(CountryCode country, String phone, String password) async {
     await toggleLoading(state: false);
     showFlushBar(
       title: 'Error',
-      message: e.message ?? 'Unknown Error!',
+      message: e?.message ?? 'Unknown Error!',
       success: false,
     );
   }
@@ -55,8 +134,10 @@ editPhone(context) {
   showDialog(
     context: context,
     builder: (context) {
-      return Center(
-        child: Container(
+      return AlertDialog(
+        titlePadding: EdgeInsets.zero,
+        contentPadding: EdgeInsets.zero,
+        content: Container(
           width: MediaQuery.of(context).size.width - 32,
           padding: EdgeInsets.all(8.0),
           decoration: BoxDecoration(

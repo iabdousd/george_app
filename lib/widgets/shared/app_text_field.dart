@@ -13,7 +13,7 @@ class AppTextField extends StatelessWidget {
     Key key,
     @required this.controller,
     @required this.label,
-    @required this.hint,
+    this.hint,
     this.ifRequiredMessage,
     this.isRequired: false,
     this.margin: const EdgeInsets.symmetric(vertical: 8.0),

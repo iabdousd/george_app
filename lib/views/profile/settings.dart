@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:plandoraslist/services/profile/email.dart';
 import 'package:plandoraslist/services/profile/phone.dart';
+import 'package:plandoraslist/services/profile/password.dart';
 
 class SettingsScreen extends StatefulWidget {
   SettingsScreen({Key key}) : super(key: key);
@@ -79,6 +80,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       onTap: () => editPhone(context),
                       child: Text(
                         '${FirebaseAuth.instance.currentUser.phoneNumber == null ? 'Add' : 'Edit'} Phone number',
+                        style: Theme.of(context).textTheme.subtitle1.copyWith(
+                              color: Theme.of(context).primaryColor,
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              mainAxisSize: MainAxisSize.max,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 12.0),
+                  child: Icon(
+                    Icons.lock_outline,
+                    size: 28,
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '********',
+                      style: Theme.of(context).textTheme.subtitle1,
+                    ),
+                    InkWell(
+                      onTap: () => changePassword(context),
+                      child: Text(
+                        'Change Password',
                         style: Theme.of(context).textTheme.subtitle1.copyWith(
                               color: Theme.of(context).primaryColor,
                               fontWeight: FontWeight.w600,

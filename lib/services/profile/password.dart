@@ -1,18 +1,15 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:plandoraslist/services/feed-back/flush_bar.dart';
 import 'package:plandoraslist/services/feed-back/loader.dart';
 import 'package:plandoraslist/widgets/shared/app_action_button.dart';
 import 'package:plandoraslist/widgets/shared/app_text_field.dart';
 
-_updateEmail(String email, String password) async {
-  if (!RegExp(
-          r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
-      .hasMatch(email)) {
+_updatePassword(String p1, String p2, String oldP) async {
+  if (p1 != p2) {
     showFlushBar(
-      title: 'Malformed email',
-      message: 'Please make sure of the format of your email.',
+      title: 'Passwords mismatch',
+      message: 'Please make sure the passwords are similar',
       success: false,
     );
     return;
@@ -21,38 +18,36 @@ _updateEmail(String email, String password) async {
   try {
     await FirebaseAuth.instance.signInWithEmailAndPassword(
       email: FirebaseAuth.instance.currentUser.email,
-      password: password,
+      password: oldP,
     );
-    await FirebaseAuth.instance.currentUser.updateEmail(email);
-    await FirebaseAuth.instance.currentUser.sendEmailVerification();
+    await FirebaseAuth.instance.currentUser.updatePassword(p1);
     toggleLoading(state: false);
     toggleLoading(state: false);
     showFlushBar(
-      title: 'Email Updated',
+      title: 'Password Updated!',
       message:
-          'Don\'t forget to use your new email instead of the old one while logging in.',
+          'Don\'t forget to use your new password instead of the old one while logging in.',
     );
   } catch (e) {
-    if (e.code == 'email-already-in-use') {
-      await toggleLoading(state: false);
+    await toggleLoading(state: false);
+    if (e is FirebaseAuthException && e.code == 'wrong-password')
       showFlushBar(
-        title: 'Already registered',
-        message: 'Seems like this email is already registered!',
+        title: 'Wrong Password',
+        message: 'Please make sure your old password is correct.',
         success: false,
       );
-      return;
-    }
-    await toggleLoading(state: false);
-    showFlushBar(
-      title: 'Error',
-      message: e.message ?? 'Unknown Error!',
-      success: false,
-    );
+    else
+      showFlushBar(
+        title: 'Change Password Error',
+        message: e.message ?? 'Unknown Error!',
+        success: false,
+      );
   }
 }
 
-editEmail(context) {
-  final _emailController = TextEditingController();
+changePassword(context) {
+  final _password1Controller = TextEditingController();
+  final _password2Controller = TextEditingController();
   final _passwordController = TextEditingController();
   showDialog(
     context: context,
@@ -74,7 +69,7 @@ editEmail(context) {
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Text(
-                    "Edit Email",
+                    "Change Password",
                     style: Theme.of(context)
                         .textTheme
                         .subtitle1
@@ -82,15 +77,32 @@ editEmail(context) {
                   ),
                 ),
                 AppTextField(
-                  controller: _emailController,
-                  label: 'New Email',
-                  hint: 'Enter your new email',
+                  controller: _password1Controller,
+                  label: 'New Password',
+                  hint: 'Enter your new password',
                   maxLines: 1,
                   contentPadding: EdgeInsets.symmetric(
                     vertical: 4,
                     horizontal: 12,
                   ),
                   autoFocus: true,
+                  obscureText: true,
+                  containerDecoration: BoxDecoration(
+                    color: Color(0x05000000),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  textInputAction: TextInputAction.next,
+                ),
+                AppTextField(
+                  controller: _password2Controller,
+                  label: 'Repeat New Password',
+                  hint: 'Repeat your new password',
+                  maxLines: 1,
+                  contentPadding: EdgeInsets.symmetric(
+                    vertical: 4,
+                    horizontal: 12,
+                  ),
+                  obscureText: true,
                   containerDecoration: BoxDecoration(
                     color: Color(0x05000000),
                     borderRadius: BorderRadius.circular(4),
@@ -99,14 +111,13 @@ editEmail(context) {
                 ),
                 AppTextField(
                   controller: _passwordController,
-                  label: 'Password',
-                  hint: 'Enter your password',
+                  label: 'Old Password',
+                  hint: 'Enter your old password',
                   maxLines: 1,
                   contentPadding: EdgeInsets.symmetric(
                     vertical: 4,
                     horizontal: 12,
                   ),
-                  autoFocus: true,
                   obscureText: true,
                   containerDecoration: BoxDecoration(
                     color: Color(0x05000000),
@@ -127,8 +138,10 @@ editEmail(context) {
                       shadows: [],
                     ),
                     AppActionButton(
-                      onPressed: () => _updateEmail(
-                          _emailController.text, _passwordController.text),
+                      onPressed: () => _updatePassword(
+                          _password1Controller.text,
+                          _password2Controller.text,
+                          _passwordController.text),
                       backgroundColor: Colors.transparent,
                       label: 'Submit',
                       textStyle: Theme.of(context).textTheme.subtitle1.copyWith(

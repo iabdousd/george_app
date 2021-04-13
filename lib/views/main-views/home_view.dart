@@ -43,50 +43,42 @@ class _HomeViewState extends State<HomeView>
             padding: const EdgeInsets.only(
               left: 16.0,
               right: 16.0,
-              top: 24.0,
+              top: 20.0,
               bottom: 12.0,
+            ),
+            child: Text(
+              'Stackedtasks',
+              style: Theme.of(context).textTheme.headline4.copyWith(
+                    fontFamily: 'logo',
+                    color: Theme.of(context).primaryColor,
+                  ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.only(
+              left: 16.0,
+              right: 16.0,
+              top: 16.0,
+              bottom: 0.0,
             ),
             child: Row(
               children: [
                 Text(
-                  'Stackedtasks',
-                  style: Theme.of(context).textTheme.headline4.copyWith(
-                        fontFamily: 'logo',
-                        color: Theme.of(context).primaryColor,
+                  'Goals:',
+                  style: Theme.of(context).textTheme.headline5.copyWith(
+                        fontWeight: FontWeight.w600,
                       ),
-                  textAlign: TextAlign.center,
                 ),
               ],
             ),
           ),
-          // Divider(
-          //   color: Color(0xFF000000),
-          //   height: 1.5,
-          // ),
-          // Container(
-          //   padding: const EdgeInsets.only(
-          //     left: 16.0,
-          //     right: 16.0,
-          //     top: 12.0,
-          //     bottom: 0.0,
-          //   ),
-          //   child: Row(
-          //     children: [
-          //       Text(
-          //         'Goals',
-          //         style: Theme.of(context).textTheme.headline5.copyWith(
-          //               fontWeight: FontWeight.w600,
-          //             ),
-          //       ),
-          //     ],
-          //   ),
-          // ),
           Expanded(
             child: Container(
               padding: const EdgeInsets.symmetric(
                 horizontal: 16.0,
               ),
-              margin: const EdgeInsets.symmetric(vertical: 4.0),
+              margin: const EdgeInsets.only(bottom: 8.0),
               child: StreamBuilder<QuerySnapshot>(
                 stream: FirebaseFirestore.instance
                     .collection(user_constants.USERS_KEY)
