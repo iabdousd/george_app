@@ -91,14 +91,24 @@ class Stack {
 
   Future delete() async {
     assert(id != null);
-    await FirebaseFirestore.instance
+    DocumentReference reference = FirebaseFirestore.instance
         .collection(user_constants.USERS_KEY)
         .doc(getCurrentUser().uid)
         .collection(goal_constants.GOALS_KEY)
         .doc(goalRef)
         .collection(goal_constants.STACKS_KEY)
-        .doc(id)
-        .delete();
+        .doc(id);
+
+    (await reference.collection(stack_constants.TASKS_KEY).get()).docs.forEach(
+          (element) async => await FirebaseFirestore.instance
+              .collection(user_constants.USERS_KEY)
+              .doc(getCurrentUser().uid)
+              .collection(stack_constants.TASKS_KEY)
+              .doc(element.id)
+              .delete(),
+        );
+
+    await reference.delete();
     await GoalSummary(id: goalRef).deleteStack(
       this,
       withFetch: true,
