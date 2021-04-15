@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_week_view/flutter_week_view.dart';
@@ -6,7 +8,6 @@ import 'package:stackedtasks/models/Task.dart';
 import 'package:stackedtasks/services/feed-back/loader.dart';
 import 'package:stackedtasks/services/user/user_service.dart';
 import 'package:stackedtasks/views/task/save_task.dart';
-import 'package:stackedtasks/widgets/calendar/calendar_day_view.dart';
 import 'package:stackedtasks/constants/user.dart' as user_constants;
 import 'package:stackedtasks/constants/models/task.dart' as task_constants;
 import 'package:stackedtasks/constants/models/stack.dart' as stack_constants;
@@ -73,13 +74,24 @@ class TasksListByDay extends StatelessWidget {
                         e.anyTime ? 0 : e.startTime.hour,
                         e.anyTime ? 0 : e.startTime.minute,
                       ),
-                      end: DateTime(
-                        day.year,
-                        day.month,
-                        day.day,
-                        e.anyTime ? 1 : e.endTime.hour,
-                        e.anyTime ? 0 : e.endTime.minute,
-                      ),
+                      end: e.anyTime
+                          ? DateTime(
+                              day.year,
+                              day.month,
+                              day.day,
+                              1,
+                              0,
+                            )
+                          : DateTime(
+                              day.year,
+                              day.month,
+                              day.day,
+                            ).add(Duration(
+                              minutes: max(
+                                e.startTime.hour * 60 + 60 + e.startTime.minute,
+                                e.endTime.hour * 60 + e.endTime.minute,
+                              ),
+                            )),
                       title: e.title,
                       description: e.description,
                       onTap: () => Get.to(
@@ -221,116 +233,3 @@ class TasksListByDay extends StatelessWidget {
     );
   }
 }
-
-//  OLD VERSION
-// return Container(
-//   height: MediaQuery.of(context).size.height,
-//   color: Theme.of(context).backgroundColor,
-//   padding: const EdgeInsets.only(bottom: 80),
-//   child: Column(
-//     crossAxisAlignment: CrossAxisAlignment.stretch,
-//     children: [
-//       Container(
-//         padding: const EdgeInsets.only(
-//           top: 20.0,
-//           left: 12.0,
-//           right: 12.0,
-//         ),
-//         decoration: BoxDecoration(
-//           color: Theme.of(context).backgroundColor,
-//           boxShadow: [
-//             BoxShadow(
-//               color: Color(0x22000000),
-//               blurRadius: 4,
-//             ),
-//           ],
-//         ),
-//         child: Column(
-//           crossAxisAlignment: CrossAxisAlignment.start,
-//           children: [
-//             Text(
-//               '${DateFormat("MMMM yyyy").format(day)}',
-//               style: Theme.of(context)
-//                   .textTheme
-//                   .headline6
-//                   .copyWith(fontWeight: FontWeight.w500),
-//             ),
-//             SizedBox(
-//               height: 4,
-//             ),
-//             Container(
-//               padding: EdgeInsets.only(
-//                   top: 8.0, bottom: 8.0, left: 4.0, right: 12.0),
-//               decoration: BoxDecoration(
-//                 color: Theme.of(context).backgroundColor,
-//                 border: Border(
-//                   right: BorderSide(
-//                     color: Color(0x22000000),
-//                     width: 1,
-//                   ),
-//                 ),
-//               ),
-//               child: Column(
-//                 children: [
-//                   Text(
-//                     DateFormat('EEE').format(day).toUpperCase(),
-//                     style: Theme.of(context).textTheme.subtitle1.copyWith(
-//                           color: Theme.of(context).primaryColor,
-//                         ),
-//                   ),
-//                   Container(
-//                     padding: EdgeInsets.all(8.0),
-//                     decoration: BoxDecoration(
-//                       color: Theme.of(context).primaryColor,
-//                       shape: BoxShape.circle,
-//                     ),
-//                     child: Text(
-//                       DateFormat('dd').format(day),
-//                       style:
-//                           Theme.of(context).textTheme.headline6.copyWith(
-//                                 color: Colors.white,
-//                                 fontWeight: FontWeight.w500,
-//                               ),
-//                     ),
-//                   ),
-//                 ],
-//               ),
-//             ),
-//           ],
-//         ),
-//       ),
-//       Expanded(
-//         child: Container(
-//           child: StreamBuilder<QuerySnapshot>(
-//             stream: FirebaseFirestore.instance
-//                 .collection(user_constants.USERS_KEY)
-//                 .doc(getCurrentUser().uid)
-//                 .collection(stack_constants.TASKS_KEY)
-//                 .where(
-//                   task_constants.DUE_DATES_KEY,
-//                   arrayContains: DateTime(day.year, day.month, day.day),
-//                 )
-//                 .orderBy(
-//                   task_constants.START_TIME_KEY,
-//                 )
-//                 .snapshots(),
-//             builder: (context, snapshot) {
-//               List<Task> tasks = [];
-//               if (snapshot.hasData && snapshot.data.docs.length > 0)
-//                 tasks = snapshot.data.docs
-//                     .map(
-//                       (e) => Task.fromJson(e.data(), id: e.id),
-//                     )
-//                     .toList();
-
-//               return CalendarDayView(
-//                 tasks: tasks,
-//                 day: day,
-//               );
-//             },
-//           ),
-//         ),
-//       ),
-//     ],
-//   ),
-// );

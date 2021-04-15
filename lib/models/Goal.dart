@@ -2,6 +2,8 @@ import 'package:stackedtasks/models/Stack.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:stackedtasks/models/goal_summary.dart';
 import 'package:stackedtasks/services/user/user_service.dart';
+import 'package:stackedtasks/constants/models/task.dart' as task_constants;
+import 'package:stackedtasks/constants/models/stack.dart' as stack_constants;
 import 'package:stackedtasks/constants/models/goal.dart' as goal_constants;
 import 'package:stackedtasks/constants/user.dart' as user_constants;
 
@@ -169,13 +171,24 @@ class Goal {
 
   Future delete() async {
     assert(id != null);
-
-    await FirebaseFirestore.instance
+    final reference = FirebaseFirestore.instance
         .collection(user_constants.USERS_KEY)
         .doc(getCurrentUser().uid)
         .collection(goal_constants.GOALS_KEY)
-        .doc(id)
-        .delete();
+        .doc(id);
+
+    (await FirebaseFirestore.instance
+            .collection(user_constants.USERS_KEY)
+            .doc(getCurrentUser().uid)
+            .collection(stack_constants.TASKS_KEY)
+            .where(task_constants.GOAL_REF_KEY, isEqualTo: reference.id)
+            .get())
+        .docs
+        .forEach(
+          (element) async => await element.reference.delete(),
+        );
+
+    await reference.delete();
     await GoalSummary(
       id: id,
     ).delete();

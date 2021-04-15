@@ -56,57 +56,6 @@ class _CalendarViewState extends State<CalendarView>
     _calendarController = CalendarController();
   }
 
-  int oldIndex = 1;
-
-  initDayTabView(DateTime date) {
-    selectedDay = date;
-    tabChildren = [
-      TasksListByDay(
-        day: DateTime(
-          date.year,
-          date.month,
-          date.day - 1,
-        ),
-        fullScreen: true,
-      ),
-      TasksListByDay(
-        day: date,
-        fullScreen: true,
-      ),
-      TasksListByDay(
-        day: DateTime(
-          date.year,
-          date.month,
-          date.day + 1,
-        ),
-        fullScreen: true,
-      ),
-    ];
-    _dayViewTanController = TabController(
-      vsync: this,
-      length: 3,
-      initialIndex: 1,
-    );
-    _dayViewTanController.animateTo(1, duration: Duration.zero);
-    _dayViewTanController.addListener(() {
-      if (_dayViewTanController.index == 2) {
-        initDayTabView(DateTime(
-          selectedDay.year,
-          selectedDay.month,
-          selectedDay.day + 1,
-        ));
-      } else if (_dayViewTanController.index == 0) {
-        initDayTabView(DateTime(
-          selectedDay.year,
-          selectedDay.month,
-          selectedDay.day - 1,
-        ));
-      }
-      oldIndex = _dayViewTanController.index;
-    });
-    setState(() {});
-  }
-
   _changeCalendarView(String view) {
     currentCalendarView = view;
     switch (view) {
@@ -122,30 +71,6 @@ class _CalendarViewState extends State<CalendarView>
         }
       case 'day':
         {
-          // _dayViewTanController = TabController(
-          //   vsync: this,
-          //   length: 3,
-          //   initialIndex: 1,
-          // );
-
-          // _dayViewTanController.addListener(() {
-          //   print(_dayViewTanController.length);
-          //   print(_dayViewTanController.index);
-          //   if (_dayViewTanController.index == 2) {
-          //     initDayTabView(DateTime(
-          //       selectedDay.year,
-          //       selectedDay.month,
-          //       selectedDay.day + 1,
-          //     ));
-          //   } else if (_dayViewTanController.index == 0) {
-          //     initDayTabView(DateTime(
-          //       selectedDay.year,
-          //       selectedDay.month,
-          //       selectedDay.day - 1,
-          //     ));
-          //   }
-          //   oldIndex = _dayViewTanController.index;
-          // });
           _dayViewTanController = TabController(
             vsync: this,
             length: daysInMonth,
