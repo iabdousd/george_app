@@ -1,13 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-import 'package:plandoraslist/constants/user.dart' as user_constants;
-import 'package:plandoraslist/constants/models/task.dart' as task_constants;
-import 'package:plandoraslist/constants/models/stack.dart' as stack_constants;
-import 'package:plandoraslist/models/Task.dart';
-import 'package:plandoraslist/services/feed-back/loader.dart';
-import 'package:plandoraslist/services/user/user_service.dart';
-import 'package:plandoraslist/widgets/task/task_list_tile_widget.dart';
+import 'package:stackedtasks/constants/user.dart' as user_constants;
+import 'package:stackedtasks/constants/models/task.dart' as task_constants;
+import 'package:stackedtasks/constants/models/stack.dart' as stack_constants;
+import 'package:stackedtasks/models/Task.dart';
+import 'package:stackedtasks/services/feed-back/loader.dart';
+import 'package:stackedtasks/services/user/user_service.dart';
+import 'package:stackedtasks/widgets/task/task_list_tile_widget.dart';
 
 class TasksTimerList extends StatefulWidget {
   final Function(Task) emitFirstTask;

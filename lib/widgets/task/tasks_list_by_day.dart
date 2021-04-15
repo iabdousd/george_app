@@ -1,17 +1,17 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_week_view/flutter_week_view.dart';
-import 'package:plandoraslist/config/extensions/hex_color.dart';
-import 'package:plandoraslist/models/Task.dart';
-import 'package:plandoraslist/services/feed-back/loader.dart';
-import 'package:plandoraslist/services/user/user_service.dart';
-import 'package:plandoraslist/views/task/save_task.dart';
-import 'package:plandoraslist/widgets/calendar/calendar_day_view.dart';
-import 'package:plandoraslist/constants/user.dart' as user_constants;
-import 'package:plandoraslist/constants/models/task.dart' as task_constants;
-import 'package:plandoraslist/constants/models/stack.dart' as stack_constants;
-import 'package:plandoraslist/widgets/shared/app_error_widget.dart';
-import 'package:plandoraslist/widgets/task/task_list_tile_widget.dart';
+import 'package:stackedtasks/config/extensions/hex_color.dart';
+import 'package:stackedtasks/models/Task.dart';
+import 'package:stackedtasks/services/feed-back/loader.dart';
+import 'package:stackedtasks/services/user/user_service.dart';
+import 'package:stackedtasks/views/task/save_task.dart';
+import 'package:stackedtasks/widgets/calendar/calendar_day_view.dart';
+import 'package:stackedtasks/constants/user.dart' as user_constants;
+import 'package:stackedtasks/constants/models/task.dart' as task_constants;
+import 'package:stackedtasks/constants/models/stack.dart' as stack_constants;
+import 'package:stackedtasks/widgets/shared/app_error_widget.dart';
+import 'package:stackedtasks/widgets/task/task_list_tile_widget.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 

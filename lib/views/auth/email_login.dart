@@ -3,9 +3,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:plandoraslist/services/feed-back/flush_bar.dart';
-import 'package:plandoraslist/services/feed-back/loader.dart';
-import 'package:plandoraslist/views/main-views/main.dart';
+import 'package:stackedtasks/services/feed-back/flush_bar.dart';
+import 'package:stackedtasks/services/feed-back/loader.dart';
+import 'package:stackedtasks/views/main-views/main.dart';
 
 import 'email_register.dart';
 

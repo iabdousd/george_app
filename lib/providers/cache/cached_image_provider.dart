@@ -4,7 +4,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
-import 'package:plandoraslist/services/cache/images/cached_image.dart';
+import 'package:stackedtasks/services/cache/images/cached_image.dart';
 
 class CachedImageProvider extends ImageProvider<CachedImageProvider> {
   final String url;

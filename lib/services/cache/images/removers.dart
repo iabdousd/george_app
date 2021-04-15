@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'dart:isolate';
-import 'package:plandoraslist/models/cache/cached_image.dart';
+import 'package:stackedtasks/models/cache/cached_image.dart';
 import 'package:hive/hive.dart';
 
 void remover(List message) async {

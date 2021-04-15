@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:plandoraslist/services/feed-back/flush_bar.dart';
-import 'package:plandoraslist/services/feed-back/loader.dart';
+import 'package:stackedtasks/services/feed-back/flush_bar.dart';
+import 'package:stackedtasks/services/feed-back/loader.dart';
 
 void reportAnIssue(String message) async {
   if (message.replaceAll('\n', '').trim().isNotEmpty) {

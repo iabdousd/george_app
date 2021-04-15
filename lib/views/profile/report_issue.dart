@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:plandoraslist/services/feed-back/reports.dart';
-import 'package:plandoraslist/widgets/shared/app_action_button.dart';
+import 'package:stackedtasks/services/feed-back/reports.dart';
+import 'package:stackedtasks/widgets/shared/app_action_button.dart';
 
 class ReportIssue extends StatefulWidget {
   ReportIssue({Key key}) : super(key: key);

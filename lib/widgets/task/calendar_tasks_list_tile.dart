@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:plandoraslist/config/extensions/hex_color.dart';
-import 'package:plandoraslist/models/Task.dart';
-import 'package:plandoraslist/views/task/save_task.dart';
+import 'package:stackedtasks/config/extensions/hex_color.dart';
+import 'package:stackedtasks/models/Task.dart';
+import 'package:stackedtasks/views/task/save_task.dart';
 import 'package:get/get.dart';
 
 class CalendarTaskListTileWidget extends StatefulWidget {

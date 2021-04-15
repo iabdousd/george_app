@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:plandoraslist/views/goal/save_goal.dart';
-import 'package:plandoraslist/widgets/home/app_bottom_navigation_bar.dart';
+import 'package:stackedtasks/views/goal/save_goal.dart';
+import 'package:stackedtasks/widgets/home/app_bottom_navigation_bar.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';

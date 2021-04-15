@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'package:plandoraslist/models/Task.dart';
-import 'package:plandoraslist/services/feed-back/flush_bar.dart';
-import 'package:plandoraslist/services/feed-back/loader.dart';
-import 'package:plandoraslist/widgets/shared/app_appbar.dart';
+import 'package:stackedtasks/models/Task.dart';
+import 'package:stackedtasks/services/feed-back/flush_bar.dart';
+import 'package:stackedtasks/services/feed-back/loader.dart';
+import 'package:stackedtasks/widgets/shared/app_appbar.dart';
 
 class SaveTaskFeedArticle extends StatefulWidget {
   final Task task;

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:plandoraslist/services/feed-back/reports.dart';
-import 'package:plandoraslist/widgets/shared/app_action_button.dart';
+import 'package:stackedtasks/services/feed-back/reports.dart';
+import 'package:stackedtasks/widgets/shared/app_action_button.dart';
 
 class ContactScreen extends StatefulWidget {
   ContactScreen({Key key}) : super(key: key);

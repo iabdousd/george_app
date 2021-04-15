@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:plandoraslist/models/Note.dart';
-import 'package:plandoraslist/services/feed-back/loader.dart';
-import 'package:plandoraslist/services/shared/text/text_to_spans.dart';
-import 'package:plandoraslist/views/note/save_note.dart';
+import 'package:stackedtasks/models/Note.dart';
+import 'package:stackedtasks/services/feed-back/loader.dart';
+import 'package:stackedtasks/services/shared/text/text_to_spans.dart';
+import 'package:stackedtasks/views/note/save_note.dart';
 import 'package:get/get.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';

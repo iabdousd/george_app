@@ -1,13 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:plandoraslist/models/goal_summary.dart';
-import 'package:plandoraslist/services/feed-back/loader.dart';
-import 'package:plandoraslist/services/user/user_service.dart';
-import 'package:plandoraslist/widgets/activity_feed/feed_articles_empty.dart';
-import 'package:plandoraslist/widgets/goal/goal_summary.dart';
-import 'package:plandoraslist/constants/user.dart' as user_constants;
-import 'package:plandoraslist/constants/feed.dart' as feed_constants;
+import 'package:stackedtasks/models/goal_summary.dart';
+import 'package:stackedtasks/services/feed-back/loader.dart';
+import 'package:stackedtasks/services/user/user_service.dart';
+import 'package:stackedtasks/widgets/activity_feed/feed_articles_empty.dart';
+import 'package:stackedtasks/widgets/goal/goal_summary.dart';
+import 'package:stackedtasks/constants/user.dart' as user_constants;
+import 'package:stackedtasks/constants/feed.dart' as feed_constants;
 
 class GoalsSummaryView extends StatefulWidget {
   GoalsSummaryView({Key key}) : super(key: key);

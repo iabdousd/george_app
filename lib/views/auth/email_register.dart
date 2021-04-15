@@ -8,13 +8,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
-import 'package:plandoraslist/constants/user.dart';
-import 'package:plandoraslist/services/feed-back/flush_bar.dart';
-import 'package:plandoraslist/services/feed-back/loader.dart';
-import 'package:plandoraslist/services/storage/image_upload.dart';
-import 'package:plandoraslist/views/main-views/main.dart';
-import 'package:plandoraslist/widgets/shared/app_action_button.dart';
-import 'package:plandoraslist/widgets/shared/app_text_field.dart';
+import 'package:stackedtasks/constants/user.dart';
+import 'package:stackedtasks/services/feed-back/flush_bar.dart';
+import 'package:stackedtasks/services/feed-back/loader.dart';
+import 'package:stackedtasks/services/storage/image_upload.dart';
+import 'package:stackedtasks/views/main-views/main.dart';
+import 'package:stackedtasks/widgets/shared/app_action_button.dart';
+import 'package:stackedtasks/widgets/shared/app_text_field.dart';
 
 class EmailRegisterView extends StatefulWidget {
   EmailRegisterView({Key key}) : super(key: key);

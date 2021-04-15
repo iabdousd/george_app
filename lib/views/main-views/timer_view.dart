@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:plandoraslist/models/Task.dart';
-import 'package:plandoraslist/widgets/task/tasks_timer_list.dart';
+import 'package:stackedtasks/models/Task.dart';
+import 'package:stackedtasks/widgets/task/tasks_timer_list.dart';
 
 class TimerView extends StatefulWidget {
   TimerView({Key key}) : super(key: key);

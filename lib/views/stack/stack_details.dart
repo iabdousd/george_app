@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:plandoraslist/services/feed-back/loader.dart';
-import 'package:plandoraslist/views/stack/save_stack.dart';
-import 'package:plandoraslist/views/task/stack_body_view.dart';
-import 'package:plandoraslist/widgets/shared/app_action_button.dart';
-import 'package:plandoraslist/widgets/shared/app_appbar.dart';
+import 'package:stackedtasks/services/feed-back/loader.dart';
+import 'package:stackedtasks/views/stack/save_stack.dart';
+import 'package:stackedtasks/views/task/stack_body_view.dart';
+import 'package:stackedtasks/widgets/shared/app_action_button.dart';
+import 'package:stackedtasks/widgets/shared/app_appbar.dart';
 import 'package:get/get.dart';
-import 'package:plandoraslist/models/Stack.dart' as stack_model;
+import 'package:stackedtasks/models/Stack.dart' as stack_model;
 
 class StackDetailsPage extends StatefulWidget {
   final stack_model.Stack stack;

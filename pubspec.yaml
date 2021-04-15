@@ -1,4 +1,4 @@
-name: plandoraslist
+name: stackedtasks
 description: A new Flutter project.
 
 # The following line prevents the package from being accidentally published to
@@ -28,6 +28,7 @@ dependencies:
   firebase_auth: ^1.0.1
   cloud_firestore: ^1.0.1
   firebase_storage: ^8.0.0
+  firebase_analytics: ^7.1.1
 
   # AUTH
   # google_sign_in: ^5.0.1

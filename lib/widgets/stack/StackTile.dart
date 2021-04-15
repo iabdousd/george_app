@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:plandoraslist/config/extensions/hex_color.dart';
-import 'package:plandoraslist/services/feed-back/loader.dart';
-import 'package:plandoraslist/views/stack/save_stack.dart';
-import 'package:plandoraslist/views/stack/stack_details.dart';
+import 'package:stackedtasks/config/extensions/hex_color.dart';
+import 'package:stackedtasks/services/feed-back/loader.dart';
+import 'package:stackedtasks/views/stack/save_stack.dart';
+import 'package:stackedtasks/views/stack/stack_details.dart';
 import 'package:get/get.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:plandoraslist/models/Stack.dart' as stack_model;
+import 'package:stackedtasks/models/Stack.dart' as stack_model;
 
 class StackListTileWidget extends StatelessWidget {
   final stack_model.Stack stack;

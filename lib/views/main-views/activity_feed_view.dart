@@ -2,11 +2,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:plandoraslist/providers/cache/cached_image_provider.dart';
-import 'package:plandoraslist/views/feed/feed_articles_list.dart';
-import 'package:plandoraslist/views/feed/goal_summary_list.dart';
-import 'package:plandoraslist/views/profile/profile_page.dart';
-import 'package:plandoraslist/widgets/activity_feed/week_progress.dart';
+import 'package:stackedtasks/providers/cache/cached_image_provider.dart';
+import 'package:stackedtasks/views/feed/feed_articles_list.dart';
+import 'package:stackedtasks/views/feed/goal_summary_list.dart';
+import 'package:stackedtasks/views/profile/profile_page.dart';
+import 'package:stackedtasks/widgets/activity_feed/week_progress.dart';
 import 'package:get/get.dart';
 
 class ActivityFeedView extends StatefulWidget {

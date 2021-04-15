@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:plandoraslist/services/user/user_service.dart';
+import 'package:stackedtasks/services/user/user_service.dart';
 
 import 'main-views/main.dart';
 import 'start_guide/guides_screen.dart';

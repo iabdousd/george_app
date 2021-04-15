@@ -1,13 +1,13 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:plandoraslist/config/extensions/hex_color.dart';
-import 'package:plandoraslist/models/Goal.dart';
-import 'package:plandoraslist/services/feed-back/flush_bar.dart';
-import 'package:plandoraslist/services/feed-back/loader.dart';
-import 'package:plandoraslist/services/shared/color.dart';
-import 'package:plandoraslist/widgets/forms/date_picker.dart';
-import 'package:plandoraslist/widgets/shared/app_appbar.dart';
+import 'package:stackedtasks/config/extensions/hex_color.dart';
+import 'package:stackedtasks/models/Goal.dart';
+import 'package:stackedtasks/services/feed-back/flush_bar.dart';
+import 'package:stackedtasks/services/feed-back/loader.dart';
+import 'package:stackedtasks/services/shared/color.dart';
+import 'package:stackedtasks/widgets/forms/date_picker.dart';
+import 'package:stackedtasks/widgets/shared/app_appbar.dart';
 
 class SaveGoalPage extends StatefulWidget {
   final Goal goal;

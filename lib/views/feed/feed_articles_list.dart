@@ -1,16 +1,16 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:plandoraslist/widgets/activity_feed/feed_articles_empty.dart';
+import 'package:stackedtasks/widgets/activity_feed/feed_articles_empty.dart';
 import 'package:intl/intl.dart';
 
-import 'package:plandoraslist/models/Task.dart';
-import 'package:plandoraslist/services/user/user_service.dart';
-import 'package:plandoraslist/widgets/activity_feed/article_skeleton.dart';
-import 'package:plandoraslist/widgets/activity_feed/onetime_task_article.dart';
-import 'package:plandoraslist/widgets/activity_feed/recurring_task_article.dart';
-import 'package:plandoraslist/constants/user.dart' as user_constants;
-import 'package:plandoraslist/constants/feed.dart' as feed_constants;
+import 'package:stackedtasks/models/Task.dart';
+import 'package:stackedtasks/services/user/user_service.dart';
+import 'package:stackedtasks/widgets/activity_feed/article_skeleton.dart';
+import 'package:stackedtasks/widgets/activity_feed/onetime_task_article.dart';
+import 'package:stackedtasks/widgets/activity_feed/recurring_task_article.dart';
+import 'package:stackedtasks/constants/user.dart' as user_constants;
+import 'package:stackedtasks/constants/feed.dart' as feed_constants;
 
 class FeedArticlesList extends StatefulWidget {
   const FeedArticlesList({Key key}) : super(key: key);

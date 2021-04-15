@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:plandoraslist/models/Goal.dart';
-import 'package:plandoraslist/services/feed-back/loader.dart';
-import 'package:plandoraslist/views/goal/save_goal.dart';
-import 'package:plandoraslist/views/stack/stacks_list_view.dart';
-import 'package:plandoraslist/widgets/shared/app_action_button.dart';
-import 'package:plandoraslist/widgets/shared/app_appbar.dart';
-import 'package:plandoraslist/widgets/shared/app_date_view.dart';
+import 'package:stackedtasks/models/Goal.dart';
+import 'package:stackedtasks/services/feed-back/loader.dart';
+import 'package:stackedtasks/views/goal/save_goal.dart';
+import 'package:stackedtasks/views/stack/stacks_list_view.dart';
+import 'package:stackedtasks/widgets/shared/app_action_button.dart';
+import 'package:stackedtasks/widgets/shared/app_appbar.dart';
+import 'package:stackedtasks/widgets/shared/app_date_view.dart';
 import 'package:get/get.dart';
 
 class GoalDetailsPage extends StatefulWidget {

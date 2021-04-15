@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import 'package:plandoraslist/models/Task.dart';
-import 'package:plandoraslist/services/feed-back/flush_bar.dart';
-import 'package:plandoraslist/services/shared/sharing/sharing_task.dart';
-import 'package:plandoraslist/views/feed/save_task_feed_article.dart';
+import 'package:stackedtasks/models/Task.dart';
+import 'package:stackedtasks/services/feed-back/flush_bar.dart';
+import 'package:stackedtasks/services/shared/sharing/sharing_task.dart';
+import 'package:stackedtasks/views/feed/save_task_feed_article.dart';
 import 'package:screenshot/screenshot.dart';
 
 class TaskFeedArticleActions extends StatelessWidget {

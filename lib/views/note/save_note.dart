@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:plandoraslist/services/shared/text/text_to_spans.dart';
+import 'package:stackedtasks/services/shared/text/text_to_spans.dart';
 import 'package:image_picker/image_picker.dart';
 
-import 'package:plandoraslist/models/Note.dart';
-import 'package:plandoraslist/services/feed-back/flush_bar.dart';
-import 'package:plandoraslist/services/feed-back/loader.dart';
-import 'package:plandoraslist/widgets/shared/app_action_button.dart';
-import 'package:plandoraslist/widgets/shared/app_appbar.dart';
-import 'package:plandoraslist/widgets/shared/images_list_view.dart';
+import 'package:stackedtasks/models/Note.dart';
+import 'package:stackedtasks/services/feed-back/flush_bar.dart';
+import 'package:stackedtasks/services/feed-back/loader.dart';
+import 'package:stackedtasks/widgets/shared/app_action_button.dart';
+import 'package:stackedtasks/widgets/shared/app_appbar.dart';
+import 'package:stackedtasks/widgets/shared/images_list_view.dart';
 import 'package:intl/intl.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 

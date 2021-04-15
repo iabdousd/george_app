@@ -2,12 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:plandoraslist/config/extensions/hex_color.dart';
-import 'package:plandoraslist/models/Note.dart';
-import 'package:plandoraslist/models/Task.dart';
-import 'package:plandoraslist/services/feed-back/flush_bar.dart';
-import 'package:plandoraslist/services/feed-back/loader.dart';
-import 'package:plandoraslist/views/task/save_task.dart';
+import 'package:stackedtasks/config/extensions/hex_color.dart';
+import 'package:stackedtasks/models/Note.dart';
+import 'package:stackedtasks/models/Task.dart';
+import 'package:stackedtasks/services/feed-back/flush_bar.dart';
+import 'package:stackedtasks/services/feed-back/loader.dart';
+import 'package:stackedtasks/views/task/save_task.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:plandoraslist/services/feed-back/loader.dart';
+import 'package:stackedtasks/services/feed-back/loader.dart';
 
-import 'package:plandoraslist/widgets/goal/GoalTile.dart';
-import 'package:plandoraslist/constants/models/goal.dart' as goal_constants;
-import 'package:plandoraslist/constants/user.dart' as user_constants;
-import 'package:plandoraslist/models/Goal.dart';
-import 'package:plandoraslist/services/user/user_service.dart';
-import 'package:plandoraslist/widgets/shared/app_error_widget.dart';
+import 'package:stackedtasks/widgets/goal/GoalTile.dart';
+import 'package:stackedtasks/constants/models/goal.dart' as goal_constants;
+import 'package:stackedtasks/constants/user.dart' as user_constants;
+import 'package:stackedtasks/models/Goal.dart';
+import 'package:stackedtasks/services/user/user_service.dart';
+import 'package:stackedtasks/widgets/shared/app_error_widget.dart';
 
 class HomeView extends StatefulWidget {
   @override

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:plandoraslist/config/extensions/hex_color.dart';
-import 'package:plandoraslist/models/goal_summary.dart';
-import 'package:plandoraslist/providers/cache/cached_image_provider.dart';
-import 'package:plandoraslist/services/shared/sharing/sharing_task.dart';
+import 'package:stackedtasks/config/extensions/hex_color.dart';
+import 'package:stackedtasks/models/goal_summary.dart';
+import 'package:stackedtasks/providers/cache/cached_image_provider.dart';
+import 'package:stackedtasks/services/shared/sharing/sharing_task.dart';
 import 'package:intl/intl.dart';
 import 'package:screenshot/screenshot.dart';
 

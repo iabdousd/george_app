@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:plandoraslist/views/auth/main.dart';
+import 'package:stackedtasks/views/auth/main.dart';
 
 class GuidesScreen extends StatefulWidget {
   GuidesScreen({Key key}) : super(key: key);

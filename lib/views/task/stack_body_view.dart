@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import 'package:plandoraslist/models/Stack.dart' as stack_model;
-import 'package:plandoraslist/views/note/note_list_view.dart';
-import 'package:plandoraslist/views/task/task_list_view.dart';
+import 'package:stackedtasks/models/Stack.dart' as stack_model;
+import 'package:stackedtasks/views/note/note_list_view.dart';
+import 'package:stackedtasks/views/task/task_list_view.dart';
 
 class StackBodyView extends StatefulWidget {
   final stack_model.Stack stack;

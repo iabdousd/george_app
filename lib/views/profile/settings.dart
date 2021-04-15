@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:plandoraslist/services/profile/email.dart';
-import 'package:plandoraslist/services/profile/phone.dart';
-import 'package:plandoraslist/services/profile/password.dart';
+import 'package:stackedtasks/services/profile/email.dart';
+import 'package:stackedtasks/services/profile/phone.dart';
+import 'package:stackedtasks/services/profile/password.dart';
 
 class SettingsScreen extends StatefulWidget {
   SettingsScreen({Key key}) : super(key: key);

@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:plandoraslist/constants/models/stack_summary.dart'
+import 'package:stackedtasks/constants/models/stack_summary.dart'
     as stack_summary_constants;
 
 class StackSummary {

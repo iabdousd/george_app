@@ -3,16 +3,16 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
-import 'package:plandoraslist/config/extensions/clippers.dart';
-import 'package:plandoraslist/providers/cache/cached_image_provider.dart';
-import 'package:plandoraslist/services/feed-back/loader.dart';
-import 'package:plandoraslist/services/feed-back/reports.dart';
-import 'package:plandoraslist/views/auth/main.dart';
-import 'package:plandoraslist/views/profile/contact_us.dart';
-import 'package:plandoraslist/views/profile/report_issue.dart';
-import 'package:plandoraslist/views/profile/settings.dart';
-import 'package:plandoraslist/widgets/shared/app_action_button.dart';
-import 'package:plandoraslist/widgets/shared/photo_view.dart';
+import 'package:stackedtasks/config/extensions/clippers.dart';
+import 'package:stackedtasks/providers/cache/cached_image_provider.dart';
+import 'package:stackedtasks/services/feed-back/loader.dart';
+import 'package:stackedtasks/services/feed-back/reports.dart';
+import 'package:stackedtasks/views/auth/main.dart';
+import 'package:stackedtasks/views/profile/contact_us.dart';
+import 'package:stackedtasks/views/profile/report_issue.dart';
+import 'package:stackedtasks/views/profile/settings.dart';
+import 'package:stackedtasks/widgets/shared/app_action_button.dart';
+import 'package:stackedtasks/widgets/shared/photo_view.dart';
 
 import 'about_us.dart';
 
