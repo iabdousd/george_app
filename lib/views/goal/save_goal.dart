@@ -156,7 +156,7 @@ class _SaveGoalPageState extends State<SaveGoalPage> {
                           color: selectedColor,
                           endDate: endDate,
                           onSubmit: _pickStartDate,
-                          initialDate: startDate,
+                          selectedDate: startDate,
                         ),
                       ),
                       SizedBox(
@@ -168,7 +168,7 @@ class _SaveGoalPageState extends State<SaveGoalPage> {
                           color: selectedColor,
                           onSubmit: _pickEndDate,
                           startDate: startDate,
-                          initialDate: endDate,
+                          selectedDate: endDate,
                         ),
                       ),
                     ],

@@ -39,6 +39,7 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
   TextEditingController _monthsCountController = TextEditingController();
   TextEditingController _descriptionController = TextEditingController();
   List<int> selectedWeekDays = [];
+
   DateTime startDate = DateTime.now();
   DateTime endDate = DateTime.now().add(Duration(days: 1));
   DateTime startTime = DateTime(
@@ -161,6 +162,8 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
   _pickStartDateOnly(DateTime pickedDate) async {
     setState(() {
       startDate = pickedDate;
+      if (pickedDate.isAfter(endDate))
+        endDate = pickedDate.add(Duration(days: 1));
     });
   }
 
@@ -354,31 +357,35 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
                 children: [
                   Expanded(
                     child: DatePickerWidget(
+                      key: const Key('start_date'),
                       title: 'Start date',
                       color: widget.stackColor,
                       onSubmit: _pickStartDateOnly,
-                      initialDate: DateTime(
+                      selectedDate: DateTime(
                         startDate.year,
                         startDate.month,
                         startDate.day,
                         startTime.hour,
                         startTime.minute,
                       ),
-                      endDate: repetition == 'No repetition'
-                          ? DateTime.now().add(Duration(days: 365))
-                          : DateTime(
-                              endDate.year,
-                              endDate.month,
-                              endDate.day,
-                              endTime.hour,
-                              endTime.minute,
-                            ),
+                      endDate:
+                          // repetition == 'No repetition'?
+                          DateTime.now().add(Duration(days: 365))
+                      // : DateTime(
+                      //     endDate.year,
+                      //     endDate.month,
+                      //     endDate.day,
+                      //     endTime.hour,
+                      //     endTime.minute,
+                      //   )
+                      ,
                       dateFormat: 'dd MMMM yyyy',
                     ),
                   ),
                   if (repetition != 'No repetition')
                     Expanded(
                       child: DatePickerWidget(
+                        key: const Key('end_date'),
                         title: 'End date',
                         color: widget.stackColor,
                         startDate: DateTime(
@@ -389,7 +396,7 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
                           startTime.minute,
                         ),
                         onSubmit: _pickEndDateOnly,
-                        initialDate: DateTime(
+                        selectedDate: DateTime(
                           endDate.year,
                           endDate.month,
                           endDate.day,

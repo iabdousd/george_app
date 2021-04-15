@@ -4,12 +4,12 @@ import 'package:stackedtasks/config/extensions/hex_color.dart';
 import 'package:stackedtasks/services/feed-back/flush_bar.dart';
 import 'package:intl/intl.dart';
 
-class DatePickerWidget extends StatefulWidget {
+class DatePickerWidget extends StatelessWidget {
   final String title;
   final String color;
   final Function onSubmit;
   final DateTime startDate;
-  final DateTime initialDate;
+  final DateTime selectedDate;
   final DateTime endDate;
   final String dateFormat;
   final CrossAxisAlignment crossAxisAlignment;
@@ -21,52 +21,42 @@ class DatePickerWidget extends StatefulWidget {
     @required this.color,
     @required this.onSubmit,
     this.startDate,
-    this.initialDate,
+    this.selectedDate,
     this.endDate,
     this.dateFormat = 'dd/MM/yyyy',
     this.crossAxisAlignment = CrossAxisAlignment.center,
     this.margin = const EdgeInsets.only(top: 8.0),
   }) : super(key: key);
 
-  @override
-  _DatePickerWidgetState createState() => _DatePickerWidgetState();
-}
-
-class _DatePickerWidgetState extends State<DatePickerWidget> {
-  DateTime selectedDate;
-
-  _pickDate() async {
+  _pickDate(context) async {
     try {
       final DateTime picked = await showRoundedDatePicker(
         context: context,
         initialDate: selectedDate,
-        firstDate: widget.startDate != null
+        firstDate: startDate != null
             ? DateTime(
-                widget.startDate.year,
-                widget.startDate.month,
-                widget.startDate.day,
+                startDate.year,
+                startDate.month,
+                startDate.day,
               )
             : DateTime(2000),
-        lastDate: widget.endDate != null
+        lastDate: endDate != null
             ? DateTime(
-                widget.endDate.year,
-                widget.endDate.month,
-                widget.endDate.day,
+                endDate.year,
+                endDate.month,
+                endDate.day,
               )
             : DateTime(2100),
         height: 280,
       );
       if (picked != null) {
-        setState(() {
-          selectedDate = DateTime(
-            picked.year,
-            picked.month,
-            picked.day,
-            selectedDate.hour,
-            selectedDate.minute,
-          );
-        });
-        widget.onSubmit(selectedDate);
+        onSubmit(DateTime(
+          picked.year,
+          picked.month,
+          picked.day,
+          selectedDate.hour,
+          selectedDate.minute,
+        ));
       }
     } catch (e) {
       print(e);
@@ -80,18 +70,12 @@ class _DatePickerWidgetState extends State<DatePickerWidget> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    selectedDate = widget.initialDate ?? DateTime.now();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          margin: widget.margin,
+          margin: margin,
           child: Row(
             children: [
               Expanded(
@@ -103,7 +87,7 @@ class _DatePickerWidgetState extends State<DatePickerWidget> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: Text(
-                  widget.title,
+                  title,
                   style: Theme.of(context).textTheme.bodyText1,
                   textAlign: TextAlign.center,
                 ),
@@ -125,18 +109,18 @@ class _DatePickerWidgetState extends State<DatePickerWidget> {
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: widget.crossAxisAlignment,
+            crossAxisAlignment: crossAxisAlignment,
             children: [
               Expanded(
                 child: InkWell(
-                  onTap: _pickDate,
+                  onTap: () => _pickDate(context),
                   child: Row(
                     children: [
                       Container(
                         padding: const EdgeInsets.all(8.0),
                         child: Icon(
                           Icons.calendar_today_outlined,
-                          color: HexColor.fromHex(widget.color),
+                          color: HexColor.fromHex(color),
                           size: 24,
                         ),
                       ),
@@ -145,7 +129,7 @@ class _DatePickerWidgetState extends State<DatePickerWidget> {
                       ),
                       Expanded(
                         child: Text(
-                          DateFormat(widget.dateFormat).format(selectedDate),
+                          DateFormat(dateFormat).format(selectedDate),
                           style: Theme.of(context)
                               .textTheme
                               .headline6
