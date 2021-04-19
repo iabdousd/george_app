@@ -3,7 +3,6 @@ import 'package:stackedtasks/models/Task.dart';
 import 'package:stackedtasks/constants/models/task.dart' as task_constants;
 import 'package:stackedtasks/constants/models/stack.dart' as stack_constants;
 import 'package:stackedtasks/constants/user.dart' as user_constants;
-import 'package:stackedtasks/constants/models/goal.dart' as goal_constants;
 import 'package:stackedtasks/services/user/user_service.dart';
 
 Future<List<Task>> tasksByDate(DateTime date) async {

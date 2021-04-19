@@ -6,7 +6,6 @@ import 'package:get/get.dart';
 import 'package:stackedtasks/config/extensions/clippers.dart';
 import 'package:stackedtasks/providers/cache/cached_image_provider.dart';
 import 'package:stackedtasks/services/feed-back/loader.dart';
-import 'package:stackedtasks/services/feed-back/reports.dart';
 import 'package:stackedtasks/views/auth/main.dart';
 import 'package:stackedtasks/views/profile/contact_us.dart';
 import 'package:stackedtasks/views/profile/report_issue.dart';
