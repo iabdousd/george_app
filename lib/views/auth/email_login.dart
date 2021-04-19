@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:stackedtasks/services/feed-back/flush_bar.dart';
 import 'package:stackedtasks/services/feed-back/loader.dart';
 import 'package:stackedtasks/views/main-views/main.dart';
@@ -215,6 +216,9 @@ class EmailLoginViewState extends State<EmailLoginView> {
         password: _passwordController.text,
       );
       await toggleLoading(state: false);
+      SharedPreferences preferences = await SharedPreferences.getInstance();
+      await preferences.setBool('hasEnteredBefore', true);
+      Navigator.popUntil(context, (route) => route.isFirst);
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => MainView()),
       );

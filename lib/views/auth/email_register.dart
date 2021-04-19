@@ -264,6 +264,7 @@ class EmailRegisterViewState extends State<EmailRegisterView> {
         USER_PROFILE_PICTURE_KEY: pictureUrl,
       });
       await toggleLoading(state: false);
+      Navigator.popUntil(context, (route) => route.isFirst);
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => MainView()),
       );

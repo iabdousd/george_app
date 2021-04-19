@@ -28,8 +28,10 @@ class _MainViewState extends State<MainView>
     SharedPreferences preferences = await SharedPreferences.getInstance();
     bool hasEnteredBefore = preferences.getBool('hasEnteredBefore') ?? false;
     if (!hasEnteredBefore) {
-      showTutorial();
-      await preferences.setBool('hasEnteredBefore', true);
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        showTutorial();
+        await preferences.setBool('hasEnteredBefore', true);
+      });
     }
   }
 
@@ -181,48 +183,65 @@ A pro tip is to add maintaining your task management system itself as one of you
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).backgroundColor,
-      body: SafeArea(
-        child: TabBarView(
-          controller: _tabController,
-          physics: NeverScrollableScrollPhysics(),
-          children: [
-            HomeView(),
-            CalendarView(),
-            TimerView(),
-            ActivityFeedView(),
-          ],
+    return WillPopScope(
+      onWillPop: () => showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+                title: Text('Are you sure you want to quit the application?'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: Text('Cancel'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: Text('Quit'),
+                  ),
+                ],
+              )),
+      child: Scaffold(
+        backgroundColor: Theme.of(context).backgroundColor,
+        body: SafeArea(
+          child: TabBarView(
+            controller: _tabController,
+            physics: NeverScrollableScrollPhysics(),
+            children: [
+              HomeView(),
+              CalendarView(),
+              TimerView(),
+              ActivityFeedView(),
+            ],
+          ),
         ),
-      ),
-      floatingActionButton: StreamBuilder<int>(
+        floatingActionButton: StreamBuilder<int>(
+            stream: pageIndexStreamController.stream,
+            builder: (context, snapshot) {
+              int index = snapshot.data ?? 0;
+              if (index == 0)
+                return FloatingActionButton(
+                  onPressed: () => Get.to(() => SaveGoalPage()),
+                  child: Icon(
+                    Icons.add,
+                    size: 32.0,
+                    color: Theme.of(context).backgroundColor,
+                  ),
+                  backgroundColor: Theme.of(context).primaryColor,
+                );
+              return Container();
+            }),
+        bottomNavigationBar: StreamBuilder<int>(
           stream: pageIndexStreamController.stream,
           builder: (context, snapshot) {
-            int index = snapshot.data ?? 0;
-            if (index == 0)
-              return FloatingActionButton(
-                onPressed: () => Get.to(() => SaveGoalPage()),
-                child: Icon(
-                  Icons.add,
-                  size: 32.0,
-                  color: Theme.of(context).backgroundColor,
-                ),
-                backgroundColor: Theme.of(context).primaryColor,
-              );
-            return Container();
-          }),
-      bottomNavigationBar: StreamBuilder<int>(
-        stream: pageIndexStreamController.stream,
-        builder: (context, snapshot) {
-          int index = 0;
-          if (snapshot.hasData) index = snapshot.data;
+            int index = 0;
+            if (snapshot.hasData) index = snapshot.data;
 
-          return AppBottomNavigationBar(
-            index: index,
-            keys: _bottomBarKeys,
-            changePage: _changePage,
-          );
-        },
+            return AppBottomNavigationBar(
+              index: index,
+              keys: _bottomBarKeys,
+              changePage: _changePage,
+            );
+          },
+        ),
       ),
     );
   }
