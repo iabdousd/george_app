@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:stackedtasks/widgets/shared/app_action_button.dart';
 import 'package:stackedtasks/widgets/task/tasks_list_by_day.dart';
 import 'package:intl/intl.dart';
+import 'package:stackedtasks/widgets/task/tasks_list_by_week.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class CalendarView extends StatefulWidget {
@@ -143,6 +144,16 @@ class _CalendarViewState extends State<CalendarView>
                     child: TabBarView(
                       controller: _dayViewTanController,
                       children: tabChildren,
+                    ),
+                  )
+                else if (currentCalendarView == 'week')
+                  Container(
+                    width: MediaQuery.of(context).size.width,
+                    height: MediaQuery.of(context).size.height - 116,
+                    margin: EdgeInsets.only(bottom: 116),
+                    child: TasksListByWeek(
+                      day: selectedDay,
+                      fullScreen: true,
                     ),
                   )
                 else
@@ -333,7 +344,7 @@ class _CalendarViewState extends State<CalendarView>
               ],
             ),
           ),
-          if (currentCalendarView != 'day')
+          if (currentCalendarView == 'month')
             TasksListByDay(
               day: selectedDay,
               fullScreen: false,

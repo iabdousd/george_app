@@ -52,7 +52,7 @@ class TasksListByDay extends StatelessWidget {
             date: day,
             dayBarStyle: DayBarStyle(
               dateFormatter: (year, month, day) =>
-                  DateFormat('EEE, dd yyyy').format(
+                  DateFormat('EEE, dd MMM').format(
                 DateTime(year, month, day),
               ),
               color: Theme.of(context).backgroundColor,

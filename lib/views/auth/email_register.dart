@@ -167,7 +167,7 @@ class EmailRegisterViewState extends State<EmailRegisterView> {
                           ),
                           AppTextField(
                             controller: _passwordController,
-                            label: 'Passowrd',
+                            label: 'Password',
                             hint: 'Make sure it\'s secure!',
                             obscureText: true,
                             maxLines: 1,
@@ -175,7 +175,7 @@ class EmailRegisterViewState extends State<EmailRegisterView> {
                           ),
                           AppTextField(
                             controller: _confirmPasswordController,
-                            label: 'Confirm Passowrd',
+                            label: 'Confirm Password',
                             hint: 'Repeat your password',
                             obscureText: true,
                             maxLines: 1,

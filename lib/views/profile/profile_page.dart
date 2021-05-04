@@ -1,11 +1,17 @@
+import 'dart:io';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:stackedtasks/config/extensions/clippers.dart';
 import 'package:stackedtasks/providers/cache/cached_image_provider.dart';
+import 'package:stackedtasks/services/feed-back/flush_bar.dart';
 import 'package:stackedtasks/services/feed-back/loader.dart';
+import 'package:stackedtasks/services/storage/image_upload.dart';
 import 'package:stackedtasks/views/auth/main.dart';
 import 'package:stackedtasks/views/profile/contact_us.dart';
 import 'package:stackedtasks/views/profile/report_issue.dart';
@@ -26,6 +32,7 @@ class _ProfilePageState extends State<ProfilePage>
     with TickerProviderStateMixin {
   AnimationController _controller;
   Animation<double> animation;
+  PickedFile profileImage;
 
   @override
   void initState() {
@@ -76,36 +83,37 @@ class _ProfilePageState extends State<ProfilePage>
                       onTap: () => Navigator.pop(context),
                     ),
                     GestureDetector(
-                      child: Hero(
-                        tag: 'progile_logo',
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(64),
-                          child: FirebaseAuth.instance.currentUser.photoURL !=
-                                  null
-                              ? Image(
-                                  image: CachedImageProvider(
-                                    FirebaseAuth.instance.currentUser.photoURL,
-                                  ),
-                                  fit: BoxFit.cover,
-                                  width: 64,
-                                  height: 64,
-                                )
-                              : SvgPicture.asset(
-                                  'assets/images/profile.svg',
-                                  fit: BoxFit.cover,
-                                  width: 64,
-                                  height: 64,
-                                ),
-                        ),
-                      ),
-                      onTap: () => Get.to(
-                        () => AppPhotoView(
-                          imageProvider: CachedImageProvider(
-                            FirebaseAuth.instance.currentUser.photoURL,
+                        child: Hero(
+                          tag: 'progile_logo',
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(64),
+                            child: profileImage != null
+                                ? Image.file(
+                                    File(profileImage.path),
+                                    fit: BoxFit.cover,
+                                    width: 64,
+                                    height: 64,
+                                  )
+                                : FirebaseAuth.instance.currentUser.photoURL !=
+                                        null
+                                    ? Image(
+                                        image: CachedImageProvider(
+                                          FirebaseAuth
+                                              .instance.currentUser.photoURL,
+                                        ),
+                                        fit: BoxFit.cover,
+                                        width: 64,
+                                        height: 64,
+                                      )
+                                    : SvgPicture.asset(
+                                        'assets/images/profile.svg',
+                                        fit: BoxFit.cover,
+                                        width: 64,
+                                        height: 64,
+                                      ),
                           ),
                         ),
-                      ),
-                    ),
+                        onTap: profilePictureClickEvent),
                     SizedBox(),
                   ],
                 ),
@@ -233,11 +241,36 @@ class _ProfilePageState extends State<ProfilePage>
                 ),
                 AppActionButton(
                   onPressed: () async {
-                    toggleLoading(state: true);
-                    await FirebaseAuth.instance.signOut();
-                    toggleLoading(state: false);
-                    Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (context) => AuthViews()),
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: Text('Are you sre to disconnect ?'),
+                        actions: [
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            child: Text('Cancel'),
+                          ),
+                          ElevatedButton(
+                            onPressed: () async {
+                              toggleLoading(state: true);
+                              await FirebaseAuth.instance.signOut();
+                              toggleLoading(state: false);
+                              Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(
+                                  builder: (context) => AuthViews(),
+                                ),
+                              );
+                            },
+                            style: ButtonStyle(
+                              backgroundColor:
+                                  MaterialStateProperty.all(Colors.red),
+                            ),
+                            child: Text('Yes'),
+                          ),
+                        ],
+                      ),
                     );
                   },
                   icon: Container(
@@ -265,6 +298,103 @@ class _ProfilePageState extends State<ProfilePage>
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void profilePictureClickEvent() {
+    _pickImage(ImageSource imageSource) async {
+      PickedFile image;
+
+      try {
+        image = await ImagePicker().getImage(
+          imageQuality: 80,
+          source: imageSource,
+        );
+      } on Exception catch (e) {
+        print(e);
+        showFlushBar(
+          title: 'Error',
+          message: 'Unknown error happened while importing your images.',
+          success: false,
+        );
+      }
+      if (image != null) {
+        toggleLoading(state: true);
+        setState(() {
+          profileImage = image;
+        });
+        String url = await uploadFile(image);
+        await FirebaseAuth.instance.currentUser.updateProfile(
+          photoURL: url,
+        );
+        toggleLoading(state: false);
+        showFlushBar(
+          title: 'Success',
+          message: 'Successfully updated your Profile Picture.',
+          success: true,
+        );
+      }
+    }
+
+    showMaterialModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      expand: false,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(12.0),
+            topRight: Radius.circular(12.0),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (FirebaseAuth.instance.currentUser.photoURL != null)
+              AppActionButton(
+                onPressed: () => Get.to(
+                  () => AppPhotoView(
+                    imageProvider: CachedImageProvider(
+                      FirebaseAuth.instance.currentUser.photoURL,
+                    ),
+                  ),
+                ),
+                icon: Icons.remove_red_eye,
+                label: 'Open Picture',
+                backgroundColor: Theme.of(context).backgroundColor,
+                textStyle: Theme.of(context).textTheme.subtitle1,
+                iconColor: Theme.of(context).primaryColor,
+                shadows: [],
+                margin: EdgeInsets.only(bottom: 0, top: 4),
+                iconSize: 28,
+              ),
+            AppActionButton(
+              onPressed: () => _pickImage(ImageSource.gallery),
+              icon: Icons.image_outlined,
+              label: 'Update from Photos',
+              backgroundColor: Theme.of(context).backgroundColor,
+              textStyle: Theme.of(context).textTheme.subtitle1,
+              iconColor: Theme.of(context).primaryColor,
+              shadows: [],
+              margin: EdgeInsets.only(bottom: 0, top: 4),
+              iconSize: 28,
+            ),
+            AppActionButton(
+              onPressed: () => _pickImage(ImageSource.camera),
+              icon: Icons.camera_alt_outlined,
+              label: 'Update from Camera',
+              backgroundColor: Theme.of(context).backgroundColor,
+              textStyle: Theme.of(context).textTheme.subtitle1,
+              iconColor: Theme.of(context).primaryColor,
+              shadows: [],
+              margin: EdgeInsets.only(bottom: 4, top: 0),
+              iconSize: 28,
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -128,8 +128,8 @@ class RecurringTaskArticleWidget extends StatelessWidget {
                         left: 16.0, right: 16.0, bottom: 8.0),
                     child: LayoutBuilder(builder: (context, constraints) {
                       return TaskProgressIndicator(
-                        total: task.dueDates.length,
-                        done: task.donesHistory.length,
+                        dueDates: task.dueDates,
+                        donesHistory: task.donesHistory,
                       );
                     }),
                   ),

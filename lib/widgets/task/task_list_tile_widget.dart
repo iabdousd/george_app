@@ -263,15 +263,20 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                                             padding: const EdgeInsets.symmetric(
                                                 horizontal: 12),
                                             child: Text(
-                                              DateFormat('hh:mm a').format(
-                                                DateTime(
-                                                  1970,
-                                                  1,
-                                                  1,
-                                                  widget.task.startTime.hour,
-                                                  widget.task.startTime.minute,
-                                                ),
-                                              ),
+                                              widget.task.anyTime
+                                                  ? 'Any time'
+                                                  : DateFormat('hh:mm a')
+                                                      .format(
+                                                      DateTime(
+                                                        1970,
+                                                        1,
+                                                        1,
+                                                        widget.task.startTime
+                                                            .hour,
+                                                        widget.task.startTime
+                                                            .minute,
+                                                      ),
+                                                    ),
                                             ),
                                           ),
                                         ],
@@ -317,8 +322,9 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                                           Icons.repeat,
                                           color: widget.task.repetition != null
                                               ? HexColor.fromHex(
-                                                  widget.stackColor)
-                                              : Color(0x88000000),
+                                                  widget.stackColor,
+                                                )
+                                              : Color(0x44000000),
                                           size: 16,
                                         ),
                                       ),
