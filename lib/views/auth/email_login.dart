@@ -118,8 +118,8 @@ class EmailLoginViewState extends State<EmailLoginView> {
                             child: TextFormField(
                               controller: _passwordController,
                               decoration: InputDecoration(
-                                labelText: 'Passowrd',
-                                hintText: 'Your secure passowrd here',
+                                labelText: 'Password',
+                                hintText: 'Your secure password here',
                                 contentPadding: const EdgeInsets.symmetric(
                                   vertical: 12.0,
                                   horizontal: 20.0,
