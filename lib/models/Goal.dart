@@ -19,7 +19,7 @@ class Goal {
   DateTime startDate;
   DateTime endDate;
 
-  List<Stack> stacks;
+  List<TasksStack> stacks;
 
   Goal({
     this.id,
@@ -96,7 +96,7 @@ class Goal {
         value.docs.forEach(
           (element) {
             this.stacks.add(
-                  Stack.fromJson(
+                  TasksStack.fromJson(
                     element.data(),
                     goalRef: id,
                     id: element.id,
@@ -118,7 +118,7 @@ class Goal {
 
       id = documentReference.id;
 
-      for (Stack stack in stacks) {
+      for (TasksStack stack in stacks) {
         DocumentReference docRef = await documentReference
             .collection(goal_constants.STACKS_KEY)
             .add(stack.toJson());
@@ -152,7 +152,7 @@ class Goal {
     return this;
   }
 
-  Future addStack(Stack stack) async {
+  Future addStack(TasksStack stack) async {
     assert(id != null);
 
     DocumentReference docRef = await FirebaseFirestore.instance
@@ -177,16 +177,15 @@ class Goal {
         .collection(goal_constants.GOALS_KEY)
         .doc(id);
 
-    (await FirebaseFirestore.instance
+    final tasksDocs = (await FirebaseFirestore.instance
             .collection(user_constants.USERS_KEY)
             .doc(getCurrentUser().uid)
             .collection(stack_constants.TASKS_KEY)
             .where(task_constants.GOAL_REF_KEY, isEqualTo: reference.id)
             .get())
-        .docs
-        .forEach(
-          (element) async => await element.reference.delete(),
-        );
+        .docs;
+
+    for (final element in tasksDocs) await element.reference.delete();
 
     await reference.delete();
     await GoalSummary(

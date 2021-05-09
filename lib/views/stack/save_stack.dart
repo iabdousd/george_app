@@ -7,7 +7,7 @@ import 'package:stackedtasks/widgets/shared/app_appbar.dart';
 class SaveStackPage extends StatefulWidget {
   final String goalRef;
   final String goalColor;
-  final stack_model.Stack stack;
+  final stack_model.TasksStack stack;
   SaveStackPage({
     Key key,
     @required this.goalRef,
@@ -28,7 +28,7 @@ class _SaveStackPageState extends State<SaveStackPage> {
   _submitStack() async {
     if (!_formKey.currentState.validate()) return;
     toggleLoading(state: true);
-    await stack_model.Stack(
+    await stack_model.TasksStack(
       goalRef: widget.goalRef,
       id: widget.stack?.id,
       title: _titleController.text,

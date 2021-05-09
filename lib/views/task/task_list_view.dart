@@ -1,21 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
-import 'package:stackedtasks/constants/models/goal.dart' as goal_constants;
-import 'package:stackedtasks/constants/user.dart' as user_constants;
-import 'package:stackedtasks/constants/models/stack.dart' as stack_constants;
-import 'package:stackedtasks/constants/models/task.dart' as task_constants;
 import 'package:stackedtasks/models/Stack.dart' as stack_model;
 import 'package:stackedtasks/models/Task.dart';
 import 'package:stackedtasks/services/feed-back/loader.dart';
-import 'package:stackedtasks/services/user/user_service.dart';
 import 'package:stackedtasks/views/task/save_task.dart';
 import 'package:stackedtasks/widgets/shared/app_action_button.dart';
 import 'package:stackedtasks/widgets/task/task_list_tile_widget.dart';
+import 'package:stackedtasks/repositories/stack/stack_repository.dart';
 import 'package:get/get.dart';
 
 class TaskListView extends StatefulWidget {
-  final stack_model.Stack stack;
+  final stack_model.TasksStack stack;
   const TaskListView({Key key, this.stack}) : super(key: key);
 
   @override
@@ -83,35 +78,25 @@ class _TaskListViewState extends State<TaskListView>
               );
             },
           ),
-          StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection(user_constants.USERS_KEY)
-                  .doc(getCurrentUser().uid)
-                  .collection(goal_constants.GOALS_KEY)
-                  .doc(widget.stack.goalRef)
-                  .collection(goal_constants.STACKS_KEY)
-                  .doc(widget.stack.id)
-                  .collection(stack_constants.TASKS_KEY)
-                  .orderBy(task_constants.CREATION_DATE_KEY, descending: true)
-                  .limit(limit)
-                  .snapshots(),
+          FutureBuilder<List<Task>>(
+              future: StackRepository.getStackTasks(
+                widget.stack,
+                limit,
+              ),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
-                  elementsCount = snapshot.data.docs.length;
-                  if (snapshot.data.docs.length > 0)
+                  elementsCount = snapshot.data.length;
+                  if (snapshot.data.length > 0)
                     return ListView.builder(
                       shrinkWrap: true,
                       padding: const EdgeInsets.symmetric(
                         vertical: 4.0,
                       ),
-                      itemCount: snapshot.data.docs.length,
+                      itemCount: snapshot.data.length,
                       physics: NeverScrollableScrollPhysics(),
                       itemBuilder: (context, index) {
                         return TaskListTileWidget(
-                          task: Task.fromJson(snapshot.data.docs[index].data())
-                            ..goalRef = widget.stack.goalRef
-                            ..stackRef = widget.stack.id
-                            ..id = snapshot.data.docs[index].id,
+                          task: snapshot.data[index],
                           stackColor: widget.stack.color,
                         );
                       },

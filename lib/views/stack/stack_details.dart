@@ -8,7 +8,7 @@ import 'package:get/get.dart';
 import 'package:stackedtasks/models/Stack.dart' as stack_model;
 
 class StackDetailsPage extends StatefulWidget {
-  final stack_model.Stack stack;
+  final stack_model.TasksStack stack;
 
   StackDetailsPage({
     Key key,

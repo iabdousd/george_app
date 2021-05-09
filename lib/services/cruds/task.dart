@@ -1,21 +1,18 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:stackedtasks/models/Task.dart';
 import 'package:stackedtasks/services/user/user_service.dart';
-import 'package:stackedtasks/constants/models/goal.dart' as goal_constants;
 import 'package:stackedtasks/constants/models/stack.dart' as stack_constants;
 import 'package:stackedtasks/constants/user.dart' as user_constants;
+import 'package:stackedtasks/constants/models/task.dart' as task_constants;
 
-Future<List<Task>> fetchStacks(String goalRef, String stackRef,
+Future<List<Task>> fetchTasks(String goalRef, String stackRef,
     {DocumentSnapshot after}) async {
   if (after != null)
     return (await FirebaseFirestore.instance
             .collection(user_constants.USERS_KEY)
             .doc(getCurrentUser().uid)
-            .collection(goal_constants.GOALS_KEY)
-            .doc(goalRef)
-            .collection(goal_constants.STACKS_KEY)
-            .doc(stackRef)
             .collection(stack_constants.TASKS_KEY)
+            .where(task_constants.STACK_REF_KEY, isEqualTo: stackRef)
             .startAfterDocument(after)
             .limit(10)
             .get())
@@ -26,11 +23,8 @@ Future<List<Task>> fetchStacks(String goalRef, String stackRef,
   return (await FirebaseFirestore.instance
           .collection(user_constants.USERS_KEY)
           .doc(getCurrentUser().uid)
-          .collection(goal_constants.GOALS_KEY)
-          .doc(goalRef)
-          .collection(goal_constants.STACKS_KEY)
-          .doc(stackRef)
           .collection(stack_constants.TASKS_KEY)
+          .where(task_constants.STACK_REF_KEY, isEqualTo: stackRef)
           .limit(10)
           .get())
       .docs

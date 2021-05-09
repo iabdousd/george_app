@@ -212,6 +212,7 @@ class TasksListByDay extends StatelessWidget {
                     );
                     return TaskListTileWidget(
                       task: task,
+                      showHirachy: true,
                       stackColor: task.stackColor,
                       enforcedDate: day,
                     );

@@ -138,7 +138,7 @@ class _CalendarTaskListTileWidgetState
                           ? FontStyle.italic
                           : FontStyle.normal,
                     ),
-                overflow: TextOverflow.clip,
+                overflow: TextOverflow.fade,
                 // maxLines: 2,
               ),
             ),

@@ -16,6 +16,7 @@ const String START_DATE_KEY = 'startDate';
 const String END_DATE_KEY = 'endDate';
 const String START_TIME_KEY = 'startTime';
 const String END_TIME_KEY = 'endTime';
+const String LAST_NOTE_KEY = 'lastNote';
 const String REPETITION_KEY = 'repetition';
 const String REPETITION_TYPE_KEY = 'repetitionType';
 const String REPETITION_WEEKS_COUNT_KEY = 'repetitionWeeksCount';

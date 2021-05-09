@@ -152,6 +152,7 @@ class _TasksTimerListState extends State<TasksTimerList>
                           task: task,
                           stackColor: task.stackColor,
                           enforcedDate: now,
+                          showHirachy: true,
                           showTimer: index == 0 &&
                               task.startTime.isBefore(
                                 DateTime(1970, 1, 1, now.hour, now.minute),
@@ -161,6 +162,10 @@ class _TasksTimerListState extends State<TasksTimerList>
                                 DateTime(1970, 1, 1, now.hour, now.minute),
                               ),
                           showDescription: true,
+                          showLastNote: index == 0 &&
+                              task.startTime.isBefore(
+                                DateTime(1970, 1, 1, now.hour, now.minute),
+                              ),
                         ),
                         if (index == 0 &&
                             snapshot.data.docs.length > 1 &&

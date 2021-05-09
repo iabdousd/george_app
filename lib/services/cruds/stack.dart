@@ -4,7 +4,7 @@ import 'package:stackedtasks/services/user/user_service.dart';
 import 'package:stackedtasks/constants/models/goal.dart' as goal_constants;
 import 'package:stackedtasks/constants/user.dart' as user_constants;
 
-Future<List<Stack>> fetchStacks(String goalRef,
+Future<List<TasksStack>> fetchStacks(String goalRef,
     {DocumentSnapshot after}) async {
   if (after != null)
     return (await FirebaseFirestore.instance
@@ -17,7 +17,7 @@ Future<List<Stack>> fetchStacks(String goalRef,
             .limit(10)
             .get())
         .docs
-        .map((e) => Stack.fromJson(e.data()))
+        .map((e) => TasksStack.fromJson(e.data()))
         .toList();
 
   return (await FirebaseFirestore.instance
@@ -29,6 +29,6 @@ Future<List<Stack>> fetchStacks(String goalRef,
           .limit(10)
           .get())
       .docs
-      .map((e) => Stack.fromJson(e.data()))
+      .map((e) => TasksStack.fromJson(e.data()))
       .toList();
 }

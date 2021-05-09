@@ -1,7 +1,7 @@
 import 'dart:math';
 
+import 'package:animate_do/animate_do.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:date_util/date_util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_week_view/flutter_week_view.dart';
 import 'package:stackedtasks/config/extensions/hex_color.dart';
@@ -17,10 +17,12 @@ import 'package:intl/intl.dart';
 class TasksListByWeek extends StatelessWidget {
   final DateTime day;
   final bool fullScreen;
+  final Function(DateTime) updateDay;
   const TasksListByWeek({
     Key key,
     this.day,
     this.fullScreen: false,
+    this.updateDay,
   }) : super(key: key);
 
   @override
@@ -64,213 +66,318 @@ class TasksListByWeek extends StatelessWidget {
                 children: [
                   for (int i = 0; i < 3; i++)
                     Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          border: Border(
-                            right: i == 2
-                                ? BorderSide.none
-                                : BorderSide(
-                                    color: Color(0x40000000),
+                      key: Key('title${i}_' + day.toString()),
+                      child: InkWell(
+                        onTap: () {
+                          if (i != 1) {
+                            updateDay(
+                              day.add(
+                                Duration(days: i - 1),
+                              ),
+                            );
+                          }
+                        },
+                        child: i == 1
+                            ? Container(
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).primaryColor,
+                                  border: Border(
+                                    right: i == 2
+                                        ? BorderSide.none
+                                        : BorderSide(
+                                            color: Color(0x40000000),
+                                          ),
+                                    bottom: BorderSide(
+                                      color: Color(0x40000000),
+                                    ),
                                   ),
-                            bottom: BorderSide(
-                              color: Color(0x40000000),
-                            ),
-                          ),
-                        ),
-                        padding: EdgeInsets.all(8),
-                        child: Center(
-                          child: Container(
-                            padding: EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Theme.of(context).primaryColor,
-                            ),
-                            child: Text(
-                              DateFormat('dd')
-                                  .format(day.subtract(Duration(days: 1 - i))),
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .headline6
-                                  .copyWith(
-                                    color: Theme.of(context).backgroundColor,
-                                    fontSize: 14,
+                                ),
+                                padding: EdgeInsets.all(8),
+                                child: Center(
+                                  child: Container(
+                                    padding: EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Theme.of(context).primaryColor,
+                                    ),
+                                    child: Text(
+                                      DateFormat('dd').format(
+                                          day.subtract(Duration(days: 1 - i))),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .headline6
+                                          .copyWith(
+                                            color: Theme.of(context)
+                                                .backgroundColor,
+                                            fontSize: 14,
+                                          ),
+                                      textAlign: TextAlign.center,
+                                    ),
                                   ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        ),
+                                ),
+                              )
+                            : i == 0
+                                ? ZoomIn(
+                                    duration: Duration(milliseconds: 250),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Theme.of(context)
+                                            .primaryColor
+                                            .withOpacity(.25),
+                                        borderRadius: BorderRadius.only(
+                                          topLeft: Radius.circular(8),
+                                          bottomLeft: Radius.circular(8),
+                                        ),
+                                      ),
+                                      padding: EdgeInsets.all(8),
+                                      child: Center(
+                                        child: Container(
+                                          padding: EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color:
+                                                Theme.of(context).primaryColor,
+                                          ),
+                                          child: Text(
+                                            DateFormat('dd').format(
+                                                day.subtract(
+                                                    Duration(days: 1 - i))),
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .headline6
+                                                .copyWith(
+                                                  color: Theme.of(context)
+                                                      .backgroundColor,
+                                                  fontSize: 14,
+                                                ),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                : FadeInRight(
+                                    duration: Duration(milliseconds: 250),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Theme.of(context)
+                                            .primaryColor
+                                            .withOpacity(.25),
+                                        borderRadius: BorderRadius.only(
+                                          topRight: Radius.circular(8),
+                                          bottomRight: Radius.circular(8),
+                                        ),
+                                      ),
+                                      padding: EdgeInsets.all(8),
+                                      child: Center(
+                                        child: Container(
+                                          padding: EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color:
+                                                Theme.of(context).primaryColor,
+                                          ),
+                                          child: Text(
+                                            DateFormat('dd').format(
+                                                day.subtract(
+                                                    Duration(days: 1 - i))),
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .headline6
+                                                .copyWith(
+                                                  color: Theme.of(context)
+                                                      .backgroundColor,
+                                                  fontSize: 14,
+                                                ),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                       ),
                     ),
                 ],
               ),
             ),
             Expanded(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: Row(
-                  children: [
-                    for (int i = 0; i < 3; i++)
-                      Container(
-                        width:
-                            (MediaQuery.of(context).size.width - 54 - 32) / 3 +
-                                (i == 0 ? 54 : 0),
-                        child: DayView(
-                          date: DateTime(day.year, day.month, day.day - 1 + i),
-                          dayBarStyle: DayBarStyle(
-                            dateFormatter: (year, month, day) =>
-                                DateFormat('dd').format(
-                              DateTime(year, month, day),
+              key: Key(day.toString()),
+              child: FadeIn(
+                duration: Duration(milliseconds: 750),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.vertical,
+                  child: Row(
+                    children: [
+                      for (int i = 0; i < 3; i++)
+                        Container(
+                          width: (MediaQuery.of(context).size.width - 54 - 32) /
+                                  3 +
+                              (i == 0 ? 54 : 0),
+                          child: DayView(
+                            date:
+                                DateTime(day.year, day.month, day.day - 1 + i),
+                            dayBarStyle: DayBarStyle(
+                              dateFormatter: (year, month, day) =>
+                                  DateFormat('dd').format(
+                                DateTime(year, month, day),
+                              ),
+                              textStyle: Theme.of(context)
+                                  .textTheme
+                                  .headline6
+                                  .copyWith(
+                                    color: Theme.of(context).backgroundColor,
+                                  ),
+                              textAlignment: Alignment.center,
                             ),
-                            textStyle:
-                                Theme.of(context).textTheme.headline6.copyWith(
-                                      color: Theme.of(context).backgroundColor,
-                                    ),
-                            textAlignment: Alignment.center,
-                          ),
-                          userZoomable: false,
-                          style: DayViewStyle(
-                            backgroundColor: Theme.of(context).backgroundColor,
-                            headerSize: 0,
-                            backgroundRulesColor: Color(0x88000000),
-                          ),
-                          hoursColumnStyle: HoursColumnStyle(
-                            width: i == 0 ? 54 : 0,
-                          ),
-                          initialTime:
-                              HourMinute(hour: day.hour, minute: day.minute),
-                          inScrollableWidget: true,
-                          currentTimeIndicatorBuilder: (dayViewStyle,
-                                  topOffsetCalculator, hoursColumnWidth) =>
-                              Container(),
-                          events: tasks
-                              .where((element) =>
-                                  (element.repetition == null &&
-                                      element.startDate ==
-                                          DateTime(
-                                            day.year,
-                                            day.month,
-                                            day.day - 1 + i,
-                                          )) ||
-                                  element.dueDates.contains(DateTime(
-                                    day.year,
-                                    day.month,
-                                    day.day - 1 + i,
-                                  )))
-                              .map((e) => FlutterWeekViewEvent(
-                                    start: DateTime(
+                            userZoomable: false,
+                            style: DayViewStyle(
+                              backgroundColor:
+                                  Theme.of(context).backgroundColor,
+                              headerSize: 0,
+                              backgroundRulesColor: Color(0x88000000),
+                            ),
+                            hoursColumnStyle: HoursColumnStyle(
+                              width: i == 0 ? 54 : 0,
+                            ),
+                            initialTime:
+                                HourMinute(hour: day.hour, minute: day.minute),
+                            inScrollableWidget: true,
+                            currentTimeIndicatorBuilder: (dayViewStyle,
+                                    topOffsetCalculator, hoursColumnWidth) =>
+                                Container(),
+                            events: tasks
+                                .where((element) =>
+                                    (element.repetition == null &&
+                                        element.startDate ==
+                                            DateTime(
+                                              day.year,
+                                              day.month,
+                                              day.day - 1 + i,
+                                            )) ||
+                                    element.dueDates.contains(DateTime(
                                       day.year,
                                       day.month,
                                       day.day - 1 + i,
-                                      e.anyTime ? 0 : e.startTime.hour,
-                                      e.anyTime ? 0 : e.startTime.minute,
-                                    ),
-                                    end: e.anyTime
-                                        ? DateTime(
-                                            day.year,
-                                            day.month,
-                                            day.day - 1 + i,
-                                            1,
-                                            0,
-                                          )
-                                        : DateTime(
-                                            day.year,
-                                            day.month,
-                                            day.day - 1 + i,
-                                          ).add(Duration(
-                                            minutes: max(
-                                              e.startTime.hour * 60 +
-                                                  60 +
-                                                  e.startTime.minute,
-                                              e.endTime.hour * 60 +
-                                                  e.endTime.minute,
-                                            ),
-                                          )),
-                                    title: e.title,
-                                    description: e.description,
-                                    onTap: () => Get.to(
-                                      () => SaveTaskPage(
-                                        goalRef: e.goalRef,
-                                        stackRef: e.stackRef,
-                                        goalTitle: e.goalTitle,
-                                        stackTitle: e.stackTitle,
-                                        stackColor: e.stackColor,
-                                        task: e,
+                                    )))
+                                .map((e) => FlutterWeekViewEvent(
+                                      start: DateTime(
+                                        day.year,
+                                        day.month,
+                                        day.day - 1 + i,
+                                        e.anyTime ? 0 : e.startTime.hour,
+                                        e.anyTime ? 0 : e.startTime.minute,
                                       ),
-                                    ),
-                                    margin: EdgeInsets.all(2.0),
-                                    decoration: BoxDecoration(
-                                      color: DateTime(
-                                                day.year,
-                                                day.month,
-                                                day.day - 1 + i,
-                                                e.startTime.hour,
-                                                e.startTime.minute,
-                                              ).isBefore(now) &&
-                                              DateTime(
-                                                day.year,
-                                                day.month,
-                                                day.day - 1 + i,
-                                                e.endTime.hour,
-                                                e.endTime.minute,
-                                              ).isAfter(now) &&
-                                              !e.anyTime
-                                          ? HexColor.fromHex(e.stackColor)
-                                              .lighten()
+                                      end: e.anyTime
+                                          ? DateTime(
+                                              day.year,
+                                              day.month,
+                                              day.day - 1 + i,
+                                              1,
+                                              0,
+                                            )
                                           : DateTime(
-                                                    day.year,
-                                                    day.month,
-                                                    day.day - 1 + i,
-                                                    e.endTime.hour,
+                                              day.year,
+                                              day.month,
+                                              day.day - 1 + i,
+                                            ).add(Duration(
+                                              minutes: max(
+                                                e.startTime.hour * 60 +
+                                                    60 +
+                                                    e.startTime.minute,
+                                                e.endTime.hour * 60 +
                                                     e.endTime.minute,
-                                                  ).isBefore(now) &&
-                                                  !e.anyTime
-                                              ? HexColor.fromHex(e.stackColor)
-                                                  .darken()
-                                              : Theme.of(context)
-                                                  .backgroundColor,
-                                      borderRadius: BorderRadius.circular(4.0),
-                                      border: Border.all(
-                                        width: 1,
-                                        color: HexColor.fromHex(e.stackColor),
-                                      ),
-                                    ),
-                                    eventTextBuilder:
-                                        (event, ctx, dayView, width, height) {
-                                      return Container(
-                                        child: Text(
-                                          event.title,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .headline6
-                                              .copyWith(
-                                                fontWeight: FontWeight.w600,
-                                                fontSize: 14,
-                                                color: DateTime(
-                                                          event.end.year,
-                                                          event.end.month,
-                                                          event.end.day,
-                                                          event.end.hour,
-                                                          event.end.minute,
-                                                        ).isBefore(now) &&
-                                                        !e.anyTime
-                                                    ? Colors.white
-                                                    : Colors.black87,
-                                                decoration: e.isDone(date: day)
-                                                    ? TextDecoration.lineThrough
-                                                    : TextDecoration.none,
-                                                fontStyle: e.isDone(date: day)
-                                                    ? FontStyle.italic
-                                                    : FontStyle.normal,
                                               ),
-                                          overflow: TextOverflow.clip,
+                                            )),
+                                      title: e.title,
+                                      description: e.description,
+                                      onTap: () => Get.to(
+                                        () => SaveTaskPage(
+                                          goalRef: e.goalRef,
+                                          stackRef: e.stackRef,
+                                          goalTitle: e.goalTitle,
+                                          stackTitle: e.stackTitle,
+                                          stackColor: e.stackColor,
+                                          task: e,
                                         ),
-                                      );
-                                    },
-                                  ))
-                              .toList(),
+                                      ),
+                                      margin: EdgeInsets.all(2.0),
+                                      decoration: BoxDecoration(
+                                        color: DateTime(
+                                                  day.year,
+                                                  day.month,
+                                                  day.day - 1 + i,
+                                                  e.startTime.hour,
+                                                  e.startTime.minute,
+                                                ).isBefore(now) &&
+                                                DateTime(
+                                                  day.year,
+                                                  day.month,
+                                                  day.day - 1 + i,
+                                                  e.endTime.hour,
+                                                  e.endTime.minute,
+                                                ).isAfter(now) &&
+                                                !e.anyTime
+                                            ? HexColor.fromHex(e.stackColor)
+                                                .lighten()
+                                            : DateTime(
+                                                      day.year,
+                                                      day.month,
+                                                      day.day - 1 + i,
+                                                      e.endTime.hour,
+                                                      e.endTime.minute,
+                                                    ).isBefore(now) &&
+                                                    !e.anyTime
+                                                ? HexColor.fromHex(e.stackColor)
+                                                    .darken()
+                                                : Theme.of(context)
+                                                    .backgroundColor,
+                                        borderRadius:
+                                            BorderRadius.circular(4.0),
+                                        border: Border.all(
+                                          width: 1,
+                                          color: HexColor.fromHex(e.stackColor),
+                                        ),
+                                      ),
+                                      eventTextBuilder:
+                                          (event, ctx, dayView, width, height) {
+                                        return Container(
+                                          child: Text(
+                                            event.title,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .headline6
+                                                .copyWith(
+                                                  fontWeight: FontWeight.w600,
+                                                  fontSize: 14,
+                                                  color: DateTime(
+                                                            event.end.year,
+                                                            event.end.month,
+                                                            event.end.day,
+                                                            event.end.hour,
+                                                            event.end.minute,
+                                                          ).isBefore(now) &&
+                                                          !e.anyTime
+                                                      ? Colors.white
+                                                      : Colors.black87,
+                                                  decoration:
+                                                      e.isDone(date: day)
+                                                          ? TextDecoration
+                                                              .lineThrough
+                                                          : TextDecoration.none,
+                                                  fontStyle: e.isDone(date: day)
+                                                      ? FontStyle.italic
+                                                      : FontStyle.normal,
+                                                ),
+                                            overflow: TextOverflow.clip,
+                                          ),
+                                        );
+                                      },
+                                    ))
+                                .toList(),
+                          ),
                         ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

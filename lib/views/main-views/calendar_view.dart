@@ -154,6 +154,13 @@ class _CalendarViewState extends State<CalendarView>
                     child: TasksListByWeek(
                       day: selectedDay,
                       fullScreen: true,
+                      updateDay: (day) => setState(
+                        () => selectedDay = DateTime(
+                          day.year,
+                          day.month,
+                          day.day,
+                        ),
+                      ),
                     ),
                   )
                 else

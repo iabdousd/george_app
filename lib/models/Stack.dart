@@ -8,7 +8,7 @@ import 'Note.dart';
 import 'Task.dart';
 import 'goal_summary.dart';
 
-class Stack {
+class TasksStack {
   String id;
   String goalRef;
   String goalTitle;
@@ -18,9 +18,10 @@ class Stack {
   DateTime creationDate;
 
   List<Task> tasks;
+  List<String> tasksKeys;
   List<Note> notes;
 
-  Stack({
+  TasksStack({
     this.id,
     this.goalRef,
     this.goalTitle,
@@ -29,9 +30,10 @@ class Stack {
     this.status = 0,
     this.creationDate,
     this.tasks,
+    this.tasksKeys,
   });
 
-  Stack.fromJson(
+  TasksStack.fromJson(
     Map<String, dynamic> jsonObject, {
     String goalRef,
     String goalTitle,
@@ -45,6 +47,7 @@ class Stack {
     this.status = jsonObject[stack_constants.STATUS_KEY];
     this.creationDate =
         (jsonObject[stack_constants.CREATION_DATE_KEY] as Timestamp).toDate();
+    this.tasksKeys = jsonObject[stack_constants.TASKS_KEYS_KEY];
   }
 
   Map<String, dynamic> toJson() {
@@ -53,6 +56,7 @@ class Stack {
       stack_constants.COLOR_KEY: color,
       stack_constants.STATUS_KEY: status,
       stack_constants.CREATION_DATE_KEY: creationDate,
+      stack_constants.TASKS_KEYS_KEY: tasksKeys,
     };
   }
 
@@ -82,6 +86,7 @@ class Stack {
           .collection(goal_constants.STACKS_KEY)
           .doc(id)
           .update(toJson());
+
       await GoalSummary(id: goalRef).saveStack(
         this,
         withFetch: true,
@@ -99,14 +104,13 @@ class Stack {
         .collection(goal_constants.STACKS_KEY)
         .doc(id);
 
-    (await reference.collection(stack_constants.TASKS_KEY).get()).docs.forEach(
-          (element) async => await FirebaseFirestore.instance
-              .collection(user_constants.USERS_KEY)
-              .doc(getCurrentUser().uid)
-              .collection(stack_constants.TASKS_KEY)
-              .doc(element.id)
-              .delete(),
-        );
+    for (final element in tasksKeys)
+      await FirebaseFirestore.instance
+          .collection(user_constants.USERS_KEY)
+          .doc(getCurrentUser().uid)
+          .collection(stack_constants.TASKS_KEY)
+          .doc(element)
+          .delete();
 
     await reference.delete();
     await GoalSummary(id: goalRef).deleteStack(

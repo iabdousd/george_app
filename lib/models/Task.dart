@@ -12,6 +12,7 @@ import 'package:stackedtasks/services/user/user_service.dart';
 import 'package:intl/intl.dart';
 
 import 'Note.dart';
+import 'Stack.dart';
 
 class Task {
   String id;
@@ -39,6 +40,7 @@ class Task {
 
   bool notesFetched = false;
   List<Note> detailedTaskNotes = [];
+  Note lastNote;
 
   Task({
     this.id,
@@ -62,6 +64,7 @@ class Task {
     this.endDate,
     this.startTime,
     this.endTime,
+    this.lastNote,
   }) {
     if (task_constants.REPETITION_OPTIONS
         .contains(repetition?.type?.toLowerCase())) {
@@ -165,6 +168,10 @@ class Task {
         (jsonObject[task_constants.START_TIME_KEY] as Timestamp).toDate();
     this.endTime =
         (jsonObject[task_constants.END_TIME_KEY] as Timestamp).toDate();
+
+    this.lastNote = jsonObject[task_constants.LAST_NOTE_KEY] != null
+        ? Note.fromJson(jsonObject[task_constants.LAST_NOTE_KEY])
+        : null;
   }
 
   Map<String, dynamic> toJson() {
@@ -190,6 +197,7 @@ class Task {
       task_constants.END_DATE_KEY: endDate,
       task_constants.START_TIME_KEY: startTime,
       task_constants.END_TIME_KEY: endTime,
+      task_constants.LAST_NOTE_KEY: lastNote?.toJson(),
     };
   }
 
@@ -506,9 +514,10 @@ class Task {
     return null;
   }
 
-  addNote(String noteId) async {
+  addNote(Note note) async {
     if (this.taskNotes == null) this.taskNotes = [];
-    this.taskNotes.add(noteId);
+    this.taskNotes.add(note.id);
+    this.lastNote = note;
     await this.save();
   }
 
@@ -518,18 +527,9 @@ class Task {
       DocumentReference docRef = await FirebaseFirestore.instance
           .collection(user_constants.USERS_KEY)
           .doc(getCurrentUser().uid)
-          .collection(goal_constants.GOALS_KEY)
-          .doc(goalRef)
-          .collection(goal_constants.STACKS_KEY)
-          .doc(stackRef)
           .collection(stack_constants.TASKS_KEY)
           .add(toJson());
-      await FirebaseFirestore.instance
-          .collection(user_constants.USERS_KEY)
-          .doc(getCurrentUser().uid)
-          .collection(stack_constants.TASKS_KEY)
-          .doc(docRef.id)
-          .set(toJson());
+
       this.id = docRef.id;
 
       if (updateSummaries)
@@ -543,20 +543,9 @@ class Task {
       DocumentReference docRef = FirebaseFirestore.instance
           .collection(user_constants.USERS_KEY)
           .doc(getCurrentUser().uid)
-          .collection(goal_constants.GOALS_KEY)
-          .doc(goalRef)
-          .collection(goal_constants.STACKS_KEY)
-          .doc(stackRef)
           .collection(stack_constants.TASKS_KEY)
           .doc(id);
-
       await docRef.set(toJson());
-      DocumentReference standAloneDocRef = FirebaseFirestore.instance
-          .collection(user_constants.USERS_KEY)
-          .doc(getCurrentUser().uid)
-          .collection(stack_constants.TASKS_KEY)
-          .doc(id);
-      await standAloneDocRef.set(toJson());
 
       if (updateSummaries)
         await GoalSummary(id: goalRef).addTasks(
@@ -569,16 +558,19 @@ class Task {
   }
 
   Future delete() async {
-    await FirebaseFirestore.instance
+    final snapshot = await FirebaseFirestore.instance
         .collection(user_constants.USERS_KEY)
         .doc(getCurrentUser().uid)
         .collection(goal_constants.GOALS_KEY)
         .doc(goalRef)
         .collection(goal_constants.STACKS_KEY)
         .doc(stackRef)
-        .collection(stack_constants.TASKS_KEY)
-        .doc(id)
-        .delete();
+        .get();
+    final stack = TasksStack.fromJson(snapshot.data());
+
+    stack.tasksKeys.remove(id);
+    await stack.save();
+
     await FirebaseFirestore.instance
         .collection(user_constants.USERS_KEY)
         .doc(getCurrentUser().uid)

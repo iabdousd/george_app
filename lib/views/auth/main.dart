@@ -228,18 +228,18 @@ class _AuthViewsState extends State<AuthViews> {
   }
 
   _loginWitApple() async {
-// TODO:
+    // ! TO IMPLEMENT
   }
 
   _loginWithFacebook() async {
-// TODO:
+    // ! TO IMPLEMENT
   }
 
   _loginWithGoogle() async {
-// TODO:
+    // ! TO IMPLEMENT
   }
 
   _loginWithTwitter() async {
-// TODO:
+    // ! TO IMPLEMENT
   }
 }

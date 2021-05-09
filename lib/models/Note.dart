@@ -39,6 +39,9 @@ class Note {
     this.creationDate =
         (jsonObject[note_constants.CREATION_DATE_KEY] as Timestamp).toDate();
     this.content = jsonObject[note_constants.CONTENT_KEY];
+    this.attachments = (jsonObject[note_constants.ATTACHMENTS_KEY] as List)
+        ?.map((e) => Attachment.fromJson(e))
+        ?.toList();
     this.attachmentsCount = jsonObject[note_constants.ATTACHMENTS_COUNT_KEY];
   }
 
@@ -49,6 +52,7 @@ class Note {
       note_constants.CONTENT_KEY: this.content,
       note_constants.CREATION_DATE_KEY: this.creationDate,
       note_constants.ATTACHMENTS_COUNT_KEY: this.attachmentsCount,
+      note_constants.ATTACHMENTS_KEY: this.attachments,
     };
   }
 
@@ -93,26 +97,10 @@ class Note {
         .delete();
   }
 
-  fetchAttachments() async {
-    attachments = [];
-    QuerySnapshot snapshot = await FirebaseFirestore.instance
-        .collection(user_constants.USERS_KEY)
-        .doc(getCurrentUser().uid)
-        .collection(goal_constants.GOALS_KEY)
-        .doc(goalRef)
-        .collection(goal_constants.STACKS_KEY)
-        .doc(stackRef)
-        .collection(stack_constants.NOTES_KEY)
-        .doc(id)
-        .collection(note_constants.ATTACHMENTS_KEY)
-        .get();
-    snapshot.docs.forEach((doc) {
-      attachments.add(Attachment.fromJson(doc.data(), id: doc.id));
-    });
-    this.attachmentsCount = snapshot.docs.length;
-  }
-
   Future deleteAttachment(Attachment attachment) async {
+    attachments.remove(attachment);
+    this.attachmentsCount--;
+
     await deleteFile(attachment.path);
     await FirebaseFirestore.instance
         .collection(user_constants.USERS_KEY)
@@ -123,11 +111,11 @@ class Note {
         .doc(stackRef)
         .collection(stack_constants.NOTES_KEY)
         .doc(id)
-        .collection(note_constants.ATTACHMENTS_KEY)
-        .doc(attachment.id)
-        .delete();
-    attachments.remove(attachment);
-    this.attachmentsCount--;
+        .update({
+      note_constants.ATTACHMENTS_KEY:
+          attachments.map((e) => e.toJson()).toList(),
+      note_constants.ATTACHMENTS_COUNT_KEY: attachmentsCount,
+    });
     await save();
   }
 
@@ -140,23 +128,24 @@ class Note {
         creationDate: DateTime.now(),
         ext: img.path.split('.').last,
       );
-      DocumentReference docRef = await FirebaseFirestore.instance
-          .collection(user_constants.USERS_KEY)
-          .doc(getCurrentUser().uid)
-          .collection(goal_constants.GOALS_KEY)
-          .doc(goalRef)
-          .collection(goal_constants.STACKS_KEY)
-          .doc(stackRef)
-          .collection(stack_constants.NOTES_KEY)
-          .doc(id)
-          .collection(note_constants.ATTACHMENTS_KEY)
-          .add(
-            Map<String, dynamic>.from(attachment.toJson()),
-          );
-      attachments.add(attachment..id = docRef.id);
+      attachments.add(attachment);
     }
-
     this.attachmentsCount += images.length;
-    await save();
+
+    await FirebaseFirestore.instance
+        .collection(user_constants.USERS_KEY)
+        .doc(getCurrentUser().uid)
+        .collection(goal_constants.GOALS_KEY)
+        .doc(goalRef)
+        .collection(goal_constants.STACKS_KEY)
+        .doc(stackRef)
+        .collection(stack_constants.NOTES_KEY)
+        .doc(id)
+        .update({
+      note_constants.ATTACHMENTS_KEY:
+          attachments.map((e) => e.toJson()).toList(),
+      note_constants.ATTACHMENTS_COUNT_KEY: attachmentsCount,
+    });
+    // await save();
   }
 }

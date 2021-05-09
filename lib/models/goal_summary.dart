@@ -123,7 +123,7 @@ class GoalSummary {
           .set(Map<String, dynamic>.from(toJson()));
   }
 
-  addStack(Stack stack, {bool withFetch: false}) async {
+  addStack(TasksStack stack, {bool withFetch: false}) async {
     if (withFetch) await fetchGoal();
     DocumentReference reference = FirebaseFirestore.instance
         .collection(user_constants.USERS_KEY)
@@ -147,7 +147,7 @@ class GoalSummary {
     );
   }
 
-  saveStack(Stack stack, {bool withFetch: false}) async {
+  saveStack(TasksStack stack, {bool withFetch: false}) async {
     if (withFetch) await fetchGoal();
     DocumentReference reference = FirebaseFirestore.instance
         .collection(user_constants.USERS_KEY)
@@ -195,7 +195,7 @@ class GoalSummary {
     );
   }
 
-  deleteStack(Stack stack, {bool withFetch: false}) async {
+  deleteStack(TasksStack stack, {bool withFetch: false}) async {
     if (withFetch) await fetchGoal();
     stacksSummaries.removeWhere(
       (e) => e.id == stack.id,

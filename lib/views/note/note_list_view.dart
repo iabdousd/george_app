@@ -15,7 +15,7 @@ import 'package:stackedtasks/widgets/shared/app_action_button.dart';
 import 'package:get/get.dart';
 
 class NoteListView extends StatefulWidget {
-  final stack_model.Stack stack;
+  final stack_model.TasksStack stack;
   const NoteListView({Key key, this.stack}) : super(key: key);
 
   @override

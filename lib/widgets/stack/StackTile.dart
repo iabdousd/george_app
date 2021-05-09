@@ -8,7 +8,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:stackedtasks/models/Stack.dart' as stack_model;
 
 class StackListTileWidget extends StatelessWidget {
-  final stack_model.Stack stack;
+  final stack_model.TasksStack stack;
 
   const StackListTileWidget({
     Key key,

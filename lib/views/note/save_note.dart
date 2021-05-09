@@ -137,11 +137,6 @@ class _SaveNotePageState extends State<SaveNotePage> {
     );
   }
 
-  init() async {
-    await widget.note.fetchAttachments();
-    setState(() {});
-  }
-
   @override
   void initState() {
     super.initState();
@@ -168,7 +163,6 @@ class _SaveNotePageState extends State<SaveNotePage> {
       displaySpans = textSpans;
 
       _contentController.text = widget.note.content;
-      init();
     }
   }
 
