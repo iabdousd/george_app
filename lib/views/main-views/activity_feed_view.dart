@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:stackedtasks/providers/cache/cached_image_provider.dart';
@@ -90,50 +91,113 @@ class _ActivityFeedViewState extends State<ActivityFeedView>
                     ],
                   ),
                 ),
-                // TodayTasks(),
-                WeekProgress(),
+                if (!kIsWeb) WeekProgress(),
               ],
             ),
           ),
-          expandedHeight: size.width / 1.7 + 180,
-          bottom: TabBar(
-            indicatorColor: Colors.black,
-            labelColor: Colors.black,
-            indicatorSize: TabBarIndicatorSize.label,
-            tabs: [
-              Tab(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.article_outlined),
-                    Text(' Activity'),
+          expandedHeight: kIsWeb ? 90 : size.width / 1.7 + 180,
+          bottom: kIsWeb
+              ? null
+              : TabBar(
+                  indicatorColor: Colors.black,
+                  labelColor: Colors.black,
+                  indicatorSize: TabBarIndicatorSize.label,
+                  tabs: [
+                    Tab(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.article_outlined),
+                          Text(' Activity'),
+                        ],
+                      ),
+                    ),
+                    Tab(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.stacked_bar_chart),
+                          Text(' Goals summary'),
+                        ],
+                      ),
+                    ),
                   ],
+                  controller: _tabController,
                 ),
-              ),
-              Tab(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.stacked_bar_chart),
-                    Text(' Goals summary'),
-                  ],
-                ),
-              ),
-            ],
-            controller: _tabController,
-          ),
         ),
       ],
-      body: Container(
-        child: TabBarView(
-          controller: _tabController,
-          physics: NeverScrollableScrollPhysics(),
-          children: [
-            FeedArticlesList(),
-            GoalsSummaryView(),
-          ],
-        ),
-      ),
+      body: kIsWeb
+          ? Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    padding: EdgeInsets.only(right: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            'Summaries:',
+                            style:
+                                Theme.of(context).textTheme.headline6.copyWith(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                          ),
+                        ),
+                        Expanded(
+                          child: GoalsSummaryView(),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Container(
+                    padding: EdgeInsets.only(left: 24),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        left: BorderSide(
+                          color: Color(0xFFAAAAAA),
+                        ),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            'Articles:',
+                            style:
+                                Theme.of(context).textTheme.headline6.copyWith(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Scrollbar(
+                            child: FeedArticlesList(),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            )
+          : Container(
+              child: TabBarView(
+                controller: _tabController,
+                physics: NeverScrollableScrollPhysics(),
+                children: [
+                  FeedArticlesList(),
+                  GoalsSummaryView(),
+                ],
+              ),
+            ),
     );
   }
 

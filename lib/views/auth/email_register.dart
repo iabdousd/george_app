@@ -1,8 +1,10 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -31,6 +33,7 @@ class EmailRegisterViewState extends State<EmailRegisterView> {
       TextEditingController();
 
   PickedFile profileImage;
+  Uint8List profileImageBytes;
 
   @override
   Widget build(BuildContext context) {
@@ -53,142 +56,152 @@ class EmailRegisterViewState extends State<EmailRegisterView> {
                 ],
               ),
               Expanded(
-                child: Form(
-                  key: _formKey,
-                  child: Center(
-                    child: SingleChildScrollView(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Text(
-                            'Register',
-                            style:
-                                Theme.of(context).textTheme.headline5.copyWith(
-                                      fontWeight: FontWeight.w800,
-                                    ),
-                          ),
-                          Container(
-                            margin: EdgeInsets.only(top: 8.0, bottom: 32.0),
-                            child: RichText(
-                              text: new TextSpan(
-                                text: 'Please fill these fields to ',
-                                style: Theme.of(context).textTheme.bodyText2,
-                                children: [
-                                  new TextSpan(
-                                    text: 'Get Started!',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .subtitle1
-                                        .copyWith(
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                  )
-                                ],
-                              ),
+                child: Container(
+                  width: kIsWeb ? 512 : null,
+                  child: Form(
+                    key: _formKey,
+                    child: Center(
+                      child: SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text(
+                              'Register',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headline5
+                                  .copyWith(
+                                    fontWeight: FontWeight.w800,
+                                  ),
                             ),
-                          ),
-                          Row(
-                            children: [
-                              Container(
-                                margin: EdgeInsets.symmetric(vertical: 8),
-                                width: 96,
-                                height: 96,
-                                decoration: BoxDecoration(
-                                  color:
-                                      Theme.of(context).scaffoldBackgroundColor,
-                                  borderRadius: BorderRadius.circular(12.0),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Color(0x33000000),
-                                      blurRadius: 6,
-                                      offset: Offset(1, 1),
+                            Container(
+                              margin: EdgeInsets.only(top: 8.0, bottom: 32.0),
+                              child: RichText(
+                                text: new TextSpan(
+                                  text: 'Please fill these fields to ',
+                                  style: Theme.of(context).textTheme.bodyText2,
+                                  children: [
+                                    new TextSpan(
+                                      text: 'Get Started!',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .subtitle1
+                                          .copyWith(
+                                            fontWeight: FontWeight.w600,
+                                          ),
                                     )
                                   ],
                                 ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(12.0),
-                                  child: InkWell(
-                                    onTap: addProfileImage,
-                                    child: profileImage != null
-                                        ? Stack(
-                                            fit: StackFit.expand,
-                                            children: [
-                                              Image.file(
-                                                File(profileImage.path),
-                                                fit: BoxFit.cover,
-                                              ),
-                                              Positioned(
-                                                top: 0,
-                                                right: 0,
-                                                child: GestureDetector(
-                                                  onTap: () => setState(() {
-                                                    profileImage = null;
-                                                  }),
-                                                  child: Container(
-                                                    decoration: BoxDecoration(
-                                                      color: Theme.of(context)
-                                                          .backgroundColor,
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              4.0),
-                                                    ),
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                            2.0),
-                                                    child: Icon(
-                                                      Icons.delete_sharp,
-                                                      size: 18,
-                                                      color: Colors.red,
+                              ),
+                            ),
+                            Row(
+                              children: [
+                                Container(
+                                  margin: EdgeInsets.symmetric(vertical: 8),
+                                  width: 96,
+                                  height: 96,
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context)
+                                        .scaffoldBackgroundColor,
+                                    borderRadius: BorderRadius.circular(12.0),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Color(0x33000000),
+                                        blurRadius: 6,
+                                        offset: Offset(1, 1),
+                                      )
+                                    ],
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(12.0),
+                                    child: InkWell(
+                                      onTap: addProfileImage,
+                                      child: profileImage != null
+                                          ? Stack(
+                                              fit: StackFit.expand,
+                                              children: [
+                                                kIsWeb
+                                                    ? Image.memory(
+                                                        profileImageBytes,
+                                                        fit: BoxFit.cover,
+                                                      )
+                                                    : Image.file(
+                                                        File(profileImage.path),
+                                                        fit: BoxFit.cover,
+                                                      ),
+                                                Positioned(
+                                                  top: 0,
+                                                  right: 0,
+                                                  child: GestureDetector(
+                                                    onTap: () => setState(() {
+                                                      profileImage = null;
+                                                    }),
+                                                    child: Container(
+                                                      decoration: BoxDecoration(
+                                                        color: Theme.of(context)
+                                                            .backgroundColor,
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(4.0),
+                                                      ),
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              2.0),
+                                                      child: Icon(
+                                                        Icons.delete_sharp,
+                                                        size: 18,
+                                                        color: Colors.red,
+                                                      ),
                                                     ),
                                                   ),
                                                 ),
-                                              ),
-                                            ],
-                                          )
-                                        : Center(
-                                            child: Icon(Icons.add_a_photo),
-                                          ),
+                                              ],
+                                            )
+                                          : Center(
+                                              child: Icon(Icons.add_a_photo),
+                                            ),
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          AppTextField(
-                            controller: _usernameController,
-                            label: 'Username',
-                            hint: 'A name for your Profile',
-                            textInputAction: TextInputAction.next,
-                          ),
-                          AppTextField(
-                            controller: _emailController,
-                            label: 'Email',
-                            hint: 'Your email here',
-                            textInputAction: TextInputAction.next,
-                          ),
-                          AppTextField(
-                            controller: _passwordController,
-                            label: 'Password',
-                            hint: 'Make sure it\'s secure!',
-                            obscureText: true,
-                            maxLines: 1,
-                            textInputAction: TextInputAction.next,
-                          ),
-                          AppTextField(
-                            controller: _confirmPasswordController,
-                            label: 'Confirm Password',
-                            hint: 'Repeat your password',
-                            obscureText: true,
-                            maxLines: 1,
-                            textInputAction: TextInputAction.next,
-                          ),
-                        ],
+                              ],
+                            ),
+                            AppTextField(
+                              controller: _usernameController,
+                              label: 'Username',
+                              hint: 'A name for your Profile',
+                              textInputAction: TextInputAction.next,
+                            ),
+                            AppTextField(
+                              controller: _emailController,
+                              label: 'Email',
+                              hint: 'Your email here',
+                              textInputAction: TextInputAction.next,
+                            ),
+                            AppTextField(
+                              controller: _passwordController,
+                              label: 'Password',
+                              hint: 'Make sure it\'s secure!',
+                              obscureText: true,
+                              maxLines: 1,
+                              textInputAction: TextInputAction.next,
+                            ),
+                            AppTextField(
+                              controller: _confirmPasswordController,
+                              label: 'Confirm Password',
+                              hint: 'Repeat your password',
+                              obscureText: true,
+                              maxLines: 1,
+                              textInputAction: TextInputAction.next,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
               Container(
-                width: double.infinity,
+                width: kIsWeb ? 512 : double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 12.0),
                 color: Colors.transparent,
                 child: Column(
@@ -312,14 +325,20 @@ class EmailRegisterViewState extends State<EmailRegisterView> {
         success: false,
       );
     }
-    if (image != null)
+    if (image != null) {
+      profileImageBytes = await image.readAsBytes();
       setState(() {
         profileImage = image;
       });
+    }
     Navigator.of(context).pop();
   }
 
   addProfileImage() {
+    if (kIsWeb) {
+      _pickImage(ImageSource.gallery);
+      return;
+    }
     showMaterialModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,

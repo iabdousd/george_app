@@ -29,6 +29,7 @@ class OnetimeTaskArticleWidget extends StatelessWidget {
           color: Color(0x22000000),
         ),
       ),
+      margin: EdgeInsets.symmetric(vertical: 4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

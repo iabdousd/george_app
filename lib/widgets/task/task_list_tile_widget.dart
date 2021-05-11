@@ -1,12 +1,12 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:stackedtasks/config/extensions/hex_color.dart';
 import 'package:stackedtasks/models/Note.dart';
 import 'package:stackedtasks/models/Task.dart';
-import 'package:stackedtasks/models/cache/cached_image.dart';
 import 'package:stackedtasks/providers/cache/cached_image_provider.dart';
 import 'package:stackedtasks/services/feed-back/flush_bar.dart';
 import 'package:stackedtasks/services/feed-back/loader.dart';
@@ -231,9 +231,13 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                                     bottom: widget.showNoteInput ? 0 : 16,
                                   ),
                                   height: widget.showDescription
-                                      ? 2 *
-                                          MediaQuery.of(context).size.width /
-                                          3
+                                      ? kIsWeb
+                                          ? 536
+                                          : 2 *
+                                              MediaQuery.of(context)
+                                                  .size
+                                                  .width /
+                                              3
                                       : null,
                                   child: Column(
                                     crossAxisAlignment:
@@ -546,7 +550,9 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                               padding: EdgeInsets.all(16),
                               decoration: BoxDecoration(
                                 border: Border(
-                                  top: BorderSide(),
+                                  top: BorderSide(
+                                    color: Colors.black26,
+                                  ),
                                 ),
                               ),
                               child: Column(

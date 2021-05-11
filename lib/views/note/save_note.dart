@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:stackedtasks/services/shared/text/text_to_spans.dart';
 import 'package:image_picker/image_picker.dart';
@@ -93,6 +94,10 @@ class _SaveNotePageState extends State<SaveNotePage> {
   }
 
   addAttachment() {
+    if (kIsWeb) {
+      _pickImage(ImageSource.gallery);
+      return;
+    }
     showMaterialModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,

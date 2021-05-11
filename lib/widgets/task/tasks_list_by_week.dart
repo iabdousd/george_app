@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:animate_do/animate_do.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_week_view/flutter_week_view.dart';
 import 'package:stackedtasks/config/extensions/hex_color.dart';
@@ -27,6 +28,7 @@ class TasksListByWeek extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tabsCount = kIsWeb ? 5 : 3;
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection(user_constants.USERS_KEY)
@@ -35,9 +37,10 @@ class TasksListByWeek extends StatelessWidget {
           .where(
             task_constants.DUE_DATES_KEY,
             arrayContainsAny: [
-              DateTime(day.year, day.month, day.day - 1),
-              DateTime(day.year, day.month, day.day),
-              DateTime(day.year, day.month, day.day + 1)
+              for (int i = 0; i < tabsCount; i++)
+                DateTime(day.year, day.month, day.day + i - tabsCount ~/ 2),
+              // DateTime(day.year, day.month, day.day),
+              // DateTime(day.year, day.month, day.day + tabsCount ~/ 2)
             ],
           )
           .orderBy(
@@ -52,6 +55,7 @@ class TasksListByWeek extends StatelessWidget {
                 (e) => Task.fromJson(e.data(), id: e.id),
               )
               .toList();
+
         final now = DateTime.now();
 
         return Column(
@@ -64,25 +68,25 @@ class TasksListByWeek extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  for (int i = 0; i < 3; i++)
+                  for (int i = 0; i < tabsCount; i++)
                     Expanded(
                       key: Key('title${i}_' + day.toString()),
                       child: InkWell(
                         onTap: () {
-                          if (i != 1) {
+                          if (i != tabsCount ~/ 2) {
                             updateDay(
                               day.add(
-                                Duration(days: i - 1),
+                                Duration(days: i - tabsCount ~/ 2),
                               ),
                             );
                           }
                         },
-                        child: i == 1
+                        child: i == tabsCount ~/ 2
                             ? Container(
                                 decoration: BoxDecoration(
                                   color: Theme.of(context).primaryColor,
                                   border: Border(
-                                    right: i == 2
+                                    right: i == tabsCount - 1
                                         ? BorderSide.none
                                         : BorderSide(
                                             color: Color(0x40000000),
@@ -101,8 +105,8 @@ class TasksListByWeek extends StatelessWidget {
                                       color: Theme.of(context).primaryColor,
                                     ),
                                     child: Text(
-                                      DateFormat('dd').format(
-                                          day.subtract(Duration(days: 1 - i))),
+                                      DateFormat('dd').format(day.subtract(
+                                          Duration(days: tabsCount ~/ 2 - i))),
                                       style: Theme.of(context)
                                           .textTheme
                                           .headline6
@@ -116,7 +120,7 @@ class TasksListByWeek extends StatelessWidget {
                                   ),
                                 ),
                               )
-                            : i == 0
+                            : i < tabsCount ~/ 2
                                 ? ZoomIn(
                                     duration: Duration(milliseconds: 250),
                                     child: Container(
@@ -124,10 +128,12 @@ class TasksListByWeek extends StatelessWidget {
                                         color: Theme.of(context)
                                             .primaryColor
                                             .withOpacity(.25),
-                                        borderRadius: BorderRadius.only(
-                                          topLeft: Radius.circular(8),
-                                          bottomLeft: Radius.circular(8),
-                                        ),
+                                        borderRadius: i == 0
+                                            ? BorderRadius.only(
+                                                topLeft: Radius.circular(8),
+                                                bottomLeft: Radius.circular(8),
+                                              )
+                                            : null,
                                       ),
                                       padding: EdgeInsets.all(8),
                                       child: Center(
@@ -140,8 +146,8 @@ class TasksListByWeek extends StatelessWidget {
                                           ),
                                           child: Text(
                                             DateFormat('dd').format(
-                                                day.subtract(
-                                                    Duration(days: 1 - i))),
+                                                day.subtract(Duration(
+                                                    days: tabsCount ~/ 2 - i))),
                                             style: Theme.of(context)
                                                 .textTheme
                                                 .headline6
@@ -163,10 +169,12 @@ class TasksListByWeek extends StatelessWidget {
                                         color: Theme.of(context)
                                             .primaryColor
                                             .withOpacity(.25),
-                                        borderRadius: BorderRadius.only(
-                                          topRight: Radius.circular(8),
-                                          bottomRight: Radius.circular(8),
-                                        ),
+                                        borderRadius: i == tabsCount - 1
+                                            ? BorderRadius.only(
+                                                topRight: Radius.circular(8),
+                                                bottomRight: Radius.circular(8),
+                                              )
+                                            : null,
                                       ),
                                       padding: EdgeInsets.all(8),
                                       child: Center(
@@ -179,8 +187,8 @@ class TasksListByWeek extends StatelessWidget {
                                           ),
                                           child: Text(
                                             DateFormat('dd').format(
-                                                day.subtract(
-                                                    Duration(days: 1 - i))),
+                                                day.subtract(Duration(
+                                                    days: tabsCount ~/ 2 - i))),
                                             style: Theme.of(context)
                                                 .textTheme
                                                 .headline6
@@ -208,14 +216,14 @@ class TasksListByWeek extends StatelessWidget {
                   scrollDirection: Axis.vertical,
                   child: Row(
                     children: [
-                      for (int i = 0; i < 3; i++)
+                      for (int i = 0; i < tabsCount; i++)
                         Container(
                           width: (MediaQuery.of(context).size.width - 54 - 32) /
-                                  3 +
+                                  tabsCount +
                               (i == 0 ? 54 : 0),
                           child: DayView(
-                            date:
-                                DateTime(day.year, day.month, day.day - 1 + i),
+                            date: DateTime(day.year, day.month,
+                                day.day - tabsCount ~/ 2 + i),
                             dayBarStyle: DayBarStyle(
                               dateFormatter: (year, month, day) =>
                                   DateFormat('dd').format(
@@ -252,18 +260,18 @@ class TasksListByWeek extends StatelessWidget {
                                             DateTime(
                                               day.year,
                                               day.month,
-                                              day.day - 1 + i,
+                                              day.day - tabsCount ~/ 2 + i,
                                             )) ||
                                     element.dueDates.contains(DateTime(
                                       day.year,
                                       day.month,
-                                      day.day - 1 + i,
+                                      day.day - tabsCount ~/ 2 + i,
                                     )))
                                 .map((e) => FlutterWeekViewEvent(
                                       start: DateTime(
                                         day.year,
                                         day.month,
-                                        day.day - 1 + i,
+                                        day.day - tabsCount ~/ 2 + i,
                                         e.anyTime ? 0 : e.startTime.hour,
                                         e.anyTime ? 0 : e.startTime.minute,
                                       ),
@@ -271,14 +279,14 @@ class TasksListByWeek extends StatelessWidget {
                                           ? DateTime(
                                               day.year,
                                               day.month,
-                                              day.day - 1 + i,
+                                              day.day - tabsCount ~/ 2 + i,
                                               1,
                                               0,
                                             )
                                           : DateTime(
                                               day.year,
                                               day.month,
-                                              day.day - 1 + i,
+                                              day.day - tabsCount ~/ 2 + i,
                                             ).add(Duration(
                                               minutes: max(
                                                 e.startTime.hour * 60 +
@@ -305,14 +313,14 @@ class TasksListByWeek extends StatelessWidget {
                                         color: DateTime(
                                                   day.year,
                                                   day.month,
-                                                  day.day - 1 + i,
+                                                  day.day - tabsCount ~/ 2 + i,
                                                   e.startTime.hour,
                                                   e.startTime.minute,
                                                 ).isBefore(now) &&
                                                 DateTime(
                                                   day.year,
                                                   day.month,
-                                                  day.day - 1 + i,
+                                                  day.day - tabsCount ~/ 2 + i,
                                                   e.endTime.hour,
                                                   e.endTime.minute,
                                                 ).isAfter(now) &&
@@ -322,7 +330,9 @@ class TasksListByWeek extends StatelessWidget {
                                             : DateTime(
                                                       day.year,
                                                       day.month,
-                                                      day.day - 1 + i,
+                                                      day.day -
+                                                          tabsCount ~/ 2 +
+                                                          i,
                                                       e.endTime.hour,
                                                       e.endTime.minute,
                                                     ).isBefore(now) &&

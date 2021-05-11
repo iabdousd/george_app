@@ -5,7 +5,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:stackedtasks/constants/models/note.dart' as note_constants;
 import 'package:stackedtasks/constants/user.dart' as user_constants;
 import 'package:stackedtasks/constants/models/stack.dart' as stack_constants;
-import 'package:stackedtasks/constants/models/goal.dart' as goal_constants;
 import 'package:stackedtasks/services/user/user_service.dart';
 import 'Attachment.dart';
 
@@ -34,6 +33,8 @@ class Note {
 
   Note.fromJson(jsonObject, {String id}) {
     this.id = id;
+    this.goalRef = jsonObject[note_constants.GOAL_REF_KEY];
+    this.stackRef = jsonObject[note_constants.STACK_REF_KEY];
     this.taskRef = jsonObject[note_constants.TASK_REF_KEY];
     this.taskTitle = jsonObject[note_constants.TASK_TITLE_KEY];
     this.creationDate =
@@ -47,6 +48,8 @@ class Note {
 
   Map<String, dynamic> toJson() {
     return {
+      note_constants.GOAL_REF_KEY: this.goalRef,
+      note_constants.STACK_REF_KEY: this.stackRef,
       note_constants.TASK_REF_KEY: this.taskRef,
       note_constants.TASK_TITLE_KEY: this.taskTitle,
       note_constants.CONTENT_KEY: this.content,
@@ -59,13 +62,10 @@ class Note {
   save() async {
     assert(goalRef != null && stackRef != null);
     if (id == null) {
-      DocumentReference docRef = await FirebaseFirestore.instance
+      DocumentReference<Map<String, dynamic>> docRef = await FirebaseFirestore
+          .instance
           .collection(user_constants.USERS_KEY)
           .doc(getCurrentUser().uid)
-          .collection(goal_constants.GOALS_KEY)
-          .doc(goalRef)
-          .collection(goal_constants.STACKS_KEY)
-          .doc(stackRef)
           .collection(stack_constants.NOTES_KEY)
           .add(toJson());
       this.id = docRef.id;
@@ -73,10 +73,6 @@ class Note {
       await FirebaseFirestore.instance
           .collection(user_constants.USERS_KEY)
           .doc(getCurrentUser().uid)
-          .collection(goal_constants.GOALS_KEY)
-          .doc(goalRef)
-          .collection(goal_constants.STACKS_KEY)
-          .doc(stackRef)
           .collection(stack_constants.NOTES_KEY)
           .doc(id)
           .update(toJson());
@@ -88,10 +84,6 @@ class Note {
     await FirebaseFirestore.instance
         .collection(user_constants.USERS_KEY)
         .doc(getCurrentUser().uid)
-        .collection(goal_constants.GOALS_KEY)
-        .doc(goalRef)
-        .collection(goal_constants.STACKS_KEY)
-        .doc(stackRef)
         .collection(stack_constants.NOTES_KEY)
         .doc(id)
         .delete();
@@ -105,10 +97,6 @@ class Note {
     await FirebaseFirestore.instance
         .collection(user_constants.USERS_KEY)
         .doc(getCurrentUser().uid)
-        .collection(goal_constants.GOALS_KEY)
-        .doc(goalRef)
-        .collection(goal_constants.STACKS_KEY)
-        .doc(stackRef)
         .collection(stack_constants.NOTES_KEY)
         .doc(id)
         .update({
@@ -135,10 +123,6 @@ class Note {
     await FirebaseFirestore.instance
         .collection(user_constants.USERS_KEY)
         .doc(getCurrentUser().uid)
-        .collection(goal_constants.GOALS_KEY)
-        .doc(goalRef)
-        .collection(goal_constants.STACKS_KEY)
-        .doc(stackRef)
         .collection(stack_constants.NOTES_KEY)
         .doc(id)
         .update({

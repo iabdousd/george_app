@@ -17,6 +17,8 @@
 
 # Firease
 /android/app/google-services.json
+/android/stackedtasks.jks
+/android/key.properties
 /android/stackedlist.keystore
 
 

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:stackedtasks/constants/user.dart' as user_constants;
@@ -110,7 +111,9 @@ class _TasksTimerListState extends State<TasksTimerList>
                                 )
                               ],
                             ),
-                            height: 2 * MediaQuery.of(context).size.width / 3,
+                            height: kIsWeb
+                                ? 536
+                                : 2 * MediaQuery.of(context).size.width / 3,
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [

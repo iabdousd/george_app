@@ -28,7 +28,7 @@ Future<CachedImage> cacheImage(
   Directory dataPathDir = Directory(dataPath);
   if (!(await dataPathDir.exists())) await dataPathDir.create(recursive: true);
 
-  dataPath += '${url.replaceAll('/', '_')}.png';
+  dataPath += '${DateTime.now().microsecondsSinceEpoch}.png';
   File dataFile = File(dataPath);
 
   if (!(await dataFile.exists()))

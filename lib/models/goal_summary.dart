@@ -77,7 +77,8 @@ class GoalSummary {
   double get completionPercentage => tasksAccomlished / max(1.0, tasksTotal);
 
   fetchGoal() async {
-    DocumentSnapshot snapshot = await FirebaseFirestore.instance
+    DocumentSnapshot<Map<String, dynamic>> snapshot = await FirebaseFirestore
+        .instance
         .collection(user_constants.USERS_KEY)
         .doc(getCurrentUser().uid)
         .collection(feed_constants.GOALS_SUMMARIES_KEY)
@@ -125,7 +126,8 @@ class GoalSummary {
 
   addStack(TasksStack stack, {bool withFetch: false}) async {
     if (withFetch) await fetchGoal();
-    DocumentReference reference = FirebaseFirestore.instance
+    DocumentReference<Map<String, dynamic>> reference = FirebaseFirestore
+        .instance
         .collection(user_constants.USERS_KEY)
         .doc(getCurrentUser().uid)
         .collection(feed_constants.GOALS_SUMMARIES_KEY)
@@ -149,7 +151,8 @@ class GoalSummary {
 
   saveStack(TasksStack stack, {bool withFetch: false}) async {
     if (withFetch) await fetchGoal();
-    DocumentReference reference = FirebaseFirestore.instance
+    DocumentReference<Map<String, dynamic>> reference = FirebaseFirestore
+        .instance
         .collection(user_constants.USERS_KEY)
         .doc(getCurrentUser().uid)
         .collection(feed_constants.GOALS_SUMMARIES_KEY)
@@ -226,7 +229,8 @@ class GoalSummary {
       }
     }
 
-    DocumentReference reference = FirebaseFirestore.instance
+    DocumentReference<Map<String, dynamic>> reference = FirebaseFirestore
+        .instance
         .collection(user_constants.USERS_KEY)
         .doc(getCurrentUser().uid)
         .collection(feed_constants.GOALS_SUMMARIES_KEY)
@@ -258,7 +262,8 @@ class GoalSummary {
       }
     }
 
-    DocumentReference reference = FirebaseFirestore.instance
+    DocumentReference<Map<String, dynamic>> reference = FirebaseFirestore
+        .instance
         .collection(user_constants.USERS_KEY)
         .doc(getCurrentUser().uid)
         .collection(feed_constants.GOALS_SUMMARIES_KEY)
@@ -285,7 +290,8 @@ class GoalSummary {
       }
     }
 
-    DocumentReference reference = FirebaseFirestore.instance
+    DocumentReference<Map<String, dynamic>> reference = FirebaseFirestore
+        .instance
         .collection(user_constants.USERS_KEY)
         .doc(getCurrentUser().uid)
         .collection(feed_constants.GOALS_SUMMARIES_KEY)

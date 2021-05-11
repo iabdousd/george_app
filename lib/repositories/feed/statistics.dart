@@ -16,7 +16,8 @@ addTaskAccomplishment(Task task) async {
     DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)).day,
   );
 
-  DocumentReference documentReference = FirebaseFirestore.instance
+  DocumentReference<Map<String, dynamic>> documentReference = FirebaseFirestore
+      .instance
       .collection(user_constants.USERS_KEY)
       .doc(getCurrentUser().uid)
       .collection(feed_constants.STATISTICS_KEY)
@@ -24,7 +25,8 @@ addTaskAccomplishment(Task task) async {
       .collection(feed_constants.WEEKLY_STATISTICS_KEY)
       .doc(start.toString());
 
-  DocumentSnapshot snapshot = await documentReference.get();
+  DocumentSnapshot<Map<String, dynamic>> snapshot =
+      await documentReference.get();
   Map data = snapshot.data() ?? {};
   await documentReference.set({
     feed_constants.STATISTICS_CREATION_DATE_KEY: DateTime.now(),
@@ -42,7 +44,8 @@ removeTaskAccomplishment(Task task) async {
     DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)).day,
   );
 
-  DocumentReference documentReference = FirebaseFirestore.instance
+  DocumentReference<Map<String, dynamic>> documentReference = FirebaseFirestore
+      .instance
       .collection(user_constants.USERS_KEY)
       .doc(getCurrentUser().uid)
       .collection(feed_constants.STATISTICS_KEY)
@@ -50,7 +53,8 @@ removeTaskAccomplishment(Task task) async {
       .collection(feed_constants.WEEKLY_STATISTICS_KEY)
       .doc(start.toString());
 
-  DocumentSnapshot snapshot = await documentReference.get();
+  DocumentSnapshot<Map<String, dynamic>> snapshot =
+      await documentReference.get();
   Map data = snapshot.data() ?? {};
   await documentReference.set({
     feed_constants.STATISTICS_CREATION_DATE_KEY: DateTime.now(),

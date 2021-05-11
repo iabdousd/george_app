@@ -16,7 +16,7 @@ void main() async {
     yield LicenseEntryWithLineBreaks(['google_fonts'], license);
   });
 
-  await initializeCache();
+  if (!kIsWeb) await initializeCache();
   runApp(MyApp());
 }
 

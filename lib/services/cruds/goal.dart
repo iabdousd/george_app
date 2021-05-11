@@ -4,7 +4,8 @@ import 'package:stackedtasks/services/user/user_service.dart';
 import 'package:stackedtasks/constants/models/goal.dart' as goal_constants;
 import 'package:stackedtasks/constants/user.dart' as user_constants;
 
-Future<List<Goal>> fetchGoals({DocumentSnapshot after}) async {
+Future<List<Goal>> fetchGoals(
+    {DocumentSnapshot<Map<String, dynamic>> after}) async {
   if (after != null)
     return (await FirebaseFirestore.instance
             .collection(user_constants.USERS_KEY)

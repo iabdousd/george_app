@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
+import 'package:http/http.dart' as http;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
@@ -32,13 +33,20 @@ class CachedImageProvider extends ImageProvider<CachedImageProvider> {
   }
 
   Future<ui.Codec> _loadAsync(DecoderCallback decode) async {
-    final Uint8List bytes = await File((await getCachedImage(
+    if (kIsWeb) {
+      final res = await http.get(
+        Uri.parse(url),
+      );
+
+      return await decode(res.bodyBytes);
+    }
+    final file = File((await getCachedImage(
       url,
       customPathList: this.customPathList,
       quality: this.quality,
     ))
-            .filePath)
-        .readAsBytes();
+        .filePath);
+    final Uint8List bytes = await file.readAsBytes();
 
     if (bytes.lengthInBytes == 0) {
       PaintingBinding.instance?.imageCache?.evict(this);

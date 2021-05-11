@@ -32,6 +32,7 @@ class RecurringTaskArticleWidget extends StatelessWidget {
         ),
         color: Theme.of(context).backgroundColor,
       ),
+      margin: EdgeInsets.symmetric(vertical: 4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

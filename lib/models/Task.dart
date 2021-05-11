@@ -524,7 +524,8 @@ class Task {
   Future save({bool updateSummaries: false}) async {
     assert(goalRef != null && stackRef != null);
     if (id == null) {
-      DocumentReference docRef = await FirebaseFirestore.instance
+      DocumentReference<Map<String, dynamic>> docRef = await FirebaseFirestore
+          .instance
           .collection(user_constants.USERS_KEY)
           .doc(getCurrentUser().uid)
           .collection(stack_constants.TASKS_KEY)
@@ -540,7 +541,8 @@ class Task {
           withFetch: true,
         );
     } else {
-      DocumentReference docRef = FirebaseFirestore.instance
+      DocumentReference<Map<String, dynamic>> docRef = FirebaseFirestore
+          .instance
           .collection(user_constants.USERS_KEY)
           .doc(getCurrentUser().uid)
           .collection(stack_constants.TASKS_KEY)

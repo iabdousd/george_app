@@ -6,7 +6,8 @@ import 'package:hive/hive.dart';
 void remover(List message) async {
   SendPort _sendPort = message[0];
   for (List image in message[1]) {
-    await File(image[1]).delete();
+    final file = File(image[1]);
+    if (file.existsSync()) await file.delete();
     _sendPort.send(image[0]);
   }
 }

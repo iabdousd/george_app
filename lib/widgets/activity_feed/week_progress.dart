@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:stackedtasks/repositories/feed/statistics.dart';
 import 'package:intl/intl.dart';
@@ -50,7 +51,7 @@ class WeekProgressState extends State<WeekProgress> {
     ];
 
     final size = MediaQuery.of(context).size;
-    return StreamBuilder<QuerySnapshot>(
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
       stream: weeklyAccsStream,
       builder: (context, snapshot) {
         if (snapshot.hasData) {
@@ -86,7 +87,7 @@ class WeekProgressState extends State<WeekProgress> {
               ),
               Container(
                 width: size.width,
-                height: size.width / 1.7,
+                height: kIsWeb ? null : size.width / 1.7,
                 child: Stack(
                   children: [
                     AspectRatio(
