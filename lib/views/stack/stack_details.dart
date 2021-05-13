@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:stackedtasks/models/Stack.dart';
 import 'package:stackedtasks/services/feed-back/loader.dart';
 import 'package:stackedtasks/views/stack/save_stack.dart';
 import 'package:stackedtasks/views/stack/stack_body_view.dart';
 import 'package:stackedtasks/widgets/shared/app_action_button.dart';
 import 'package:stackedtasks/widgets/shared/app_appbar.dart';
 import 'package:get/get.dart';
-import 'package:stackedtasks/models/Stack.dart' as stack_model;
 
 class StackDetailsPage extends StatefulWidget {
-  final stack_model.TasksStack stack;
+  final TasksStack stack;
 
   StackDetailsPage({
     Key key,

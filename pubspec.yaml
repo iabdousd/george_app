@@ -55,9 +55,9 @@ dependencies:
   screenshot: ^0.3.0
   share: ^2.0.1
   shared_preferences: ^2.0.5
-  shimmer: ^1.1.2
+  shimmer: ^2.0.0
   syncfusion_flutter_calendar: ^19.1.58
-  table_calendar: ^2.3.3
+  table_calendar: ^3.0.0
   tutorial_coach_mark: ^0.6.0+1
   url_launcher: ^6.0.3
 

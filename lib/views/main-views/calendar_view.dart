@@ -17,7 +17,6 @@ class CalendarView extends StatefulWidget {
 class _CalendarViewState extends State<CalendarView>
     with AutomaticKeepAliveClientMixin, TickerProviderStateMixin {
   TabController _dayViewTanController;
-  CalendarController _calendarController;
   DateTime selectedDay;
   String currentCalendarView = 'month';
   List<Widget> tabChildren;
@@ -55,7 +54,6 @@ class _CalendarViewState extends State<CalendarView>
         fullScreen: true,
       ),
     );
-    _calendarController = CalendarController();
   }
 
   _changeCalendarView(String view) {
@@ -63,12 +61,11 @@ class _CalendarViewState extends State<CalendarView>
     switch (view) {
       case 'week':
         {
-          _calendarController.setCalendarFormat(CalendarFormat.week);
+          // _calendarController.setCalendarFormat(CalendarFormat.week);
           break;
         }
       case 'month':
         {
-          _calendarController.setCalendarFormat(CalendarFormat.month);
           break;
         }
       case 'day':
@@ -114,7 +111,6 @@ class _CalendarViewState extends State<CalendarView>
 
   @override
   void dispose() {
-    _calendarController.dispose();
     super.dispose();
   }
 
@@ -137,12 +133,13 @@ class _CalendarViewState extends State<CalendarView>
                       //     ? EdgeInsets.zero
                       //     :
                       EdgeInsets.symmetric(
-                    horizontal: currentCalendarView == 'day' ? 0 : 16.0,
+                    horizontal:
+                        !kIsWeb && currentCalendarView == 'day' ? 0 : 16.0,
                     vertical: 24.0,
                   ),
                   child: Stack(
                     children: [
-                      if (currentCalendarView == 'day')
+                      if (!kIsWeb && currentCalendarView == 'day')
                         Container(
                           width: MediaQuery.of(context).size.width,
                           height: MediaQuery.of(context).size.height -
@@ -153,7 +150,7 @@ class _CalendarViewState extends State<CalendarView>
                             children: tabChildren,
                           ),
                         )
-                      else if (currentCalendarView == 'week')
+                      else if (!kIsWeb && currentCalendarView == 'week')
                         Container(
                           width: MediaQuery.of(context).size.width,
                           height: MediaQuery.of(context).size.height -
@@ -173,31 +170,40 @@ class _CalendarViewState extends State<CalendarView>
                         )
                       else
                         TableCalendar(
-                          calendarController: _calendarController,
-                          initialSelectedDay: selectedDay,
+                          // calendarController: _calendarController,
+                          focusedDay: selectedDay,
+                          firstDay: DateTime.now().subtract(
+                            Duration(days: 5 * 365),
+                          ),
+                          lastDay: DateTime.now().add(
+                            Duration(days: 5 * 365),
+                          ),
+                          selectedDayPredicate: (_) =>
+                              _.year == selectedDay.year &&
+                              _.month == selectedDay.month &&
+                              _.day == selectedDay.day,
+                          calendarFormat: CalendarFormat.month,
                           calendarStyle: CalendarStyle(
-                            canEventMarkersOverflow: true,
-                            todayColor: Colors.orange,
-                            selectedColor: Theme.of(context).primaryColor,
-                            todayStyle: TextStyle(
+                            canMarkersOverflow: true,
+                            todayDecoration: BoxDecoration(
+                              color: Colors.orange,
+                            ),
+                            selectedDecoration: BoxDecoration(
+                              color: Theme.of(context).primaryColor,
+                            ),
+                            todayTextStyle: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 18.0,
                               color: Colors.white,
                             ),
                           ),
                           headerStyle: HeaderStyle(
-                            // formatButtonDecoration: BoxDecoration(
-                            //   color: Theme.of(context).primaryColor,
-                            //   borderRadius: BorderRadius.circular(8.0),
-                            // ),
-                            // centerHeaderTitle: true,
                             formatButtonVisible: false,
                             titleTextStyle:
                                 Theme.of(context).textTheme.headline6,
-                            // formatButtonTextStyle: TextStyle(color: Colors.white),
                           ),
                           daysOfWeekStyle: DaysOfWeekStyle(
-                            dowTextBuilder: (date, d) =>
+                            dowTextFormatter: (date, d) =>
                                 DateFormat('E').format(date).substring(0, 1),
                             weekdayStyle:
                                 Theme.of(context).textTheme.bodyText2.copyWith(
@@ -216,8 +222,9 @@ class _CalendarViewState extends State<CalendarView>
                                           .withOpacity(.5),
                                     ),
                           ),
-                          builders: CalendarBuilders(
-                            dayBuilder: (context, date, events) => Container(
+                          calendarBuilders: CalendarBuilders(
+                            defaultBuilder: (context, date, events) =>
+                                Container(
                               alignment: Alignment.center,
                               decoration: BoxDecoration(
                                 color: Theme.of(context).backgroundColor,
@@ -227,7 +234,7 @@ class _CalendarViewState extends State<CalendarView>
                                 style: Theme.of(context).textTheme.subtitle1,
                               ),
                             ),
-                            selectedDayBuilder: (context, date, events) =>
+                            selectedBuilder: (context, date, events) =>
                                 Container(
                               margin: const EdgeInsets.all(0.0),
                               alignment: Alignment.center,
@@ -277,8 +284,7 @@ class _CalendarViewState extends State<CalendarView>
                                 ],
                               ),
                             ),
-                            todayDayBuilder: (context, date, events) =>
-                                Container(
+                            todayBuilder: (context, date, events) => Container(
                               margin: const EdgeInsets.all(4.0),
                               alignment: Alignment.center,
                               decoration: BoxDecoration(
@@ -293,7 +299,7 @@ class _CalendarViewState extends State<CalendarView>
                                 style: Theme.of(context).textTheme.subtitle1,
                               ),
                             ),
-                            outsideDayBuilder: (context, date, events) =>
+                            outsideBuilder: (context, date, events) =>
                                 Container(
                               margin: const EdgeInsets.all(4.0),
                               alignment: Alignment.center,
@@ -313,7 +319,7 @@ class _CalendarViewState extends State<CalendarView>
                                             .withOpacity(.5)),
                               ),
                             ),
-                            outsideWeekendDayBuilder: (context, date, events) =>
+                            disabledBuilder: (context, date, events) =>
                                 Container(
                               margin: const EdgeInsets.all(4.0),
                               alignment: Alignment.center,
@@ -334,11 +340,11 @@ class _CalendarViewState extends State<CalendarView>
                               ),
                             ),
                           ),
-                          onDaySelected: (day, l1, l2) => setState(() {
+                          onDaySelected: (day, end) => setState(() {
                             selectedDay = day;
                           }),
                         ),
-                      if (currentCalendarView == 'day')
+                      if (!kIsWeb && currentCalendarView == 'day')
                         Positioned(
                           top: 0,
                           right: 64,
@@ -384,6 +390,37 @@ class _CalendarViewState extends State<CalendarView>
                     fullScreen: false,
                   ),
                 )
+              else if (kIsWeb && currentCalendarView == 'week')
+                Expanded(
+                  flex: 2,
+                  child: Container(
+                    height: MediaQuery.of(context).size.height,
+                    padding: EdgeInsets.only(bottom: 64),
+                    child: TasksListByWeek(
+                      day: selectedDay,
+                      fullScreen: true,
+                      updateDay: (day) => setState(
+                        () => selectedDay = DateTime(
+                          day.year,
+                          day.month,
+                          day.day,
+                        ),
+                      ),
+                    ),
+                  ),
+                )
+              else if (kIsWeb && currentCalendarView == 'day')
+                Expanded(
+                  flex: 2,
+                  child: Container(
+                    height: MediaQuery.of(context).size.height,
+                    padding: EdgeInsets.only(bottom: 64),
+                    child: TabBarView(
+                      controller: _dayViewTanController,
+                      children: tabChildren,
+                    ),
+                  ),
+                ),
             ],
           ),
           if (!kIsWeb && currentCalendarView == 'month')

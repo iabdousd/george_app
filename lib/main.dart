@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
         FirebaseAnalyticsObserver(analytics: analytics),
       ],
       theme: lightThemeData(context),
-      darkTheme: darkThemeData(context),
+      darkTheme: lightThemeData(context), // darkThemeData(context),
       home: AppViews(),
     );
   }

@@ -28,7 +28,7 @@ class TasksListByWeek extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tabsCount = kIsWeb ? 5 : 3;
+    final tabsCount = kIsWeb ? 3 : 3;
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection(user_constants.USERS_KEY)
@@ -217,10 +217,10 @@ class TasksListByWeek extends StatelessWidget {
                   child: Row(
                     children: [
                       for (int i = 0; i < tabsCount; i++)
-                        Container(
-                          width: (MediaQuery.of(context).size.width - 54 - 32) /
-                                  tabsCount +
-                              (i == 0 ? 54 : 0),
+                        Flexible(
+                          // width: (MediaQuery.of(context).size.width - 54 - 32) /
+                          //         tabsCount +
+                          //     (i == 0 ? 54 : 0),
                           child: DayView(
                             date: DateTime(day.year, day.month,
                                 day.day - tabsCount ~/ 2 + i),

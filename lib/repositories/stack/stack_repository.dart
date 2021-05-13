@@ -24,4 +24,23 @@ class StackRepository {
             ))
         .toList();
   }
+
+  static Stream<List<Task>> streamStackTasks(TasksStack stack, int limit) {
+    return FirebaseFirestore.instance
+        .collection(user_constants.USERS_KEY)
+        .doc(getCurrentUser().uid)
+        .collection(stack_constants.TASKS_KEY)
+        .where(task_constants.STACK_REF_KEY, isEqualTo: stack.id)
+        .orderBy(task_constants.CREATION_DATE_KEY, descending: true)
+        .limit(limit)
+        .snapshots()
+        .map(
+          (event) => event.docs
+              .map((e) => Task.fromJson(
+                    e.data(),
+                    id: e.id,
+                  ))
+              .toList(),
+        );
+  }
 }

@@ -1,19 +1,25 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:stackedtasks/config/extensions/hex_color.dart';
+import 'package:stackedtasks/constants/models/note.dart' as note_constants;
+import 'package:stackedtasks/constants/models/stack.dart';
+import 'package:stackedtasks/constants/user.dart';
 import 'package:stackedtasks/models/Note.dart';
 import 'package:stackedtasks/models/Task.dart';
 import 'package:stackedtasks/providers/cache/cached_image_provider.dart';
 import 'package:stackedtasks/services/feed-back/flush_bar.dart';
 import 'package:stackedtasks/services/feed-back/loader.dart';
+import 'package:stackedtasks/services/user/user_service.dart';
 import 'package:stackedtasks/views/task/save_task.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:stackedtasks/widgets/shared/app_expansion_tile.dart';
 
 class TaskListTileWidget extends StatefulWidget {
   final Task task;
@@ -230,15 +236,6 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                                     right: 10,
                                     bottom: widget.showNoteInput ? 0 : 16,
                                   ),
-                                  height: widget.showDescription
-                                      ? kIsWeb
-                                          ? 536
-                                          : 2 *
-                                              MediaQuery.of(context)
-                                                  .size
-                                                  .width /
-                                              3
-                                      : null,
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
@@ -293,58 +290,6 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                                                       ),
                                                 ),
                                               ),
-                                              if (widget.showDescription)
-                                                Row(
-                                                  mainAxisSize:
-                                                      MainAxisSize.max,
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: [
-                                                    ClipRRect(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              32),
-                                                      child: Image.network(
-                                                        'https://monteluke.com.au/wp-content/gallery/linkedin-profile-pictures/1.jpg',
-                                                        width: 28,
-                                                        height: 28,
-                                                        fit: BoxFit.cover,
-                                                      ),
-                                                    ),
-                                                    Container(
-                                                      margin:
-                                                          EdgeInsets.symmetric(
-                                                        horizontal: 2,
-                                                      ),
-                                                      child: ClipRRect(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(32),
-                                                        child: Image.network(
-                                                          'https://www.rd.com/wp-content/uploads/2017/09/01-shutterstock_476340928-Irina-Bg.jpg',
-                                                          width: 28,
-                                                          height: 28,
-                                                          fit: BoxFit.cover,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    Container(
-                                                      decoration: BoxDecoration(
-                                                        color:
-                                                            Color(0xFFEEEEEE),
-                                                        shape: BoxShape.circle,
-                                                      ),
-                                                      width: 28,
-                                                      height: 28,
-                                                      child: Center(
-                                                        child: Icon(
-                                                          Icons.add,
-                                                          size: 18,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
                                             ],
                                           ),
                                           Container(
@@ -393,16 +338,25 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                                       ),
                                       if (widget.showDescription &&
                                           widget.task.description.isNotEmpty)
-                                        Text(
-                                          widget.task.description,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .headline6
-                                              .copyWith(
-                                                fontWeight: FontWeight.w400,
-                                                fontSize: 13,
-                                              ),
-                                          textAlign: TextAlign.justify,
+                                        AppExpansionTile(
+                                          title: Text(
+                                            'Task details',
+                                          ),
+                                          expandedCrossAxisAlignment:
+                                              CrossAxisAlignment.stretch,
+                                          children: [
+                                            Text(
+                                              widget.task.description,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .headline6
+                                                  .copyWith(
+                                                    fontWeight: FontWeight.w400,
+                                                    fontSize: 13,
+                                                  ),
+                                              textAlign: TextAlign.justify,
+                                            ),
+                                          ],
                                         ),
                                       if (widget.showDescription &&
                                           widget.task.description.isNotEmpty)
@@ -543,11 +497,9 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                               ),
                             ],
                           ),
-                          if (widget.showLastNote &&
-                              widget.task.lastNote != null)
+                          SizedBox(height: 12),
+                          if (widget.showDescription)
                             Container(
-                              margin: EdgeInsets.symmetric(vertical: 12),
-                              padding: EdgeInsets.all(16),
                               decoration: BoxDecoration(
                                 border: Border(
                                   top: BorderSide(
@@ -555,61 +507,162 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                                   ),
                                 ),
                               ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.max,
+                                mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
-                                  Row(
-                                    children: [
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(32),
-                                        child: Image(
-                                          image: CachedImageProvider(
-                                            FirebaseAuth
-                                                .instance.currentUser.photoURL,
-                                          ),
-                                          width: 32,
-                                          height: 32,
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
-                                      Expanded(
-                                        child: Container(
-                                          padding: EdgeInsets.all(8),
-                                          child: Text(
-                                            FirebaseAuth.instance.currentUser
-                                                    .displayName
-                                                    .split(' ')
-                                                    .first +
-                                                ' - Task Notes ' +
-                                                DateFormat('EEE, dd MMM')
-                                                    .format(
-                                                  widget.task.lastNote
-                                                      .creationDate,
-                                                ),
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(32),
+                                    child: Image.network(
+                                      'https://monteluke.com.au/wp-content/gallery/linkedin-profile-pictures/1.jpg',
+                                      width: 28,
+                                      height: 28,
+                                      fit: BoxFit.cover,
+                                    ),
                                   ),
                                   Container(
-                                    margin: EdgeInsets.only(top: 8),
-                                    child: Text(
-                                      widget.task.lastNote.content,
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w400,
+                                    margin: EdgeInsets.symmetric(
+                                      horizontal: 2,
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(32),
+                                      child: Image.network(
+                                        'https://monteluke.com.au/wp-content/gallery/linkedin-profile-pictures/1.jpg',
+                                        width: 28,
+                                        height: 28,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  ),
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: Color(0xFFEEEEEE),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    width: 28,
+                                    height: 28,
+                                    child: Center(
+                                      child: Icon(
+                                        Icons.add,
+                                        size: 18,
                                       ),
                                     ),
                                   ),
                                 ],
                               ),
-                            )
-                          else
-                            SizedBox(height: 12),
+                            ),
+                          if (widget.showLastNote)
+                            StreamBuilder<QuerySnapshot>(
+                              stream: FirebaseFirestore.instance
+                                  .collection(USERS_KEY)
+                                  .doc(getCurrentUser().uid)
+                                  .collection(NOTES_KEY)
+                                  .where(
+                                    note_constants.TASK_REF_KEY,
+                                    isEqualTo: widget.task.id,
+                                  )
+                                  .orderBy(
+                                    note_constants.CREATION_DATE_KEY,
+                                    descending: true,
+                                  )
+                                  .snapshots(),
+                              builder: (context, snapshot) {
+                                print(snapshot.error);
+
+                                if (!snapshot.hasData) {
+                                  return Container(
+                                    padding: const EdgeInsets.all(8.0),
+                                    height: 64,
+                                    child: Center(
+                                      child: LoadingWidget(),
+                                    ),
+                                  );
+                                }
+                                return ListView.builder(
+                                    shrinkWrap: true,
+                                    physics: NeverScrollableScrollPhysics(),
+                                    itemCount: snapshot.data.docs.length,
+                                    itemBuilder: (context, index) {
+                                      final note = Note.fromJson(
+                                        snapshot.data.docs[index].data(),
+                                        id: snapshot.data.docs[index].id,
+                                      );
+                                      return Container(
+                                        margin: EdgeInsets.only(
+                                          bottom: 8,
+                                        ),
+                                        padding: EdgeInsets.all(16),
+                                        decoration: BoxDecoration(
+                                          border: Border(
+                                            top: BorderSide(
+                                              color: Colors.black26,
+                                            ),
+                                          ),
+                                        ),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                ClipRRect(
+                                                  borderRadius:
+                                                      BorderRadius.circular(32),
+                                                  child: Image(
+                                                    image: CachedImageProvider(
+                                                      'https://monteluke.com.au/wp-content/gallery/linkedin-profile-pictures/1.jpg',
+                                                    ),
+                                                    width: 32,
+                                                    height: 32,
+                                                    fit: BoxFit.cover,
+                                                  ),
+                                                ),
+                                                Expanded(
+                                                  child: Container(
+                                                    padding: EdgeInsets.all(8),
+                                                    child: Text(
+                                                      FirebaseAuth
+                                                              .instance
+                                                              .currentUser
+                                                              .displayName
+                                                              .split(' ')
+                                                              .first +
+                                                          ' - Task Notes ' +
+                                                          DateFormat(
+                                                                  'EEE, dd MMM')
+                                                              .format(
+                                                            note.creationDate,
+                                                          ),
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            Container(
+                                              margin: EdgeInsets.only(top: 8),
+                                              child: Text(
+                                                note.content,
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w400,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    });
+                              },
+                            ),
                         ],
                       ),
                     ),

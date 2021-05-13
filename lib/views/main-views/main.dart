@@ -10,6 +10,7 @@ import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 import 'activity_feed_view.dart';
 import 'calendar_view.dart';
 import 'home_view.dart';
+import 'time_tracking_views.dart';
 import 'timer_view.dart';
 
 class MainView extends StatefulWidget {
@@ -162,7 +163,7 @@ A pro tip is to add maintaining your task management system itself as one of you
   void initState() {
     _init();
     pageIndexStreamController.add(0);
-    _tabController = _tabController = TabController(length: 4, vsync: this);
+    _tabController = _tabController = TabController(length: 3, vsync: this);
     super.initState();
   }
 
@@ -207,8 +208,7 @@ A pro tip is to add maintaining your task management system itself as one of you
             physics: NeverScrollableScrollPhysics(),
             children: [
               HomeView(),
-              CalendarView(),
-              TimerView(),
+              TimeTrackingViews(),
               ActivityFeedView(),
             ],
           ),

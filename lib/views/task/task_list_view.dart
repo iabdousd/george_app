@@ -78,8 +78,8 @@ class _TaskListViewState extends State<TaskListView>
               );
             },
           ),
-          FutureBuilder<List<Task>>(
-              future: StackRepository.getStackTasks(
+          StreamBuilder<List<Task>>(
+              stream: StackRepository.streamStackTasks(
                 widget.stack,
                 limit,
               ),

@@ -44,17 +44,6 @@ class AppBottomNavigationBar extends StatelessWidget {
         ),
         BottomNavigationBarItem(
           icon: SvgPicture.asset(
-            'assets/images/icons/timer.svg',
-            key: keys[2],
-            width: 22,
-            height: 22,
-            color: index == 2 ? Theme.of(context).primaryColor : null,
-          ),
-          label: '',
-          tooltip: '',
-        ),
-        BottomNavigationBarItem(
-          icon: SvgPicture.asset(
             'assets/images/icons/activity.svg',
             key: keys[3],
             width: 22,
