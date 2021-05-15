@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:math';
 
+import 'package:animate_do/animate_do.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -29,7 +31,7 @@ class TaskListTileWidget extends StatefulWidget {
       showNoteInput,
       showDescription,
       showHirachy,
-      showLastNote;
+      showLastNotes;
 
   const TaskListTileWidget({
     Key key,
@@ -40,7 +42,7 @@ class TaskListTileWidget extends StatefulWidget {
     this.showDescription: false,
     this.showNoteInput: false,
     this.showHirachy: false,
-    this.showLastNote: false,
+    this.showLastNotes: false,
   }) : super(key: key);
 
   @override
@@ -147,8 +149,96 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
 
     return Column(
       children: [
-        AnimatedContainer(
-          duration: Duration(milliseconds: 250),
+        if (widget.showNoteInput)
+          Column(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8.0),
+                  border: Border.all(
+                    width: 1,
+                    color: Colors.grey[400],
+                  ),
+                ),
+                margin: EdgeInsets.only(
+                  top: 24.0,
+                  left: 34.0,
+                  right: 34.0,
+                ),
+                child: TextField(
+                  controller: _contentController,
+                  decoration: InputDecoration(
+                    labelText: 'Task Notes',
+                    hintText: 'The content of the note',
+                    contentPadding: const EdgeInsets.symmetric(
+                      vertical: 12.0,
+                      horizontal: 12.0,
+                    ),
+                    alignLabelWithHint: true,
+                    border: InputBorder.none,
+                  ),
+                  textInputAction: TextInputAction.newline,
+                  minLines: 3,
+                  maxLines: 5,
+                ),
+              ),
+              Container(
+                margin: EdgeInsets.only(
+                  bottom: 8.0,
+                  left: 24.0,
+                  right: 34.0,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        //
+                      },
+                      icon: Icon(Icons.attach_file),
+                    ),
+                    ElevatedButton(
+                      onPressed: () async {
+                        if (_contentController.text
+                                .replaceAll('\n', '')
+                                .trim() ==
+                            '') return;
+                        setState(() => loading = true);
+                        Note note = Note(
+                          content: _contentController.text.trim(),
+                          goalRef: widget.task.goalRef,
+                          stackRef: widget.task.stackRef,
+                          taskRef: widget.task.id,
+                          taskTitle: widget.task.title,
+                          creationDate: DateTime.now(),
+                        );
+                        await note.save();
+                        await widget.task.addNote(note);
+                        _contentController.text = '';
+                        setState(() => loading = false);
+                        showFlushBar(
+                          title: 'Note added successfully!',
+                          message: 'You can now see your note in notes list.',
+                        );
+                      },
+                      child: loading
+                          ? SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation(
+                                  Theme.of(context).backgroundColor,
+                                ),
+                                strokeWidth: 1,
+                              ))
+                          : Text('Post'),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8.0),
             boxShadow: [
@@ -160,7 +250,6 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
             ],
           ),
           margin: EdgeInsets.only(top: 16.0),
-          // height: 64.0 + 20,
           child: GestureDetector(
             onTap: () => _editTask(context),
             child: Slidable(
@@ -505,6 +594,9 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                                   top: BorderSide(
                                     color: Colors.black26,
                                   ),
+                                  bottom: BorderSide(
+                                    color: Colors.black26,
+                                  ),
                                 ),
                               ),
                               padding: EdgeInsets.symmetric(
@@ -555,7 +647,7 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                                 ],
                               ),
                             ),
-                          if (widget.showLastNote)
+                          if (widget.showLastNotes)
                             StreamBuilder<QuerySnapshot>(
                               stream: FirebaseFirestore.instance
                                   .collection(USERS_KEY)
@@ -582,85 +674,197 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                                     ),
                                   );
                                 }
-                                return ListView.builder(
-                                    shrinkWrap: true,
-                                    physics: NeverScrollableScrollPhysics(),
-                                    itemCount: snapshot.data.docs.length,
-                                    itemBuilder: (context, index) {
-                                      final note = Note.fromJson(
-                                        snapshot.data.docs[index].data(),
-                                        id: snapshot.data.docs[index].id,
-                                      );
-                                      return Container(
-                                        margin: EdgeInsets.only(
-                                          bottom: 8,
-                                        ),
-                                        padding: EdgeInsets.all(16),
-                                        decoration: BoxDecoration(
-                                          border: Border(
-                                            top: BorderSide(
-                                              color: Colors.black26,
-                                            ),
-                                          ),
-                                        ),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Row(
-                                              children: [
-                                                ClipRRect(
-                                                  borderRadius:
-                                                      BorderRadius.circular(32),
-                                                  child: Image(
-                                                    image: CachedImageProvider(
-                                                      'https://monteluke.com.au/wp-content/gallery/linkedin-profile-pictures/1.jpg',
-                                                    ),
-                                                    width: 32,
-                                                    height: 32,
-                                                    fit: BoxFit.cover,
+                                bool showAll = false;
+
+                                return StatefulBuilder(
+                                    builder: (context, notesSetState) {
+                                  return Padding(
+                                    padding: const EdgeInsets.only(top: 20.0),
+                                    child: ListView.builder(
+                                        shrinkWrap: true,
+                                        physics: NeverScrollableScrollPhysics(),
+                                        itemCount: showAll
+                                            ? snapshot.data.docs.length + 1
+                                            : min(
+                                                snapshot.data.docs.length,
+                                                (showAll
+                                                    ? snapshot.data.docs.length
+                                                    : 4)),
+                                        itemBuilder: (context, index) {
+                                          if ((showAll &&
+                                                  index ==
+                                                      snapshot
+                                                          .data.docs.length) ||
+                                              (!showAll &&
+                                                  index == 3 &&
+                                                  snapshot.data.docs.length >
+                                                      3))
+                                            return TextButton(
+                                              onPressed: () => notesSetState(
+                                                () => showAll = !showAll,
+                                              ),
+                                              style: ButtonStyle(
+                                                padding:
+                                                    MaterialStateProperty.all(
+                                                  EdgeInsets.symmetric(
+                                                    vertical: 16,
                                                   ),
                                                 ),
-                                                Expanded(
-                                                  child: Container(
-                                                    padding: EdgeInsets.all(8),
-                                                    child: Text(
-                                                      FirebaseAuth
-                                                              .instance
-                                                              .currentUser
-                                                              .displayName
-                                                              .split(' ')
-                                                              .first +
-                                                          ' - Task Notes ' +
-                                                          DateFormat(
-                                                                  'EEE, dd MMM')
-                                                              .format(
-                                                            note.creationDate,
+                                              ),
+                                              child: Text(
+                                                showAll
+                                                    ? 'Hide notes'
+                                                    : 'Show all notes',
+                                              ),
+                                            );
+
+                                          final note = Note.fromJson(
+                                            snapshot.data.docs[index].data(),
+                                            id: snapshot.data.docs[index].id,
+                                          );
+                                          return FadeIn(
+                                            duration:
+                                                Duration(milliseconds: 350),
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                  // border: index == 0
+                                                  //     ? null
+                                                  //     : Border(
+                                                  //         top: BorderSide(
+                                                  //           color: Colors.black26,
+                                                  //         ),
+                                                  //       ),
+                                                  ),
+                                              child: IntrinsicHeight(
+                                                child: Row(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Column(
+                                                      mainAxisSize:
+                                                          MainAxisSize.max,
+                                                      children: [
+                                                        Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .only(
+                                                            top: 4.0,
+                                                            bottom: 4.0,
+                                                            left: 12.0,
+                                                            right: 12.0,
                                                           ),
-                                                      style: TextStyle(
-                                                        fontSize: 12,
-                                                        fontWeight:
-                                                            FontWeight.w500,
+                                                          child: ClipRRect(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        52),
+                                                            child: Image(
+                                                              image:
+                                                                  CachedImageProvider(
+                                                                'https://monteluke.com.au/wp-content/gallery/linkedin-profile-pictures/1.jpg',
+                                                              ),
+                                                              width: 52,
+                                                              height: 52,
+                                                              fit: BoxFit.cover,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        if (index !=
+                                                                snapshot
+                                                                        .data
+                                                                        .docs
+                                                                        .length -
+                                                                    1 &&
+                                                            (showAll ||
+                                                                (!showAll &&
+                                                                    index !=
+                                                                        2)))
+                                                          Expanded(
+                                                            child: Container(
+                                                              width: 1.5,
+                                                              color: Color(
+                                                                  0xFFAAAAAA),
+                                                            ),
+                                                          ),
+                                                      ],
+                                                    ),
+                                                    Expanded(
+                                                      child: Padding(
+                                                        padding: EdgeInsets
+                                                            .symmetric(
+                                                          horizontal: 12,
+                                                        ),
+                                                        child: Column(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            Row(
+                                                              children: [
+                                                                Text(
+                                                                  FirebaseAuth
+                                                                      .instance
+                                                                      .currentUser
+                                                                      .displayName
+                                                                      .split(
+                                                                          ' ')
+                                                                      .first,
+                                                                  style:
+                                                                      TextStyle(
+                                                                    fontSize:
+                                                                        14,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w600,
+                                                                  ),
+                                                                ),
+                                                                Text(
+                                                                  ' - Task Notes ' +
+                                                                      DateFormat(
+                                                                              'EEE, dd MMM')
+                                                                          .format(
+                                                                        note.creationDate,
+                                                                      ),
+                                                                  style:
+                                                                      TextStyle(
+                                                                    fontSize:
+                                                                        14,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w500,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                            Container(
+                                                              margin: EdgeInsets
+                                                                  .only(
+                                                                top: 4,
+                                                                bottom: 32,
+                                                              ),
+                                                              child: Text(
+                                                                note.content,
+                                                                style:
+                                                                    TextStyle(
+                                                                  fontSize: 14,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w400,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
                                                       ),
                                                     ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            Container(
-                                              margin: EdgeInsets.only(top: 8),
-                                              child: Text(
-                                                note.content,
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w400,
+                                                  ],
                                                 ),
                                               ),
                                             ),
-                                          ],
-                                        ),
-                                      );
-                                    });
+                                          );
+                                        }),
+                                  );
+                                });
                               },
                             ),
                         ],
@@ -742,95 +946,6 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
             ),
           ),
         ),
-        if (widget.showNoteInput)
-          Column(
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8.0),
-                  border: Border.all(
-                    width: 1,
-                    color: Colors.grey[400],
-                  ),
-                ),
-                margin: EdgeInsets.only(
-                  top: 24.0,
-                  left: 34.0,
-                  right: 34.0,
-                ),
-                child: TextField(
-                  controller: _contentController,
-                  decoration: InputDecoration(
-                    labelText: 'Task Notes',
-                    hintText: 'The content of the note',
-                    contentPadding: const EdgeInsets.symmetric(
-                      vertical: 12.0,
-                      horizontal: 12.0,
-                    ),
-                    alignLabelWithHint: true,
-                    border: InputBorder.none,
-                  ),
-                  textInputAction: TextInputAction.newline,
-                  minLines: 3,
-                  maxLines: 5,
-                ),
-              ),
-              Container(
-                margin: EdgeInsets.only(
-                  bottom: 8.0,
-                  left: 24.0,
-                  right: 34.0,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    IconButton(
-                      onPressed: () {
-                        //
-                      },
-                      icon: Icon(Icons.attach_file),
-                    ),
-                    ElevatedButton(
-                      onPressed: () async {
-                        if (_contentController.text
-                                .replaceAll('\n', '')
-                                .trim() ==
-                            '') return;
-                        setState(() => loading = true);
-                        Note note = Note(
-                          content: _contentController.text.trim(),
-                          goalRef: widget.task.goalRef,
-                          stackRef: widget.task.stackRef,
-                          taskRef: widget.task.id,
-                          taskTitle: widget.task.title,
-                          creationDate: DateTime.now(),
-                        );
-                        await note.save();
-                        await widget.task.addNote(note);
-                        _contentController.text = '';
-                        setState(() => loading = false);
-                        showFlushBar(
-                          title: 'Note added successfully!',
-                          message: 'You can now see your note in notes list.',
-                        );
-                      },
-                      child: loading
-                          ? SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation(
-                                  Theme.of(context).backgroundColor,
-                                ),
-                                strokeWidth: 1,
-                              ))
-                          : Text('Post'),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
       ],
     );
   }

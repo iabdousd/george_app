@@ -165,7 +165,7 @@ class _TasksTimerListState extends State<TasksTimerList>
                                 DateTime(1970, 1, 1, now.hour, now.minute),
                               ),
                           showDescription: true,
-                          showLastNote: index == 0 &&
+                          showLastNotes: index == 0 &&
                               task.startTime.isBefore(
                                 DateTime(1970, 1, 1, now.hour, now.minute),
                               ),

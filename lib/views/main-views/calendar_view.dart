@@ -1,6 +1,7 @@
 import 'package:date_util/date_util.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:stackedtasks/widgets/shared/app_action_button.dart';
 import 'package:stackedtasks/widgets/task/tasks_list_by_day.dart';
 import 'package:intl/intl.dart';
@@ -43,6 +44,16 @@ class _CalendarViewState extends State<CalendarView>
       initialIndex: selectedDay.day - 1,
     );
 
+    _dayViewTanController.addListener(() {
+      setState(() {
+        selectedDay = DateTime(
+          selectedDay.year,
+          selectedDay.month,
+          _dayViewTanController.index + 1,
+        );
+      });
+    });
+
     tabChildren = List<Widget>.generate(
       daysInMonth,
       (index) => TasksListByDay(
@@ -75,7 +86,15 @@ class _CalendarViewState extends State<CalendarView>
             length: daysInMonth,
             initialIndex: selectedDay.day - 1,
           );
-
+          _dayViewTanController.addListener(() {
+            setState(() {
+              selectedDay = DateTime(
+                selectedDay.year,
+                selectedDay.month,
+                _dayViewTanController.index + 1,
+              );
+            });
+          });
           tabChildren = List<Widget>.generate(
             daysInMonth,
             (index) => TasksListByDay(
@@ -342,6 +361,8 @@ class _CalendarViewState extends State<CalendarView>
                           ),
                           onDaySelected: (day, end) => setState(() {
                             selectedDay = day;
+                            if (kIsWeb)
+                              _dayViewTanController.animateTo(day.day - 1);
                           }),
                         ),
                       if (!kIsWeb && currentCalendarView == 'day')
@@ -395,7 +416,7 @@ class _CalendarViewState extends State<CalendarView>
                   flex: 2,
                   child: Container(
                     height: MediaQuery.of(context).size.height,
-                    padding: EdgeInsets.only(bottom: 64),
+                    padding: EdgeInsets.only(bottom: 134),
                     child: TasksListByWeek(
                       day: selectedDay,
                       fullScreen: true,
@@ -414,10 +435,80 @@ class _CalendarViewState extends State<CalendarView>
                   flex: 2,
                   child: Container(
                     height: MediaQuery.of(context).size.height,
-                    padding: EdgeInsets.only(bottom: 64),
-                    child: TabBarView(
-                      controller: _dayViewTanController,
-                      children: tabChildren,
+                    padding: EdgeInsets.only(bottom: 140),
+                    margin: EdgeInsets.only(
+                      left: 0,
+                      top: 32,
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            MouseRegion(
+                              cursor: SystemMouseCursors.click,
+                              child: InkWell(
+                                onTap: () {
+                                  setState(
+                                    () => selectedDay = selectedDay.subtract(
+                                      Duration(days: 1),
+                                    ),
+                                  );
+                                  if (kIsWeb)
+                                    _dayViewTanController
+                                        .animateTo(selectedDay.day - 1);
+                                },
+                                child: Container(
+                                  width: 54,
+                                  height: 54,
+                                  child: Center(
+                                    child: Icon(Icons.arrow_back_ios),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12.0,
+                                ),
+                                child: Text(
+                                  DateFormat('EEE, dd MMM').format(
+                                    selectedDay,
+                                  ),
+                                  style: Theme.of(context).textTheme.headline6,
+                                ),
+                              ),
+                            ),
+                            MouseRegion(
+                              cursor: SystemMouseCursors.click,
+                              child: InkWell(
+                                onTap: () {
+                                  setState(
+                                    () => selectedDay = selectedDay.add(
+                                      Duration(days: 1),
+                                    ),
+                                  );
+                                  _dayViewTanController
+                                      .animateTo(selectedDay.day - 1);
+                                },
+                                child: Container(
+                                  width: 54,
+                                  height: 54,
+                                  child: Center(
+                                    child: Icon(Icons.arrow_forward_ios),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Expanded(
+                          child: TabBarView(
+                            controller: _dayViewTanController,
+                            children: tabChildren,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),

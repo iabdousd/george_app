@@ -81,11 +81,14 @@ class _SaveNotePageState extends State<SaveNotePage> {
       );
     } on Exception catch (e) {
       print(e);
-      showFlushBar(
-        title: 'Error',
-        message: 'Unknown error happened while importing your images.',
-        success: false,
-      );
+      if (imageSource != ImageSource.gallery)
+        _pickImage(ImageSource.gallery);
+      else
+        showFlushBar(
+          title: 'Error',
+          message: 'Unknown error happened while importing your images.',
+          success: false,
+        );
     }
     if (image != null)
       setState(() {

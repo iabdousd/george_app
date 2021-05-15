@@ -4,6 +4,7 @@ import 'package:animate_do/animate_do.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_week_view/flutter_week_view.dart';
 import 'package:stackedtasks/config/extensions/hex_color.dart';
 import 'package:stackedtasks/models/Task.dart';
@@ -62,12 +63,28 @@ class TasksListByWeek extends StatelessWidget {
           children: [
             Container(
               margin: EdgeInsets.only(
-                left: 54,
-                top: 64,
+                top: 32,
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
+                  MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: InkWell(
+                      onTap: () => updateDay(
+                        day.subtract(
+                          Duration(days: 1),
+                        ),
+                      ),
+                      child: Container(
+                        width: 54,
+                        height: 54,
+                        child: Center(
+                          child: Icon(Icons.arrow_back_ios),
+                        ),
+                      ),
+                    ),
+                  ),
                   for (int i = 0; i < tabsCount; i++)
                     Expanded(
                       key: Key('title${i}_' + day.toString()),
@@ -205,6 +222,23 @@ class TasksListByWeek extends StatelessWidget {
                                   ),
                       ),
                     ),
+                  MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: InkWell(
+                      onTap: () => updateDay(
+                        day.add(
+                          Duration(days: 1),
+                        ),
+                      ),
+                      child: Container(
+                        width: 54,
+                        height: 54,
+                        child: Center(
+                          child: Icon(Icons.arrow_forward_ios),
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),

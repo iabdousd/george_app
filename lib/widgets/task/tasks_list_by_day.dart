@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_week_view/flutter_week_view.dart';
 import 'package:stackedtasks/config/extensions/hex_color.dart';
@@ -51,19 +52,17 @@ class TasksListByDay extends StatelessWidget {
           return DayView(
             date: day,
             dayBarStyle: DayBarStyle(
-              dateFormatter: (year, month, day) =>
-                  DateFormat('EEE, dd MMM').format(
-                DateTime(year, month, day),
-              ),
+              dateFormatter: (year, month, day) => '',
               color: Theme.of(context).backgroundColor,
               textStyle: Theme.of(context).textTheme.headline6,
               textAlignment: Alignment.centerLeft,
             ),
             style: DayViewStyle(
               backgroundColor: Theme.of(context).backgroundColor,
-              headerSize: 60,
+              headerSize: 0,
               backgroundRulesColor: Color(0x88000000),
             ),
+            userZoomable: !kIsWeb,
             initialTime: HourMinute(hour: day.hour, minute: day.minute),
             events: tasks
                 .map((e) => FlutterWeekViewEvent(

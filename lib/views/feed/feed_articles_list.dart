@@ -57,39 +57,99 @@ class _FeedArticlesListState extends State<FeedArticlesList>
                       lastDate.year == task.creationDate.year);
 
                 lastDate = task.creationDate;
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                return Row(
+                  crossAxisAlignment: showDate
+                      ? CrossAxisAlignment.start
+                      : CrossAxisAlignment.center,
                   children: [
-                    if (showDate)
-                      Container(
-                        margin: EdgeInsets.only(
-                          left: 16.0,
-                          top: 24.0,
-                          bottom: 8.0,
-                        ),
-                        child: Text(
-                          DateFormat('EEEE, dd MMMM').format(task.creationDate),
-                          style: Theme.of(context)
-                              .textTheme
-                              .headline6
-                              .copyWith(fontWeight: FontWeight.w500),
-                        ),
+                    Container(
+                      margin: EdgeInsets.only(
+                        left: 8.0,
+                        right: 8.0,
+                        top: 8.0,
                       ),
+                      width: 80,
+                      child: showDate
+                          ? Column(
+                              children: [
+                                Text(
+                                  DateFormat('EEEE\nMMMM d')
+                                      .format(task.creationDate)
+                                      .toUpperCase(),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headline6
+                                      .copyWith(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 14,
+                                        color: Theme.of(context)
+                                            .textTheme
+                                            .headline6
+                                            .color
+                                            .withOpacity(.6),
+                                      ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 12.0),
+                                  child: Text(
+                                    DateFormat('hh:mm a')
+                                        .format(task.creationDate),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyText1
+                                        .copyWith(
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 12,
+                                          color: Theme.of(context)
+                                              .textTheme
+                                              .headline6
+                                              .color
+                                              .withOpacity(.5),
+                                        ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ],
+                            )
+                          : Text(
+                              DateFormat('hh:mm a').format(task.creationDate),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyText1
+                                  .copyWith(
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 12,
+                                    color: Theme.of(context)
+                                        .textTheme
+                                        .headline6
+                                        .color
+                                        .withOpacity(.5),
+                                  ),
+                              textAlign: TextAlign.center,
+                            ),
+                    ),
                     if (task.repetition == null)
-                      OnetimeTaskArticleWidget(
-                        key: Key(task.id),
-                        name: FirebaseAuth.instance.currentUser.displayName,
-                        profilePicture:
-                            FirebaseAuth.instance.currentUser.photoURL,
-                        task: task,
+                      Expanded(
+                        child: OnetimeTaskArticleWidget(
+                          key: Key(task.id),
+                          name: FirebaseAuth.instance.currentUser.displayName,
+                          profilePicture:
+                              FirebaseAuth.instance.currentUser.photoURL,
+                          task: task,
+                          showAuthorRow: showDate,
+                        ),
                       )
                     else
-                      RecurringTaskArticleWidget(
-                        key: Key(task.id),
-                        name: FirebaseAuth.instance.currentUser.displayName,
-                        profilePicture:
-                            FirebaseAuth.instance.currentUser.photoURL,
-                        task: task,
+                      Expanded(
+                        child: RecurringTaskArticleWidget(
+                          key: Key(task.id),
+                          name: FirebaseAuth.instance.currentUser.displayName,
+                          profilePicture:
+                              FirebaseAuth.instance.currentUser.photoURL,
+                          task: task,
+                          showAuthorRow: showDate,
+                        ),
                       ),
                   ],
                 );
