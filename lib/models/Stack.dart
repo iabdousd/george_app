@@ -21,7 +21,6 @@ class TasksStack extends InboxItem {
   DateTime creationDate;
 
   List<Task> tasks;
-  List<String> tasksKeys;
   List<Note> notes;
 
   TasksStack({
@@ -33,7 +32,6 @@ class TasksStack extends InboxItem {
     this.status = 0,
     this.creationDate,
     this.tasks,
-    this.tasksKeys,
   });
 
   TasksStack.fromJson(
@@ -50,7 +48,6 @@ class TasksStack extends InboxItem {
     this.status = jsonObject[stack_constants.STATUS_KEY];
     this.creationDate =
         (jsonObject[stack_constants.CREATION_DATE_KEY] as Timestamp).toDate();
-    this.tasksKeys = jsonObject[stack_constants.TASKS_KEYS_KEY];
   }
 
   Map<String, dynamic> toJson() {
@@ -59,7 +56,6 @@ class TasksStack extends InboxItem {
       stack_constants.COLOR_KEY: color,
       stack_constants.STATUS_KEY: status,
       stack_constants.CREATION_DATE_KEY: creationDate,
-      stack_constants.TASKS_KEYS_KEY: tasksKeys,
     };
   }
 

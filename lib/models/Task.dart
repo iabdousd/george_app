@@ -571,24 +571,6 @@ class Task extends InboxItem {
   }
 
   Future delete() async {
-    if (stackRef != 'inbox') {
-      final TasksStack stack = goalRef == 'inbox'
-          ? await InboxRepository.getInboxStack(id)
-          : TasksStack.fromJson((await FirebaseFirestore.instance
-                  .collection(user_constants.USERS_KEY)
-                  .doc(getCurrentUser().uid)
-                  .collection(goal_constants.GOALS_KEY)
-                  .doc(goalRef)
-                  .collection(goal_constants.STACKS_KEY)
-                  .doc(stackRef)
-                  .get())
-              .data());
-      if (stack != null) {
-        stack.tasksKeys.remove(id);
-        await stack.save();
-      }
-    }
-
     await FirebaseFirestore.instance
         .collection(user_constants.USERS_KEY)
         .doc(getCurrentUser().uid)

@@ -679,8 +679,6 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                                   )
                                   .snapshots(),
                               builder: (context, snapshot) {
-                                print(snapshot.error);
-
                                 if (!snapshot.hasData) {
                                   return Container(
                                     padding: const EdgeInsets.all(8.0),

@@ -200,9 +200,17 @@ class GoalSummary {
 
   deleteStack(TasksStack stack, {bool withFetch: false}) async {
     if (withFetch) await fetchGoal();
-    stacksSummaries.removeWhere(
-      (e) => e.id == stack.id,
-    );
+    final stackToRemove = stacksSummaries
+        .where(
+          (e) => e.id == stack.id,
+        )
+        .first;
+
+    stacksSummaries.remove(stackToRemove);
+    tasksAccomlished -= stackToRemove.tasksAccomlished;
+    tasksTotal -= stackToRemove.tasksTotal;
+    allocatedTime -= stackToRemove.allocatedTime;
+
     FirebaseFirestore.instance
         .collection(user_constants.USERS_KEY)
         .doc(getCurrentUser().uid)
@@ -210,6 +218,9 @@ class GoalSummary {
         .doc(id)
         .update(
       {
+        goal_summary_constants.TASKS_ACCOMPLISHED_KEY: tasksAccomlished,
+        goal_summary_constants.TASKS_TOTAL_KEY: tasksTotal,
+        goal_summary_constants.ALLOCATED_TIME_KEY: allocatedTime.inMilliseconds,
         goal_summary_constants.STACKS_SUMMARIES_KEY:
             stacksSummaries.map((e) => e.toJson()).toList(),
       },
