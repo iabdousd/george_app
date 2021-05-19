@@ -33,7 +33,7 @@ class AppErrorWidget extends StatelessWidget {
     }
     return Center(
       child: Text(
-        'Error',
+        'Unknown error, please try again!',
         textAlign: TextAlign.center,
       ),
     );

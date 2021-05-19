@@ -136,6 +136,10 @@ class RecurringTaskArticleWidget extends StatelessWidget {
                       create: (_) {
                         return task.fetchNotes();
                       },
+                      catchError: (context, error) {
+                        print(error);
+                        return 'An error ocurred';
+                      },
                       child: Consumer<String>(
                         builder: (context, data, _) {
                           if (data == null)

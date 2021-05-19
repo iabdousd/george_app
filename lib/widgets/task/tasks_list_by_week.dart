@@ -251,10 +251,19 @@ class TasksListByWeek extends StatelessWidget {
                   child: Row(
                     children: [
                       for (int i = 0; i < tabsCount; i++)
-                        Flexible(
-                          // width: (MediaQuery.of(context).size.width - 54 - 32) /
-                          //         tabsCount +
-                          //     (i == 0 ? 54 : 0),
+                        Container(
+                          width: ((kIsWeb
+                                          ? 2 *
+                                                  MediaQuery.of(context)
+                                                      .size
+                                                      .width /
+                                                  3 -
+                                              32
+                                          : MediaQuery.of(context).size.width) -
+                                      54 -
+                                      32) /
+                                  tabsCount +
+                              (i == 0 ? 54 : 0),
                           child: DayView(
                             date: DateTime(day.year, day.month,
                                 day.day - tabsCount ~/ 2 + i),

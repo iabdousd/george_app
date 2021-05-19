@@ -164,6 +164,10 @@ class _CalendarViewState extends State<CalendarView>
                           height: MediaQuery.of(context).size.height -
                               (kIsWeb ? 80 : 116),
                           margin: EdgeInsets.only(bottom: 116),
+                          padding: EdgeInsets.only(
+                            bottom: kIsWeb ? 0 : 86,
+                            top: kIsWeb ? 0 : 54,
+                          ),
                           child: TabBarView(
                             controller: _dayViewTanController,
                             children: tabChildren,
@@ -173,8 +177,12 @@ class _CalendarViewState extends State<CalendarView>
                         Container(
                           width: MediaQuery.of(context).size.width,
                           height: MediaQuery.of(context).size.height -
-                              (kIsWeb ? 80 : 116),
-                          margin: EdgeInsets.only(bottom: 116),
+                              (kIsWeb ? 116 : 116),
+                          margin: EdgeInsets.only(bottom: kIsWeb ? 116 : 0),
+                          padding: EdgeInsets.only(
+                            bottom: kIsWeb ? 0 : 86,
+                            top: kIsWeb ? 0 : 24,
+                          ),
                           child: TasksListByWeek(
                             day: selectedDay,
                             fullScreen: true,
@@ -220,6 +228,7 @@ class _CalendarViewState extends State<CalendarView>
                             formatButtonVisible: false,
                             titleTextStyle:
                                 Theme.of(context).textTheme.headline6,
+                            headerPadding: EdgeInsets.all(8),
                           ),
                           daysOfWeekStyle: DaysOfWeekStyle(
                             dowTextFormatter: (date, d) =>
@@ -367,13 +376,22 @@ class _CalendarViewState extends State<CalendarView>
                         ),
                       if (!kIsWeb && currentCalendarView == 'day')
                         Positioned(
-                          top: 0,
+                          top: kIsWeb ? 8 : 4,
                           right: 64,
+                          height: kIsWeb ? null : 54,
                           child: AppActionButton(
                             onPressed: _switchCalendarView,
                             icon: Icons.calendar_today_outlined,
                             label: currentCalendarView.toUpperCase(),
                             backgroundColor: Theme.of(context).primaryColor,
+                            padding: kIsWeb
+                                ? EdgeInsets.symmetric(
+                                    vertical: 14,
+                                    horizontal: 20,
+                                  )
+                                : EdgeInsets.symmetric(
+                                    horizontal: 4,
+                                  ),
                             iconSize: 18,
                             textStyle:
                                 Theme.of(context).textTheme.headline6.copyWith(
@@ -384,14 +402,23 @@ class _CalendarViewState extends State<CalendarView>
                         )
                       else
                         Positioned(
-                          top: 0,
+                          top: kIsWeb ? 8 : 4,
                           right: 50,
+                          height: kIsWeb ? null : 54,
                           child: AppActionButton(
                             onPressed: _switchCalendarView,
                             icon: Icons.calendar_today_outlined,
                             label: currentCalendarView.toUpperCase(),
                             backgroundColor: Theme.of(context).primaryColor,
                             iconSize: 18,
+                            padding: kIsWeb
+                                ? EdgeInsets.symmetric(
+                                    vertical: 14,
+                                    horizontal: 20,
+                                  )
+                                : EdgeInsets.symmetric(
+                                    horizontal: 4,
+                                  ),
                             textStyle:
                                 Theme.of(context).textTheme.headline6.copyWith(
                                       fontSize: 14,
@@ -403,6 +430,7 @@ class _CalendarViewState extends State<CalendarView>
                   ),
                 ),
               ),
+              if (kIsWeb) SizedBox(width: 16),
               if (kIsWeb && currentCalendarView == 'month')
                 Expanded(
                   flex: 2,

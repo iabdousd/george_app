@@ -1,8 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:stackedtasks/views/main-views/home/home_view_lg.dart';
 import 'package:stackedtasks/views/main-views/home/home_view_sm.dart';
 
 class HomeView extends StatefulWidget {
+  final StreamController<int> pageIndexStreamController;
+
+  const HomeView({Key key, this.pageIndexStreamController}) : super(key: key);
+
   @override
   _HomeViewState createState() => _HomeViewState();
 }
@@ -24,7 +30,9 @@ class _HomeViewState extends State<HomeView>
         if (constraints.maxWidth >= 900) {
           return HomeViewLG();
         }
-        return HomeViewSM();
+        return HomeViewSM(
+          pageIndexStreamController: widget.pageIndexStreamController,
+        );
       },
     );
   }

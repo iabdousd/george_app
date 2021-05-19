@@ -42,7 +42,7 @@ class _StackDetailsPageState extends State<StackDetailsPage> {
             style: Theme.of(context).textTheme.headline6,
           ),
           content: Text(
-              'Would you really like to delete \'${widget.stack.title.toUpperCase()}\' ?'),
+              'Would you really like to delete \'${widget.stack.title?.toUpperCase() ?? ''}\' ?'),
           actions: [
             TextButton(
               onPressed: () async {
@@ -95,21 +95,22 @@ class _StackDetailsPageState extends State<StackDetailsPage> {
               shrinkWrap: true,
               physics: NeverScrollableScrollPhysics(),
               children: [
-                InkWell(
-                  onTap: () => Get.back(),
-                  child: Container(
-                    margin: EdgeInsets.only(bottom: 4.0),
-                    child: Hero(
-                      tag: widget.stack.goalRef,
-                      child: Text(
-                        widget.stack.goalTitle.toUpperCase() + ' >',
-                        style: Theme.of(context).textTheme.bodyText2.copyWith(
-                              fontWeight: FontWeight.w500,
-                            ),
+                if (widget.stack.goalRef != null)
+                  InkWell(
+                    onTap: () => Get.back(),
+                    child: Container(
+                      margin: EdgeInsets.only(bottom: 4.0),
+                      child: Hero(
+                        tag: widget.stack.goalRef,
+                        child: Text(
+                          (widget.stack.goalTitle?.toUpperCase() ?? '') + ' >',
+                          style: Theme.of(context).textTheme.bodyText2.copyWith(
+                                fontWeight: FontWeight.w500,
+                              ),
+                        ),
                       ),
                     ),
                   ),
-                ),
                 Row(
                   children: [
                     Expanded(

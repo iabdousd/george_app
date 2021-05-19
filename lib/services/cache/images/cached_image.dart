@@ -41,8 +41,8 @@ Future<CachedImage> cacheImage(
     //   await compressList(
     //   data,
     //   quality,
-    //   // minHeight: minHeight,
-    //   // minWidth: minWidth,
+    //   minHeight: minHeight,
+    //   minWidth: minWidth,
     // ),
   );
 

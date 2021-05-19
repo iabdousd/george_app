@@ -1,14 +1,17 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:stackedtasks/constants/models/inbox_item.dart';
 import 'package:stackedtasks/services/user/user_service.dart';
 import 'package:stackedtasks/constants/models/stack.dart' as stack_constants;
 import 'package:stackedtasks/constants/models/goal.dart' as goal_constants;
 import 'package:stackedtasks/constants/user.dart' as user_constants;
 
+import '../constants/models/task.dart';
+import 'InboxItem.dart';
 import 'Note.dart';
 import 'Task.dart';
 import 'goal_summary.dart';
 
-class TasksStack {
+class TasksStack extends InboxItem {
   String id;
   String goalRef;
   String goalTitle;
@@ -60,7 +63,19 @@ class TasksStack {
     };
   }
 
-  Future save() async {
+  Future<void> updateSummary() async {
+    if (goalRef == 'inbox') {
+      // TODO:
+    } else
+      await GoalSummary(id: goalRef).addStack(
+        this,
+        withFetch: true,
+      );
+  }
+
+  Future save({
+    bool updateSummaries: true,
+  }) async {
     assert(goalRef != null);
 
     if (id == null) {
@@ -73,49 +88,62 @@ class TasksStack {
           .add(toJson());
 
       id = documentReference.id;
-      await GoalSummary(id: goalRef).addStack(
-        this,
-        withFetch: true,
-      );
+      if (updateSummaries) await updateSummary();
     } else {
-      await FirebaseFirestore.instance
-          .collection(user_constants.USERS_KEY)
-          .doc(getCurrentUser().uid)
-          .collection(goal_constants.GOALS_KEY)
-          .doc(goalRef)
-          .collection(goal_constants.STACKS_KEY)
-          .doc(id)
-          .update(toJson());
-
-      await GoalSummary(id: goalRef).saveStack(
-        this,
-        withFetch: true,
-      );
+      try {
+        await FirebaseFirestore.instance
+            .collection(user_constants.USERS_KEY)
+            .doc(getCurrentUser().uid)
+            .collection(goal_constants.GOALS_KEY)
+            .doc(goalRef)
+            .collection(goal_constants.STACKS_KEY)
+            .doc(id)
+            .update(toJson());
+      } on FirebaseException {
+        await FirebaseFirestore.instance
+            .collection(user_constants.USERS_KEY)
+            .doc(getCurrentUser().uid)
+            .collection(goal_constants.GOALS_KEY)
+            .doc(goalRef)
+            .collection(goal_constants.STACKS_KEY)
+            .doc(id)
+            .set(toJson());
+      }
+      if (updateSummaries) await updateSummary();
     }
   }
 
   Future delete() async {
     assert(id != null);
-    DocumentReference reference = FirebaseFirestore.instance
+    DocumentReference reference = goalRef == 'inbox'
+        ? FirebaseFirestore.instance
+            .collection(user_constants.USERS_KEY)
+            .doc(getCurrentUser().uid)
+            .collection(INBOX_COLLECTION)
+            .doc(id)
+        : FirebaseFirestore.instance
+            .collection(user_constants.USERS_KEY)
+            .doc(getCurrentUser().uid)
+            .collection(goal_constants.GOALS_KEY)
+            .doc(goalRef)
+            .collection(goal_constants.STACKS_KEY)
+            .doc(id);
+
+    final tasks = await FirebaseFirestore.instance
         .collection(user_constants.USERS_KEY)
         .doc(getCurrentUser().uid)
-        .collection(goal_constants.GOALS_KEY)
-        .doc(goalRef)
-        .collection(goal_constants.STACKS_KEY)
-        .doc(id);
+        .collection(stack_constants.TASKS_KEY)
+        .where(STACK_REF_KEY, isEqualTo: id)
+        .get();
 
-    for (final element in tasksKeys)
-      await FirebaseFirestore.instance
-          .collection(user_constants.USERS_KEY)
-          .doc(getCurrentUser().uid)
-          .collection(stack_constants.TASKS_KEY)
-          .doc(element)
-          .delete();
+    for (final task in tasks.docs) await task.reference.delete();
 
     await reference.delete();
-    await GoalSummary(id: goalRef).deleteStack(
-      this,
-      withFetch: true,
-    );
+    // TODO: FIX INBOX ONES
+    if (goalRef != null && goalRef != 'inbox')
+      await GoalSummary(id: goalRef).deleteStack(
+        this,
+        withFetch: true,
+      );
   }
 }

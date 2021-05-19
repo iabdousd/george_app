@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:animate_do/animate_do.dart';
+import 'package:animated_rotation/animated_rotation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -31,7 +32,10 @@ class TaskListTileWidget extends StatefulWidget {
       showNoteInput,
       showDescription,
       showHirachy,
-      showLastNotes;
+      showLastNotes,
+      selected;
+  final VoidCallback onLongPress;
+  final VoidCallback onClickEvent;
 
   const TaskListTileWidget({
     Key key,
@@ -43,6 +47,9 @@ class TaskListTileWidget extends StatefulWidget {
     this.showNoteInput: false,
     this.showHirachy: false,
     this.showLastNotes: false,
+    this.selected: false,
+    this.onLongPress,
+    this.onClickEvent,
   }) : super(key: key);
 
   @override
@@ -51,6 +58,7 @@ class TaskListTileWidget extends StatefulWidget {
 
 class _TaskListTileWidgetState extends State<TaskListTileWidget> {
   bool loading = false;
+  bool showAll = false;
   final StreamController _realTimeUpdateTimer = StreamController.broadcast();
   TextEditingController _contentController = TextEditingController();
   Timer updateTimer;
@@ -174,12 +182,12 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                       vertical: 12.0,
                       horizontal: 12.0,
                     ),
-                    alignLabelWithHint: true,
+                    alignLabelWithHint: false,
                     border: InputBorder.none,
                   ),
                   textInputAction: TextInputAction.newline,
-                  minLines: 3,
-                  maxLines: 5,
+                  minLines: 1,
+                  maxLines: 10,
                 ),
               ),
               Container(
@@ -251,16 +259,24 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
           ),
           margin: EdgeInsets.only(top: 16.0),
           child: GestureDetector(
-            onTap: () => _editTask(context),
+            onTap: widget.onClickEvent ?? () => _editTask(context),
+            onLongPress: widget.onLongPress,
             child: Slidable(
               actionPane: SlidableScrollActionPane(),
+              enabled: !widget.showLastNotes,
               actionExtentRatio: 0.25,
               child: AnimatedContainer(
                 duration: Duration(milliseconds: 250),
                 decoration: BoxDecoration(
-                  color: widget.task.isDone(date: widget.enforcedDate)
-                      ? Theme.of(context).backgroundColor.withOpacity(.8)
-                      : Theme.of(context).backgroundColor,
+                  color: widget.selected
+                      ? Color.lerp(
+                          Theme.of(context).primaryColor,
+                          Theme.of(context).backgroundColor,
+                          .5,
+                        )
+                      : widget.task.isDone(date: widget.enforcedDate)
+                          ? Theme.of(context).backgroundColor.withOpacity(.8)
+                          : Theme.of(context).backgroundColor,
                   borderRadius: BorderRadius.circular(8.0),
                 ),
                 child: Stack(
@@ -674,13 +690,12 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                                     ),
                                   );
                                 }
-                                bool showAll = false;
 
                                 return StatefulBuilder(
-                                    builder: (context, notesSetState) {
-                                  return Padding(
-                                    padding: const EdgeInsets.only(top: 20.0),
-                                    child: ListView.builder(
+                                  builder: (context, notesSetState) {
+                                    return Padding(
+                                      padding: const EdgeInsets.only(top: 20.0),
+                                      child: ListView.builder(
                                         shrinkWrap: true,
                                         physics: NeverScrollableScrollPhysics(),
                                         itemCount: showAll
@@ -689,17 +704,19 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                                                 snapshot.data.docs.length,
                                                 (showAll
                                                     ? snapshot.data.docs.length
-                                                    : 4)),
+                                                    : 2)),
                                         itemBuilder: (context, index) {
                                           if ((showAll &&
                                                   index ==
                                                       snapshot
                                                           .data.docs.length) ||
                                               (!showAll &&
-                                                  index == 3 &&
+                                                  index == 1 &&
                                                   snapshot.data.docs.length >
-                                                      3))
+                                                      1))
                                             return TextButton(
+                                              key: Key(
+                                                  'SHOW_NOTES_${widget.task.id}'),
                                               onPressed: () => notesSetState(
                                                 () => showAll = !showAll,
                                               ),
@@ -711,10 +728,28 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                                                   ),
                                                 ),
                                               ),
-                                              child: Text(
-                                                showAll
-                                                    ? 'Hide notes'
-                                                    : 'Show all notes',
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            right: 8.0),
+                                                    child: AnimatedRotation(
+                                                      angle: showAll ? 90 : -90,
+                                                      child: Icon(
+                                                        Icons
+                                                            .arrow_back_ios_outlined,
+                                                        size: 18,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    showAll
+                                                        ? 'Show less notes'
+                                                        : 'Show all notes',
+                                                  ),
+                                                ],
                                               ),
                                             );
 
@@ -723,6 +758,7 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                                             id: snapshot.data.docs[index].id,
                                           );
                                           return FadeIn(
+                                            key: Key(note.id),
                                             duration:
                                                 Duration(milliseconds: 350),
                                             child: Container(
@@ -761,7 +797,10 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                                                             child: Image(
                                                               image:
                                                                   CachedImageProvider(
-                                                                'https://monteluke.com.au/wp-content/gallery/linkedin-profile-pictures/1.jpg',
+                                                                FirebaseAuth
+                                                                    .instance
+                                                                    .currentUser
+                                                                    .photoURL,
                                                               ),
                                                               width: 52,
                                                               height: 52,
@@ -778,7 +817,7 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                                                             (showAll ||
                                                                 (!showAll &&
                                                                     index !=
-                                                                        2)))
+                                                                        0)))
                                                           Expanded(
                                                             child: Container(
                                                               width: 1.5,
@@ -862,9 +901,11 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                                               ),
                                             ),
                                           );
-                                        }),
-                                  );
-                                });
+                                        },
+                                      ),
+                                    );
+                                  },
+                                );
                               },
                             ),
                         ],

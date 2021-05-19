@@ -8,13 +8,15 @@ import 'package:stackedtasks/constants/models/goal.dart' as goal_constants;
 import 'package:stackedtasks/constants/feed.dart' as feed_constants;
 import 'package:stackedtasks/models/goal_summary.dart';
 import 'package:stackedtasks/repositories/feed/statistics.dart';
+import 'package:stackedtasks/repositories/inbox/inbox_repository.dart';
 import 'package:stackedtasks/services/user/user_service.dart';
 import 'package:intl/intl.dart';
 
+import 'InboxItem.dart';
 import 'Note.dart';
 import 'Stack.dart';
 
-class Task {
+class Task extends InboxItem {
   String id;
   String goalRef;
   String stackRef;
@@ -318,8 +320,10 @@ class Task {
             )
             .delete();
         await removeTaskAccomplishment(this);
-        await GoalSummary(id: goalRef)
-            .accomplishTask(-1, stackRef, withFetch: true);
+        // TODO: !
+        if (stackRef != 'inbox' && goalRef != 'inbox')
+          await GoalSummary(id: goalRef)
+              .accomplishTask(-1, stackRef, withFetch: true);
         return;
       } else {
         status = 1;
@@ -338,8 +342,10 @@ class Task {
           },
         );
         await addTaskAccomplishment(this);
-        await GoalSummary(id: goalRef)
-            .accomplishTask(1, stackRef, withFetch: true);
+        // TODO: !
+        if (stackRef != 'inbox' && goalRef != 'inbox')
+          await GoalSummary(id: goalRef)
+              .accomplishTask(1, stackRef, withFetch: true);
         return;
       }
     }
@@ -368,8 +374,10 @@ class Task {
           )
           .delete();
       await removeTaskAccomplishment(this);
-      await GoalSummary(id: goalRef)
-          .accomplishTask(-1, stackRef, withFetch: true);
+      // TODO: !
+      if (stackRef != 'inbox')
+        await GoalSummary(id: goalRef)
+            .accomplishTask(-1, stackRef, withFetch: true);
     } else {
       // CHECKED!
       this.donesHistory.add(accompishedDate);
@@ -389,8 +397,10 @@ class Task {
         },
       );
       await addTaskAccomplishment(this);
-      await GoalSummary(id: goalRef)
-          .accomplishTask(1, stackRef, withFetch: true);
+      // TODO: !
+      if (stackRef != 'inbox')
+        await GoalSummary(id: goalRef)
+            .accomplishTask(1, stackRef, withFetch: true);
     }
   }
 
@@ -521,6 +531,19 @@ class Task {
     await this.save();
   }
 
+  Future<void> updateSummary() async {
+    if (goalRef == 'inbox') {
+      // TODO:
+      return;
+    }
+    await GoalSummary(id: goalRef).addTasks(
+      this.dueDates.length,
+      endTime.difference(startTime).abs(),
+      stackRef,
+      withFetch: true,
+    );
+  }
+
   Future save({bool updateSummaries: false}) async {
     assert(goalRef != null && stackRef != null);
     if (id == null) {
@@ -533,13 +556,7 @@ class Task {
 
       this.id = docRef.id;
 
-      if (updateSummaries)
-        await GoalSummary(id: goalRef).addTasks(
-          this.dueDates.length,
-          endTime.difference(startTime).abs(),
-          stackRef,
-          withFetch: true,
-        );
+      if (updateSummaries) await updateSummary();
     } else {
       DocumentReference<Map<String, dynamic>> docRef = FirebaseFirestore
           .instance
@@ -549,29 +566,28 @@ class Task {
           .doc(id);
       await docRef.set(toJson());
 
-      if (updateSummaries)
-        await GoalSummary(id: goalRef).addTasks(
-          this.dueDates.length - oldDueDatesCount,
-          endTime.difference(startTime).abs() - oldDuration.abs(),
-          stackRef,
-          withFetch: true,
-        );
+      if (updateSummaries) await updateSummary();
     }
   }
 
   Future delete() async {
-    final snapshot = await FirebaseFirestore.instance
-        .collection(user_constants.USERS_KEY)
-        .doc(getCurrentUser().uid)
-        .collection(goal_constants.GOALS_KEY)
-        .doc(goalRef)
-        .collection(goal_constants.STACKS_KEY)
-        .doc(stackRef)
-        .get();
-    final stack = TasksStack.fromJson(snapshot.data());
-
-    stack.tasksKeys.remove(id);
-    await stack.save();
+    if (stackRef != 'inbox') {
+      final TasksStack stack = goalRef == 'inbox'
+          ? await InboxRepository.getInboxStack(id)
+          : TasksStack.fromJson((await FirebaseFirestore.instance
+                  .collection(user_constants.USERS_KEY)
+                  .doc(getCurrentUser().uid)
+                  .collection(goal_constants.GOALS_KEY)
+                  .doc(goalRef)
+                  .collection(goal_constants.STACKS_KEY)
+                  .doc(stackRef)
+                  .get())
+              .data());
+      if (stack != null) {
+        stack.tasksKeys.remove(id);
+        await stack.save();
+      }
+    }
 
     await FirebaseFirestore.instance
         .collection(user_constants.USERS_KEY)
@@ -580,17 +596,23 @@ class Task {
         .doc(id)
         .delete();
 
-    await GoalSummary(id: goalRef).deleteTask(
-      this.dueDates.length,
-      repetition == null
-          ? status == 1
-              ? 1
-              : 0
-          : this.donesHistory.length,
-      endTime.difference(startTime).abs(),
-      stackRef,
-      withFetch: true,
-    );
+    if (stackRef == 'inbox') {
+      await InboxRepository.deleteInboxItem(id);
+    }
+
+    // TODO:
+    if (stackRef != 'inbox' && goalRef != 'inbox')
+      await GoalSummary(id: goalRef).deleteTask(
+        this.dueDates.length,
+        repetition == null
+            ? status == 1
+                ? 1
+                : 0
+            : this.donesHistory.length,
+        endTime.difference(startTime).abs(),
+        stackRef,
+        withFetch: true,
+      );
   }
 
   Future saveAsFeed() async {

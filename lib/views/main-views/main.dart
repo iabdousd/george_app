@@ -1,17 +1,18 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:stackedtasks/views/goal/save_goal.dart';
 import 'package:stackedtasks/widgets/home/app_bottom_navigation_bar.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 
+import '../stack/save_stack.dart';
+import '../task/save_task.dart';
 import 'activity_feed_view.dart';
-import 'calendar_view.dart';
 import 'home_view.dart';
 import 'time_tracking_views.dart';
-import 'timer_view.dart';
 
 class MainView extends StatefulWidget {
   @override
@@ -207,33 +208,110 @@ A pro tip is to add maintaining your task management system itself as one of you
             controller: _tabController,
             physics: NeverScrollableScrollPhysics(),
             children: [
-              HomeView(),
+              HomeView(
+                pageIndexStreamController: pageIndexStreamController,
+              ),
               TimeTrackingViews(),
               ActivityFeedView(),
             ],
           ),
         ),
         floatingActionButton: StreamBuilder<int>(
-            stream: pageIndexStreamController.stream,
-            builder: (context, snapshot) {
-              int index = snapshot.data ?? 0;
-              if (index == 0)
-                return FloatingActionButton(
-                  onPressed: () => Get.to(() => SaveGoalPage()),
-                  child: Icon(
-                    Icons.add,
-                    size: 32.0,
-                    color: Theme.of(context).backgroundColor,
+          stream: pageIndexStreamController.stream,
+          builder: (context, snapshot) {
+            int index = snapshot.data ?? 0;
+            if (index == 0)
+              return SpeedDial(
+                marginEnd: 18,
+                marginBottom: 20,
+                icon: Icons.add,
+                activeIcon: Icons.close,
+                buttonSize: 64.0,
+                visible: true,
+                closeManually: false,
+                renderOverlay: false,
+                curve: Curves.bounceIn,
+                overlayColor: Colors.black,
+                overlayOpacity: 0.5,
+                tooltip: 'Create',
+                backgroundColor: Theme.of(context).primaryColor,
+                foregroundColor: Theme.of(context).backgroundColor,
+                elevation: 8.0,
+                shape: CircleBorder(),
+                children: [
+                  SpeedDialChild(
+                    child: Center(
+                      child: Image.asset(
+                        'assets/images/icons/goal.png',
+                        width: 32.0,
+                        fit: BoxFit.cover,
+                        color: Theme.of(context).backgroundColor,
+                      ),
+                    ),
+                    backgroundColor: Theme.of(context).primaryColor,
+                    label: 'Create Goal',
+                    labelStyle: TextStyle(fontSize: 18.0),
+                    onTap: () => Get.to(() => SaveGoalPage()),
                   ),
-                  backgroundColor: Theme.of(context).primaryColor,
-                );
-              return Container();
-            }),
+                  SpeedDialChild(
+                    child: Center(
+                      child: Image.asset(
+                        'assets/images/icons/tasks_stack.png',
+                        width: 32.0,
+                        color: Theme.of(context).backgroundColor,
+                      ),
+                    ),
+                    backgroundColor: Theme.of(context).primaryColor,
+                    label: 'Create Inbox Stack',
+                    labelStyle: TextStyle(fontSize: 18.0),
+                    onTap: () => Get.to(
+                      () => SaveStackPage(
+                        goalRef: 'inbox',
+                        goalColor: Theme.of(context)
+                            .primaryColor
+                            .value
+                            .toRadixString(16),
+                      ),
+                    ),
+                  ),
+                  SpeedDialChild(
+                    child: Center(
+                      child: Image.asset(
+                        'assets/images/icons/task.png',
+                        width: 32.0,
+                        color: Theme.of(context).backgroundColor,
+                      ),
+                    ),
+                    backgroundColor: Theme.of(context).primaryColor,
+                    label: 'Create Inbox Task',
+                    labelStyle: TextStyle(fontSize: 18.0),
+                    onTap: () => Get.to(
+                      () => SaveTaskPage(
+                        goalRef: 'inbox',
+                        stackRef: 'inbox',
+                        goalTitle: 'Inbox',
+                        stackTitle: '',
+                        stackColor: Theme.of(context)
+                            .primaryColor
+                            .value
+                            .toRadixString(16),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            return SizedBox();
+          },
+        ),
         bottomNavigationBar: StreamBuilder<int>(
           stream: pageIndexStreamController.stream,
           builder: (context, snapshot) {
             int index = 0;
-            if (snapshot.hasData) index = snapshot.data;
+            /**
+             * -1 is used to show the bottom menu when selecting inbox tasks.
+             */
+            if (snapshot.hasData)
+              index = snapshot.data == -1 ? 0 : snapshot.data;
 
             return AppBottomNavigationBar(
               index: index,

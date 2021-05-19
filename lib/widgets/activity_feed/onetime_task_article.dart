@@ -78,10 +78,10 @@ class OnetimeTaskArticleWidget extends StatelessWidget {
                                       fontWeight: FontWeight.w600,
                                     ),
                               ),
-                              Text(
-                                DateFormat('hh:mm a').format(task.creationDate),
-                                style: Theme.of(context).textTheme.bodyText2,
-                              ),
+                              // Text(
+                              //   DateFormat('hh:mm a').format(task.creationDate),
+                              //   style: Theme.of(context).textTheme.bodyText2,
+                              // ),
                             ],
                           ),
                         ],

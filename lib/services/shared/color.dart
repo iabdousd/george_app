@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:stackedtasks/config/extensions/hex_color.dart';
 import 'package:get/get.dart';
@@ -24,7 +26,9 @@ const List<String> availableColors = [
   '#04F06A',
 ];
 
-pickColor(Function update) {
+get randomColor => availableColors[Random().nextInt(availableColors.length)];
+
+pickColor(Function(String) update) {
   showDialog(
     context: Get.context,
     builder: (context) {

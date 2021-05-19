@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:stackedtasks/constants/models/inbox_item.dart';
 import 'package:stackedtasks/models/Stack.dart' as stack_model;
+import 'package:stackedtasks/repositories/inbox/inbox_repository.dart';
 import 'package:stackedtasks/services/feed-back/flush_bar.dart';
 import 'package:stackedtasks/services/feed-back/loader.dart';
 import 'package:stackedtasks/widgets/shared/app_appbar.dart';
@@ -28,14 +30,44 @@ class _SaveStackPageState extends State<SaveStackPage> {
   _submitStack() async {
     if (!_formKey.currentState.validate()) return;
     toggleLoading(state: true);
-    await stack_model.TasksStack(
-      goalRef: widget.goalRef,
-      id: widget.stack?.id,
-      title: _titleController.text,
-      color: widget.goalColor,
-      creationDate: DateTime.now(),
-      status: 0,
-    ).save();
+
+    if (widget.goalRef == 'inbox') {
+      final res = await InboxRepository.saveInboxItem(
+        INBOX_STACK_ITEM_TYPE,
+        data: stack_model.TasksStack(
+          goalRef: widget.goalRef,
+          id: widget.stack?.id,
+          title: _titleController.text,
+          color: widget.goalColor,
+          creationDate: DateTime.now(),
+          status: 0,
+          goalTitle: 'Inbox',
+        ).toJson(),
+        reference: widget.stack.id,
+      );
+      if (!res.status) {
+        await toggleLoading(state: false);
+        await showFlushBar(
+          title: 'Error',
+          message:
+              'An error occurred while adding your stack to the inbox. Please try again later.',
+          success: false,
+        );
+        return;
+      }
+    } else {
+      final stack = stack_model.TasksStack(
+        goalRef: widget.goalRef,
+        id: widget.stack?.id,
+        title: _titleController.text,
+        color: widget.goalColor,
+        creationDate: DateTime.now(),
+        status: 0,
+        goalTitle: 'Inbox',
+      );
+
+      await stack.save();
+    }
     toggleLoading(state: false);
     Navigator.of(context).pop();
     showFlushBar(

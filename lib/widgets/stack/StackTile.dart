@@ -5,14 +5,20 @@ import 'package:stackedtasks/views/stack/save_stack.dart';
 import 'package:stackedtasks/views/stack/stack_details.dart';
 import 'package:get/get.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:stackedtasks/models/Stack.dart' as stack_model;
+import 'package:stackedtasks/models/Stack.dart';
 
 class StackListTileWidget extends StatelessWidget {
-  final stack_model.TasksStack stack;
+  final TasksStack stack;
+  final VoidCallback onLongPress;
+  final VoidCallback onClickEvent;
+  final bool selected;
 
   const StackListTileWidget({
     Key key,
     @required this.stack,
+    this.onLongPress,
+    this.onClickEvent,
+    this.selected: false,
   }) : super(key: key);
 
   _deleteGoal(context) {
@@ -75,7 +81,13 @@ class StackListTileWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).backgroundColor,
+        color: selected
+            ? Color.lerp(
+                Theme.of(context).primaryColor,
+                Theme.of(context).backgroundColor,
+                .5,
+              )
+            : Theme.of(context).backgroundColor,
         borderRadius: BorderRadius.circular(8.0),
         boxShadow: [
           BoxShadow(
@@ -86,19 +98,19 @@ class StackListTileWidget extends StatelessWidget {
         ],
       ),
       margin: EdgeInsets.only(top: 16.0),
-      // height: 40.0 + 20,
       child: GestureDetector(
-        onTap: () => Get.to(
-          () => StackDetailsPage(
-            stack: stack,
-          ),
-        ),
+        onTap: onClickEvent ??
+            () => Get.to(
+                  () => StackDetailsPage(
+                    stack: stack,
+                  ),
+                ),
+        onLongPress: onLongPress,
         child: Slidable(
           actionPane: SlidableScrollActionPane(),
           actionExtentRatio: 0.25,
           child: Container(
             decoration: BoxDecoration(
-              color: Theme.of(context).backgroundColor,
               borderRadius: BorderRadius.circular(8.0),
             ),
             child: Row(

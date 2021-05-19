@@ -94,7 +94,7 @@ class _FeedArticlesListState extends State<FeedArticlesList>
                                   padding: const EdgeInsets.only(top: 12.0),
                                   child: Text(
                                     DateFormat('hh:mm a')
-                                        .format(task.creationDate),
+                                        .format(task.startTime),
                                     style: Theme.of(context)
                                         .textTheme
                                         .bodyText1

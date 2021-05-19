@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:stackedtasks/config/extensions/hex_color.dart';
+import 'package:stackedtasks/constants/models/inbox_item.dart';
 import 'package:stackedtasks/models/Task.dart';
+import 'package:stackedtasks/repositories/inbox/inbox_repository.dart';
 import 'package:stackedtasks/services/feed-back/flush_bar.dart';
 import 'package:stackedtasks/services/feed-back/loader.dart';
 import 'package:stackedtasks/widgets/forms/date_picker.dart';
@@ -139,6 +141,22 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
     await task.save(
       updateSummaries: true,
     );
+    if (widget.goalRef == 'inbox' && widget.stackRef == 'inbox') {
+      final res = await InboxRepository.saveInboxItem(
+        INBOX_TASK_ITEM_TYPE,
+        reference: task.id,
+      );
+      if (!res.status) {
+        await toggleLoading(state: false);
+        await showFlushBar(
+          title: 'Error',
+          message:
+              'An error occurred while adding your task to the inbox. Please try again later.',
+          success: false,
+        );
+        return;
+      }
+    }
     toggleLoading(state: false);
     Navigator.of(context).pop();
     showFlushBar(
