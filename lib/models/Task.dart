@@ -14,7 +14,6 @@ import 'package:intl/intl.dart';
 
 import 'InboxItem.dart';
 import 'Note.dart';
-import 'Stack.dart';
 
 class Task extends InboxItem {
   String id;
@@ -537,14 +536,17 @@ class Task extends InboxItem {
       return;
     }
     await GoalSummary(id: goalRef).addTasks(
-      this.dueDates.length,
+      task_constants.REPETITION_OPTIONS
+              .contains(this.repetition?.type?.toLowerCase())
+          ? this.dueDates.length
+          : 1,
       endTime.difference(startTime).abs(),
       stackRef,
       withFetch: true,
     );
   }
 
-  Future save({bool updateSummaries: false}) async {
+  Future save({bool updateSummaries: true}) async {
     assert(goalRef != null && stackRef != null);
     if (id == null) {
       DocumentReference<Map<String, dynamic>> docRef = await FirebaseFirestore

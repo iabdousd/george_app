@@ -1,9 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:stackedtasks/constants/models/inbox_item.dart';
-import 'package:stackedtasks/services/user/user_service.dart';
-import 'package:stackedtasks/constants/models/stack.dart' as stack_constants;
+
 import 'package:stackedtasks/constants/models/goal.dart' as goal_constants;
+import 'package:stackedtasks/constants/models/inbox_item.dart';
+import 'package:stackedtasks/constants/models/stack.dart' as stack_constants;
 import 'package:stackedtasks/constants/user.dart' as user_constants;
+import 'package:stackedtasks/services/user/user_service.dart';
 
 import '../constants/models/task.dart';
 import 'InboxItem.dart';
@@ -141,5 +142,27 @@ class TasksStack extends InboxItem {
         this,
         withFetch: true,
       );
+  }
+
+  TasksStack copyWith({
+    String id,
+    String goalRef,
+    String goalTitle,
+    String title,
+    String color,
+    int status,
+    DateTime creationDate,
+    List<Task> tasks,
+  }) {
+    return TasksStack(
+      id: id ?? this.id,
+      goalRef: goalRef ?? this.goalRef,
+      goalTitle: goalTitle ?? this.goalTitle,
+      title: title ?? this.title,
+      color: color ?? this.color,
+      status: status ?? this.status,
+      creationDate: creationDate ?? this.creationDate,
+      tasks: tasks ?? this.tasks,
+    );
   }
 }

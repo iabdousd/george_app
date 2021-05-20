@@ -19,7 +19,7 @@ class AppActionButton extends StatelessWidget {
     @required this.onPressed,
     this.icon,
     this.label,
-    @required this.backgroundColor,
+    this.backgroundColor,
     this.alignment = Alignment.centerLeft,
     this.iconSize = 20.0,
     this.iconColor,
@@ -43,7 +43,7 @@ class AppActionButton extends StatelessWidget {
     return Container(
       margin: margin,
       decoration: BoxDecoration(
-        color: backgroundColor,
+        color: backgroundColor ?? Theme.of(context).primaryColor,
         boxShadow: shadows,
         borderRadius: BorderRadius.circular(radius),
       ),
@@ -55,7 +55,7 @@ class AppActionButton extends StatelessWidget {
                 child: Container(
                   padding: iconPadding,
                   decoration: BoxDecoration(
-                    color: backgroundColor,
+                    color: backgroundColor ?? Theme.of(context).primaryColor,
                   ),
                   child: icon is IconData
                       ? Icon(

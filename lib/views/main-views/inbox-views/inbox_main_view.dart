@@ -1,12 +1,15 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:stackedtasks/config/extensions/hex_color.dart';
+import 'package:get/get.dart';
+import 'package:stackedtasks/models/Goal.dart';
 import 'package:stackedtasks/models/InboxItem.dart';
 import 'package:stackedtasks/models/Task.dart';
 import 'package:stackedtasks/repositories/inbox/inbox_repository.dart';
-import 'package:stackedtasks/services/shared/color.dart';
-import 'package:stackedtasks/widgets/forms/date_picker.dart';
+import 'package:stackedtasks/views/goal/save_goal.dart';
+import 'package:stackedtasks/views/main-views/home/lg_views/goal_list.dart';
+import 'package:stackedtasks/views/stack/save_stack.dart';
+import 'package:stackedtasks/widgets/home/tiles/lg_stack_tile.dart';
 import 'package:stackedtasks/widgets/shared/app_action_button.dart';
 import 'package:stackedtasks/widgets/shared/app_text_field.dart';
 
@@ -38,6 +41,19 @@ class _InboxMainViewState extends State<InboxMainView>
    * 2 - Tasks are selected
    */
   int selectionStatus = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.pageIndexStreamController.stream.listen((event) {
+      if (event != -1 && event != 0) {
+        setState(() {
+          selectionStatus = 0;
+          selectedInboxItems.clear();
+        });
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -99,8 +115,11 @@ class _InboxMainViewState extends State<InboxMainView>
                                                 (e as TasksStack).id ==
                                                 (items[index] as TasksStack).id,
                                           );
-                                          if (selectedInboxItems.isEmpty)
+                                          if (selectedInboxItems.isEmpty) {
                                             selectionStatus = 0;
+                                            widget.pageIndexStreamController
+                                                .add(0);
+                                          }
                                         });
                                 }
                               },
@@ -122,8 +141,11 @@ class _InboxMainViewState extends State<InboxMainView>
                                               (e as TasksStack).id ==
                                               (items[index] as TasksStack).id,
                                         );
-                                        if (selectedInboxItems.isEmpty)
+                                        if (selectedInboxItems.isEmpty) {
                                           selectionStatus = 0;
+                                          widget.pageIndexStreamController
+                                              .add(0);
+                                        }
                                       })
                                 : null,
                           );
@@ -156,8 +178,10 @@ class _InboxMainViewState extends State<InboxMainView>
                                             (e as Task).id ==
                                             (items[index] as Task).id,
                                       );
-                                      if (selectedInboxItems.isEmpty)
+                                      if (selectedInboxItems.isEmpty) {
                                         selectionStatus = 0;
+                                        widget.pageIndexStreamController.add(0);
+                                      }
                                     })
                               : null,
                           onLongPress: () => setState(
@@ -183,8 +207,11 @@ class _InboxMainViewState extends State<InboxMainView>
                                               (e as Task).id ==
                                               (items[index] as Task).id,
                                         );
-                                        if (selectedInboxItems.isEmpty)
+                                        if (selectedInboxItems.isEmpty) {
+                                          widget.pageIndexStreamController
+                                              .add(0);
                                           selectionStatus = 0;
+                                        }
                                       });
                               }
                             },
@@ -247,113 +274,91 @@ class _InboxMainViewState extends State<InboxMainView>
   submitSelection() async {
     bool submit = false;
     if (selectionStatus == 1) {
-      final goalTitleController = TextEditingController();
-      DateTime startDate = DateTime.now(),
-          endDate = DateTime.now().add(
-            Duration(days: 1),
-          );
-      String selectedColor = randomColor;
+      Goal selectedGoal;
 
       submit = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text('Grouping Stacks'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              AppTextField(
-                controller: goalTitleController,
-                label: 'Goal Title',
-                hint: 'Enter the title of the Goal',
-              ),
-              Container(
-                margin: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    InkWell(
-                      onTap: () => pickColor(
-                        (e) => selectedColor = e,
-                      ),
-                      child: Container(
-                        padding: const EdgeInsets.all(8.0),
-                        decoration: BoxDecoration(
-                          color: Color(0x07000000),
-                          borderRadius: BorderRadius.circular(8.0),
+            context: context,
+            builder: (context) => Dialog(
+              child: StatefulBuilder(
+                builder: (context, setState) {
+                  return Container(
+                    width: MediaQuery.of(context).size.width - 32,
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: HomeLGGoalList(
+                            selectedGoal: selectedGoal,
+                            selectGoal: (goal) => selectedGoal?.id == goal.id
+                                ? setState(
+                                    () {
+                                      selectedGoal = null;
+                                    },
+                                  )
+                                : setState(
+                                    () {
+                                      selectedGoal = goal;
+                                    },
+                                  ),
+                          ),
                         ),
-                        child: Icon(
-                          Icons.brightness_1,
-                          color: HexColor.fromHex(selectedColor),
-                          size: 32,
+                        AppActionButton(
+                          onPressed: () => Get.to(
+                            () => SaveGoalPage(),
+                          ),
+                          label: 'Create new Goal',
+                          backgroundColor: Theme.of(context).backgroundColor,
+                          textStyle: TextStyle(
+                            color: Theme.of(context).primaryColor,
+                          ),
+                          margin: EdgeInsets.symmetric(horizontal: 16),
                         ),
-                      ),
+                        Container(
+                          width: MediaQuery.of(context).size.width,
+                          margin: EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 16,
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.max,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              AppActionButton(
+                                onPressed: () =>
+                                    Navigator.of(context).pop(false),
+                                backgroundColor: Colors.red,
+                                label: 'Cancel',
+                                padding: EdgeInsets.symmetric(horizontal: 16),
+                                margin: EdgeInsets.zero,
+                              ),
+                              AppActionButton(
+                                onPressed: () {
+                                  if (selectedGoal != null) {
+                                    Navigator.of(context).pop(true);
+                                  }
+                                },
+                                label: 'Add To Selected',
+                                padding: EdgeInsets.symmetric(horizontal: 16),
+                                margin: EdgeInsets.zero,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                    SizedBox(
-                      width: 8,
-                    ),
-                    Expanded(
-                      child: DatePickerWidget(
-                        title: 'Start:',
-                        color: selectedColor,
-                        endDate: endDate,
-                        onSubmit: (picked) {
-                          startDate = picked;
-                        },
-                        selectedDate: startDate,
-                      ),
-                    ),
-                    SizedBox(
-                      width: 8,
-                    ),
-                    Expanded(
-                      child: DatePickerWidget(
-                        title: 'End:',
-                        color: selectedColor,
-                        onSubmit: (picked) {
-                          endDate = picked;
-                        },
-                        startDate: startDate,
-                        selectedDate: endDate,
-                      ),
-                    ),
-                  ],
-                ),
+                  );
+                },
               ),
-            ],
-          ),
-          actions: [
-            AppActionButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              backgroundColor: Colors.red,
-              label: 'Cancel',
-              margin: EdgeInsets.only(right: 4),
-            ),
-            AppActionButton(
-              onPressed: () {
-                if (goalTitleController.text.trim().isNotEmpty &&
-                    startDate != null &&
-                    endDate != null) {
-                  Navigator.of(context).pop(true);
-                }
-              },
-              backgroundColor: Theme.of(context).backgroundColor,
-              label: 'Submit',
-              textStyle: TextStyle(
-                color: Theme.of(context).primaryColor,
+              insetPadding: EdgeInsets.symmetric(
+                vertical: 32,
+                horizontal: 16,
               ),
-              margin: EdgeInsets.zero,
             ),
-          ],
-        ),
-        barrierDismissible: false,
-      );
+          ) ??
+          false;
       if (submit) {
         final res = await InboxRepository.groupStacks(
           List<TasksStack>.from(selectedInboxItems),
-          goalTitle: goalTitleController.text,
-          goalStartDate: startDate,
-          goalEndDate: endDate,
+          selectedGoal,
         );
         if (res)
           setState(
@@ -365,44 +370,125 @@ class _InboxMainViewState extends State<InboxMainView>
           );
       }
     } else if (selectionStatus == 2) {
-      final stackTitleController = TextEditingController();
+      TasksStack selectedStack;
+
       submit = await showDialog<bool>(
         context: context,
-        builder: (context) => AlertDialog(
-          title: Text('Grouping Tasks'),
-          content: AppTextField(
-            controller: stackTitleController,
-            label: 'Stack Title',
-            hint: 'Enter the title of the Stack',
+        builder: (context) => Dialog(
+          child: StreamBuilder<List<TasksStack>>(
+            stream: InboxRepository.getInboxStacks(),
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                if (snapshot.data.length > 0)
+                  return Container(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Row(
+                            children: [
+                              Text(
+                                'Select Stack',
+                                style: Theme.of(context).textTheme.headline6,
+                              ),
+                            ],
+                          ),
+                        ),
+                        StatefulBuilder(
+                          builder: (context, setState) {
+                            return ListView.builder(
+                              shrinkWrap: true,
+                              padding: EdgeInsets.symmetric(horizontal: 16),
+                              itemCount: snapshot.data.length,
+                              itemBuilder: (context, index) {
+                                final stack = snapshot.data[index];
+
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 8.0),
+                                  child: LGStackTile(
+                                    stack: stack,
+                                    selected: selectedStack?.id == stack.id,
+                                    onSelected: () => setState(
+                                      () => selectedStack?.id == stack.id
+                                          ? selectedStack = null
+                                          : selectedStack = stack,
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
+                        SizedBox(height: 16),
+                        AppActionButton(
+                          onPressed: () => Get.to(
+                            () => SaveStackPage(
+                              goalRef: 'inbox',
+                              goalColor: Theme.of(context)
+                                  .primaryColor
+                                  .value
+                                  .toRadixString(16),
+                            ),
+                          ),
+                          label: 'Create new Stack',
+                          backgroundColor: Theme.of(context).backgroundColor,
+                          textStyle: TextStyle(
+                            color: Theme.of(context).primaryColor,
+                          ),
+                          margin: EdgeInsets.symmetric(horizontal: 16),
+                        ),
+                        Container(
+                          width: MediaQuery.of(context).size.width,
+                          margin: EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 16,
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.max,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              AppActionButton(
+                                onPressed: () =>
+                                    Navigator.of(context).pop(false),
+                                backgroundColor: Colors.red,
+                                label: 'Cancel',
+                                padding: EdgeInsets.symmetric(horizontal: 16),
+                                margin: EdgeInsets.zero,
+                              ),
+                              AppActionButton(
+                                onPressed: () {
+                                  if (selectedStack != null) {
+                                    Navigator.of(context).pop(true);
+                                  }
+                                },
+                                label: 'Add To Selected',
+                                padding: EdgeInsets.symmetric(horizontal: 16),
+                                margin: EdgeInsets.zero,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                else
+                  return AppErrorWidget(
+                    status: 404,
+                    customMessage: 'No tasks added yet',
+                  );
+              }
+
+              return LoadingWidget();
+            },
           ),
-          actions: [
-            AppActionButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              backgroundColor: Colors.red,
-              label: 'Cancel',
-              margin: EdgeInsets.only(right: 4),
-            ),
-            AppActionButton(
-              onPressed: () {
-                if (stackTitleController.text.trim().isNotEmpty) {
-                  Navigator.of(context).pop(true);
-                }
-              },
-              backgroundColor: Theme.of(context).backgroundColor,
-              label: 'Submit',
-              textStyle: TextStyle(
-                color: Theme.of(context).primaryColor,
-              ),
-              margin: EdgeInsets.zero,
-            ),
-          ],
         ),
         barrierDismissible: false,
       );
       if (submit) {
         final res = await InboxRepository.groupTasks(
           List<Task>.from(selectedInboxItems),
-          stackTitle: stackTitleController.text,
+          selectedStack,
         );
         if (res)
           setState(

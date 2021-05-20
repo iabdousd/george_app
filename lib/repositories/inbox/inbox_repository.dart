@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:stackedtasks/constants/models/inbox_item.dart';
 import 'package:stackedtasks/models/Goal.dart';
 import 'package:stackedtasks/models/InboxItem.dart';
+import 'package:stackedtasks/repositories/stack/stack_repository.dart';
 import 'package:stackedtasks/services/feed-back/flush_bar.dart';
 import 'package:stackedtasks/services/feed-back/loader.dart';
 
@@ -84,6 +85,28 @@ class InboxRepository {
     );
   }
 
+  static Stream<List<TasksStack>> getInboxStacks() {
+    return FirebaseFirestore.instance
+        .collection(USERS_KEY)
+        .doc(getCurrentUser().uid)
+        .collection(INBOX_COLLECTION)
+        .where(INBOX_ITEM_TYPE, isEqualTo: INBOX_STACK_ITEM_TYPE)
+        .orderBy(INBOX_ITEM_CREATION_DATE, descending: true)
+        .snapshots()
+        .asyncMap(
+      (event) async {
+        return event.docs
+            .map((e) => TasksStack.fromJson(
+                  e.data(),
+                  id: e.id,
+                  goalRef: 'inbox',
+                  goalTitle: 'Inbox',
+                )..itemType = INBOX_STACK_ITEM_TYPE)
+            .toList();
+      },
+    );
+  }
+
   static Future<InboxRepositoryResult> saveInboxItem(
     String type, {
     String reference,
@@ -149,40 +172,39 @@ class InboxRepository {
   }
 
   static Future<bool> groupStacks(
-    List<TasksStack> stacks, {
-    String goalRef,
-    String goalTitle,
-    DateTime goalStartDate,
-    DateTime goalEndDate,
-  }) async {
+    List<TasksStack> stacks,
+    Goal goal,
+  ) async {
     try {
-      assert(goalRef != null || (goalTitle != null && goalTitle.isNotEmpty));
       await toggleLoading(state: true);
-      if (goalRef != null) {
-        // TODO:
-        return true;
-      } else {
-        final goal = Goal(
-          title: goalTitle,
-          creationDate: DateTime.now(),
-          startDate: goalStartDate,
-          endDate: goalEndDate,
-          color: Theme.of(Get.context).primaryColor.value.toRadixString(16),
+      for (final stack in stacks) {
+        final oldStackId = stack.id;
+        stack.id = null;
+        stack.goalRef = goal.id;
+        stack.color = goal.color;
+        await stack.save();
+        await deleteInboxItem(oldStackId);
+        final tasks = await StackRepository.getStackTasks(
+          stack.copyWith(
+            id: oldStackId,
+          ),
         );
-        await goal.save();
-        for (final stack in stacks) {
-          stack.goalRef = goal.id;
-          await stack.save();
-          await deleteInboxItem(stack.id);
+        for (Task task in tasks) {
+          await task.delete();
+          task.id = null;
+          task.goalRef = goal.id;
+          task.stackRef = stack.id;
+          task.stackColor = goal.color;
+          await task.save();
         }
-        await toggleLoading(state: false);
-        showFlushBar(
-          title: 'Goal Saved',
-          message: 'The selected stacks were grouped into a goal successfully',
-          success: true,
-        );
-        return true;
       }
+      await toggleLoading(state: false);
+      showFlushBar(
+        title: 'Goal Saved',
+        message: 'The selected stacks were grouped into a goal successfully',
+        success: true,
+      );
+      return true;
     } catch (e) {
       print(e);
       await toggleLoading(state: false);
@@ -196,41 +218,24 @@ class InboxRepository {
   }
 
   static Future<bool> groupTasks(
-    List<Task> tasks, {
-    String stackRef,
-    String stackTitle,
-  }) async {
+    List<Task> tasks,
+    TasksStack stack,
+  ) async {
     try {
-      assert(stackRef != null || (stackTitle != null && stackTitle.isNotEmpty));
       await toggleLoading(state: true);
-      if (stackRef != null) {
-        // TODO:
-        return true;
-      } else {
-        final stack = TasksStack(
-          title: stackTitle,
-          goalRef: 'inbox',
-          creationDate: DateTime.now(),
-          goalTitle: 'Inbox',
-          color: Theme.of(Get.context).primaryColor.value.toRadixString(16),
-        );
-        final res = await saveInboxItem(
-          INBOX_STACK_ITEM_TYPE,
-          data: stack.toJson(),
-        );
-        for (final task in tasks) {
-          task.stackRef = res.result;
-          await task.save();
-          await deleteInboxItem(task.id);
-        }
-        await toggleLoading(state: false);
-        showFlushBar(
-          title: 'Stack Saved',
-          message: 'The selected tasks were grouped into a stack successfully',
-          success: true,
-        );
-        return true;
+
+      for (final task in tasks) {
+        task.stackRef = stack.id;
+        await task.save();
+        await deleteInboxItem(task.id);
       }
+      await toggleLoading(state: false);
+      showFlushBar(
+        title: 'Stack Saved',
+        message: 'The selected tasks were grouped into a stack successfully',
+        success: true,
+      );
+      return true;
     } catch (e) {
       return false;
     }

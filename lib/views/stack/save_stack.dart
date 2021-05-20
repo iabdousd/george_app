@@ -43,7 +43,7 @@ class _SaveStackPageState extends State<SaveStackPage> {
           status: 0,
           goalTitle: 'Inbox',
         ).toJson(),
-        reference: widget.stack.id,
+        reference: widget.stack?.id,
       );
       if (!res.status) {
         await toggleLoading(state: false);
