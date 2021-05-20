@@ -458,37 +458,43 @@ class _InboxMainViewState extends State<InboxMainView>
                                                 ),
                                               )
                                             else
-                                              ListView.builder(
-                                                padding: EdgeInsets.symmetric(
-                                                    horizontal: 16),
-                                                itemCount: snapshot.data.length,
-                                                itemBuilder: (context, index) {
-                                                  final stack =
-                                                      snapshot.data[index];
+                                              Expanded(
+                                                child: ListView.builder(
+                                                  padding: EdgeInsets.symmetric(
+                                                    horizontal: 16,
+                                                    vertical: 8,
+                                                  ),
+                                                  itemCount:
+                                                      snapshot.data.length,
+                                                  itemBuilder:
+                                                      (context, index) {
+                                                    final stack =
+                                                        snapshot.data[index];
 
-                                                  return Padding(
-                                                    key: Key(stack.id),
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            bottom: 8.0),
-                                                    child: LGStackTile(
-                                                      stack: stack,
-                                                      selected:
-                                                          selectedStack?.id ==
-                                                              stack.id,
-                                                      onSelected: () =>
-                                                          setState(
-                                                        () => selectedStack
-                                                                    ?.id ==
-                                                                stack.id
-                                                            ? selectedStack =
-                                                                null
-                                                            : selectedStack =
-                                                                stack,
+                                                    return Padding(
+                                                      key: Key(stack.id),
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                              bottom: 8.0),
+                                                      child: LGStackTile(
+                                                        stack: stack,
+                                                        selected:
+                                                            selectedStack?.id ==
+                                                                stack.id,
+                                                        onSelected: () =>
+                                                            setState(
+                                                          () => selectedStack
+                                                                      ?.id ==
+                                                                  stack.id
+                                                              ? selectedStack =
+                                                                  null
+                                                              : selectedStack =
+                                                                  stack,
+                                                        ),
                                                       ),
-                                                    ),
-                                                  );
-                                                },
+                                                    );
+                                                  },
+                                                ),
                                               ),
                                             AppActionButton(
                                               onPressed: () => Get.to(
