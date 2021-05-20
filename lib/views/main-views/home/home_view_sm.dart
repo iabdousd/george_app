@@ -58,7 +58,7 @@ class _HomeViewSMState extends State<HomeViewSM>
                 tabs: [
                   Tab(
                     child: Text(
-                      'Goals',
+                      'Inbox',
                       style: Theme.of(context).textTheme.headline5.copyWith(
                             fontWeight: FontWeight.w600,
                           ),
@@ -66,7 +66,7 @@ class _HomeViewSMState extends State<HomeViewSM>
                   ),
                   Tab(
                     child: Text(
-                      'Inbox',
+                      'Goals',
                       style: Theme.of(context).textTheme.headline5.copyWith(
                             fontWeight: FontWeight.w600,
                           ),
@@ -82,11 +82,10 @@ class _HomeViewSMState extends State<HomeViewSM>
             Expanded(
               child: TabBarView(
                 children: [
+                  InboxMainView(
+                    pageIndexStreamController: widget.pageIndexStreamController,
+                  ),
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0,
-                    ),
-                    margin: const EdgeInsets.only(bottom: 8.0),
                     child: StreamBuilder<QuerySnapshot>(
                       stream: FirebaseFirestore.instance
                           .collection(user_constants.USERS_KEY)
@@ -101,6 +100,10 @@ class _HomeViewSMState extends State<HomeViewSM>
                           if (snapshot.data.docs.length > 0)
                             return ListView.builder(
                               itemCount: snapshot.data.docs.length,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16.0,
+                                vertical: 8.0,
+                              ),
                               itemBuilder: (context, index) {
                                 return GoalListTileWidget(
                                   goal: Goal.fromJson(
@@ -112,10 +115,13 @@ class _HomeViewSMState extends State<HomeViewSM>
                             );
                           else
                             return Center(
-                              child: AppErrorWidget(
-                                status: 404,
-                                customMessage:
-                                    'Nothing here. Create a Goal by pressing + to get started',
+                              child: Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: AppErrorWidget(
+                                  status: 404,
+                                  customMessage:
+                                      'Nothing here. Create a Goal by pressing + to get started',
+                                ),
                               ),
                             );
                         }
@@ -123,9 +129,6 @@ class _HomeViewSMState extends State<HomeViewSM>
                         return LoadingWidget();
                       },
                     ),
-                  ),
-                  InboxMainView(
-                    pageIndexStreamController: widget.pageIndexStreamController,
                   ),
                 ],
               ),

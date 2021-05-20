@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:stackedtasks/views/goal/save_goal.dart';
@@ -221,84 +222,87 @@ A pro tip is to add maintaining your task management system itself as one of you
           builder: (context, snapshot) {
             int index = snapshot.data ?? 0;
             if (index == 0)
-              return SpeedDial(
-                marginEnd: 18,
-                marginBottom: 20,
-                icon: Icons.add,
-                activeIcon: Icons.close,
-                buttonSize: 64.0,
-                visible: true,
-                closeManually: false,
-                renderOverlay: false,
-                curve: Curves.bounceIn,
-                overlayColor: Colors.black,
-                overlayOpacity: 0.5,
-                tooltip: 'Create',
-                backgroundColor: Theme.of(context).primaryColor,
-                foregroundColor: Theme.of(context).backgroundColor,
-                elevation: 8.0,
-                shape: CircleBorder(),
-                children: [
-                  SpeedDialChild(
-                    child: Center(
-                      child: Image.asset(
-                        'assets/images/icons/goal.png',
-                        width: 32.0,
-                        fit: BoxFit.cover,
-                        color: Theme.of(context).backgroundColor,
+              return FadeInUp(
+                duration: Duration(milliseconds: 300),
+                child: SpeedDial(
+                  marginEnd: 18,
+                  marginBottom: 20,
+                  icon: Icons.add,
+                  activeIcon: Icons.close,
+                  buttonSize: 64.0,
+                  visible: true,
+                  closeManually: false,
+                  renderOverlay: false,
+                  curve: Curves.bounceIn,
+                  overlayColor: Colors.black,
+                  overlayOpacity: 0.5,
+                  tooltip: 'Create',
+                  backgroundColor: Theme.of(context).primaryColor,
+                  foregroundColor: Theme.of(context).backgroundColor,
+                  elevation: 8.0,
+                  shape: CircleBorder(),
+                  children: [
+                    SpeedDialChild(
+                      child: Center(
+                        child: Image.asset(
+                          'assets/images/icons/goal.png',
+                          width: 32.0,
+                          fit: BoxFit.cover,
+                          color: Theme.of(context).backgroundColor,
+                        ),
+                      ),
+                      backgroundColor: Theme.of(context).primaryColor,
+                      label: 'Create Goal',
+                      labelStyle: TextStyle(fontSize: 18.0),
+                      onTap: () => Get.to(() => SaveGoalPage()),
+                    ),
+                    SpeedDialChild(
+                      child: Center(
+                        child: Image.asset(
+                          'assets/images/icons/tasks_stack.png',
+                          width: 32.0,
+                          color: Theme.of(context).backgroundColor,
+                        ),
+                      ),
+                      backgroundColor: Theme.of(context).primaryColor,
+                      label: 'Create Inbox Stack',
+                      labelStyle: TextStyle(fontSize: 18.0),
+                      onTap: () => Get.to(
+                        () => SaveStackPage(
+                          goalRef: 'inbox',
+                          goalColor: Theme.of(context)
+                              .primaryColor
+                              .value
+                              .toRadixString(16),
+                        ),
                       ),
                     ),
-                    backgroundColor: Theme.of(context).primaryColor,
-                    label: 'Create Goal',
-                    labelStyle: TextStyle(fontSize: 18.0),
-                    onTap: () => Get.to(() => SaveGoalPage()),
-                  ),
-                  SpeedDialChild(
-                    child: Center(
-                      child: Image.asset(
-                        'assets/images/icons/tasks_stack.png',
-                        width: 32.0,
-                        color: Theme.of(context).backgroundColor,
+                    SpeedDialChild(
+                      child: Center(
+                        child: Image.asset(
+                          'assets/images/icons/task.png',
+                          width: 32.0,
+                          color: Theme.of(context).backgroundColor,
+                        ),
+                      ),
+                      backgroundColor: Theme.of(context).primaryColor,
+                      label: 'Create Inbox Task',
+                      labelStyle: TextStyle(fontSize: 18.0),
+                      onTap: () => Get.to(
+                        () => SaveTaskPage(
+                          goalRef: 'inbox',
+                          stackRef: 'inbox',
+                          goalTitle: 'Inbox',
+                          stackTitle: '',
+                          stackColor: Theme.of(context)
+                              .primaryColor
+                              .value
+                              .toRadixString(16),
+                        ),
                       ),
                     ),
-                    backgroundColor: Theme.of(context).primaryColor,
-                    label: 'Create Inbox Stack',
-                    labelStyle: TextStyle(fontSize: 18.0),
-                    onTap: () => Get.to(
-                      () => SaveStackPage(
-                        goalRef: 'inbox',
-                        goalColor: Theme.of(context)
-                            .primaryColor
-                            .value
-                            .toRadixString(16),
-                      ),
-                    ),
-                  ),
-                  SpeedDialChild(
-                    child: Center(
-                      child: Image.asset(
-                        'assets/images/icons/task.png',
-                        width: 32.0,
-                        color: Theme.of(context).backgroundColor,
-                      ),
-                    ),
-                    backgroundColor: Theme.of(context).primaryColor,
-                    label: 'Create Inbox Task',
-                    labelStyle: TextStyle(fontSize: 18.0),
-                    onTap: () => Get.to(
-                      () => SaveTaskPage(
-                        goalRef: 'inbox',
-                        stackRef: 'inbox',
-                        goalTitle: 'Inbox',
-                        stackTitle: '',
-                        stackColor: Theme.of(context)
-                            .primaryColor
-                            .value
-                            .toRadixString(16),
-                      ),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               );
             return SizedBox();
           },

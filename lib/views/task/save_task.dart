@@ -194,6 +194,7 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
   @override
   void initState() {
     super.initState();
+    anyTime = widget.goalRef == 'inbox';
     if (widget.task != null) {
       _titleController.text = widget.task.title ?? '';
       _descriptionController.text = widget.task.description ?? '';
@@ -291,31 +292,32 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
                   textInputAction: TextInputAction.next,
                 ),
               ),
-              Container(
-                decoration: BoxDecoration(
-                  color: Theme.of(context).backgroundColor,
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
-                margin: EdgeInsets.symmetric(vertical: 8.0),
-                child: TextFormField(
-                  controller: _descriptionController,
-                  decoration: InputDecoration(
-                    labelText: 'Task description',
-                    hintText: 'The description of the task',
-                    contentPadding: const EdgeInsets.symmetric(
-                      vertical: 20.0,
-                      horizontal: 20.0,
-                    ),
-                    alignLabelWithHint: true,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8.0),
-                      borderSide: BorderSide(width: 1),
-                    ),
+              if (widget.goalRef != 'inbox')
+                Container(
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).backgroundColor,
+                    borderRadius: BorderRadius.circular(8.0),
                   ),
-                  minLines: 5,
-                  maxLines: 7,
+                  margin: EdgeInsets.symmetric(vertical: 8.0),
+                  child: TextFormField(
+                    controller: _descriptionController,
+                    decoration: InputDecoration(
+                      labelText: 'Task description',
+                      hintText: 'The description of the task',
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 20.0,
+                        horizontal: 20.0,
+                      ),
+                      alignLabelWithHint: true,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                        borderSide: BorderSide(width: 1),
+                      ),
+                    ),
+                    minLines: 5,
+                    maxLines: 7,
+                  ),
                 ),
-              ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [

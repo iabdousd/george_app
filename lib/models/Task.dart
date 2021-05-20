@@ -309,7 +309,9 @@ class Task extends InboxItem {
     if (repetition == null) {
       if (status == 1) {
         status = 0;
-        await save();
+        await save(
+          updateSummaries: false,
+        );
         await FirebaseFirestore.instance
             .collection(user_constants.USERS_KEY)
             .doc(getCurrentUser().uid)
@@ -318,15 +320,21 @@ class Task extends InboxItem {
               id + DateFormat('yyyy_MM_dd').format(startDate),
             )
             .delete();
-        await removeTaskAccomplishment(this);
         // TODO: !
-        if (stackRef != 'inbox' && goalRef != 'inbox')
-          await GoalSummary(id: goalRef)
-              .accomplishTask(-1, stackRef, withFetch: true);
-        return;
+        if (stackRef != 'inbox' && goalRef != 'inbox') {
+          await removeTaskAccomplishment(this);
+          if (stackRef != 'inbox' && goalRef != 'inbox')
+            await GoalSummary(id: goalRef).accomplishTask(
+              -1,
+              stackRef,
+              withFetch: true,
+            );
+        }
       } else {
         status = 1;
-        await save();
+        await save(
+          updateSummaries: false,
+        );
         await FirebaseFirestore.instance
             .collection(user_constants.USERS_KEY)
             .doc(getCurrentUser().uid)
@@ -340,13 +348,17 @@ class Task extends InboxItem {
             task_constants.CREATION_DATE_KEY: DateTime.now(),
           },
         );
-        await addTaskAccomplishment(this);
         // TODO: !
-        if (stackRef != 'inbox' && goalRef != 'inbox')
-          await GoalSummary(id: goalRef)
-              .accomplishTask(1, stackRef, withFetch: true);
-        return;
+        if (stackRef != 'inbox' && goalRef != 'inbox') {
+          await addTaskAccomplishment(this);
+          await GoalSummary(id: goalRef).accomplishTask(
+            1,
+            stackRef,
+            withFetch: true,
+          );
+        }
       }
+      return;
     }
     if (this.donesHistory == null) this.donesHistory = [];
 
@@ -363,7 +375,9 @@ class Task extends InboxItem {
       // UNCHECKED!
       if (this.donesHistory.length == this.dueDates.length) this.status = 0;
       this.donesHistory.remove(accompishedDate);
-      await save();
+      await save(
+        updateSummaries: false,
+      );
       await FirebaseFirestore.instance
           .collection(user_constants.USERS_KEY)
           .doc(getCurrentUser().uid)
@@ -372,16 +386,19 @@ class Task extends InboxItem {
             id + DateFormat('yyyy_MM_dd').format(accompishedDate),
           )
           .delete();
-      await removeTaskAccomplishment(this);
       // TODO: !
-      if (stackRef != 'inbox')
+      if (stackRef != 'inbox' && goalRef != 'inbox') {
+        await removeTaskAccomplishment(this);
         await GoalSummary(id: goalRef)
             .accomplishTask(-1, stackRef, withFetch: true);
+      }
     } else {
       // CHECKED!
       this.donesHistory.add(accompishedDate);
       if (this.donesHistory.length == this.dueDates.length) this.status = 1;
-      await save();
+      await save(
+        updateSummaries: false,
+      );
       await FirebaseFirestore.instance
           .collection(user_constants.USERS_KEY)
           .doc(getCurrentUser().uid)
@@ -395,11 +412,12 @@ class Task extends InboxItem {
           task_constants.CREATION_DATE_KEY: DateTime.now(),
         },
       );
-      await addTaskAccomplishment(this);
       // TODO: !
-      if (stackRef != 'inbox')
+      if (stackRef != 'inbox' && goalRef != 'inbox') {
+        await addTaskAccomplishment(this);
         await GoalSummary(id: goalRef)
             .accomplishTask(1, stackRef, withFetch: true);
+      }
     }
   }
 
@@ -527,7 +545,9 @@ class Task extends InboxItem {
     if (this.taskNotes == null) this.taskNotes = [];
     this.taskNotes.add(note.id);
     this.lastNote = note;
-    await this.save();
+    await save(
+      updateSummaries: false,
+    );
   }
 
   Future<void> updateSummary() async {

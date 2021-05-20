@@ -181,6 +181,7 @@ class InboxRepository {
         final oldStackId = stack.id;
         stack.id = null;
         stack.goalRef = goal.id;
+        stack.goalTitle = goal.title;
         stack.color = goal.color;
         await stack.save();
         await deleteInboxItem(oldStackId);
@@ -193,7 +194,9 @@ class InboxRepository {
           await task.delete();
           task.id = null;
           task.goalRef = goal.id;
+          task.goalTitle = goal.title;
           task.stackRef = stack.id;
+          task.stackTitle = stack.title;
           task.stackColor = goal.color;
           await task.save();
         }
@@ -225,7 +228,11 @@ class InboxRepository {
       await toggleLoading(state: true);
 
       for (final task in tasks) {
+        task.goalRef = stack.goalRef;
+        task.goalTitle = stack.goalTitle;
+        task.stackTitle = stack.title;
         task.stackRef = stack.id;
+        task.stackColor = stack.color;
         await task.save();
         await deleteInboxItem(task.id);
       }
@@ -237,6 +244,13 @@ class InboxRepository {
       );
       return true;
     } catch (e) {
+      print(e);
+      await toggleLoading(state: false);
+      showFlushBar(
+        title: 'Grouping Error',
+        message: 'Couldn\'t group your tasks, please try again later.',
+        success: false,
+      );
       return false;
     }
   }
