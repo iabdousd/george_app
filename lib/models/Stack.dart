@@ -3,8 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:stackedtasks/constants/models/goal.dart' as goal_constants;
 import 'package:stackedtasks/constants/models/inbox_item.dart';
 import 'package:stackedtasks/constants/models/stack.dart' as stack_constants;
-import 'package:stackedtasks/constants/user.dart' as user_constants;
-import 'package:stackedtasks/services/user/user_service.dart';
 
 import '../constants/models/task.dart';
 import 'InboxItem.dart';
@@ -14,6 +12,8 @@ import 'goal_summary.dart';
 
 class TasksStack extends InboxItem {
   String id;
+  String userID;
+  List<String> partnersIDs;
   String goalRef;
   String goalTitle;
   String title;
@@ -26,6 +26,8 @@ class TasksStack extends InboxItem {
 
   TasksStack({
     this.id,
+    this.userID,
+    this.partnersIDs: const [],
     this.goalRef,
     this.goalTitle,
     this.title,
@@ -42,7 +44,10 @@ class TasksStack extends InboxItem {
     String id,
   }) {
     this.id = id;
-    this.goalRef = goalRef;
+    this.userID = jsonObject[stack_constants.USER_ID_KEY];
+    this.partnersIDs =
+        List<String>.from(jsonObject[stack_constants.PARTNERS_IDS_KEY]);
+    this.goalRef = goalRef ?? jsonObject[stack_constants.GOAL_REF_KEY];
     this.goalTitle = goalTitle;
     this.title = jsonObject[stack_constants.TITLE_KEY];
     this.color = jsonObject[stack_constants.COLOR_KEY];
@@ -53,7 +58,10 @@ class TasksStack extends InboxItem {
 
   Map<String, dynamic> toJson() {
     return {
+      stack_constants.USER_ID_KEY: userID,
+      stack_constants.PARTNERS_IDS_KEY: partnersIDs,
       stack_constants.TITLE_KEY: title,
+      stack_constants.GOAL_REF_KEY: goalRef,
       stack_constants.COLOR_KEY: color,
       stack_constants.STATUS_KEY: status,
       stack_constants.CREATION_DATE_KEY: creationDate,
@@ -77,10 +85,6 @@ class TasksStack extends InboxItem {
 
     if (id == null) {
       DocumentReference documentReference = await FirebaseFirestore.instance
-          .collection(user_constants.USERS_KEY)
-          .doc(getCurrentUser().uid)
-          .collection(goal_constants.GOALS_KEY)
-          .doc(goalRef)
           .collection(goal_constants.STACKS_KEY)
           .add(toJson());
 
@@ -89,19 +93,11 @@ class TasksStack extends InboxItem {
     } else {
       try {
         await FirebaseFirestore.instance
-            .collection(user_constants.USERS_KEY)
-            .doc(getCurrentUser().uid)
-            .collection(goal_constants.GOALS_KEY)
-            .doc(goalRef)
             .collection(goal_constants.STACKS_KEY)
             .doc(id)
             .update(toJson());
       } on FirebaseException {
         await FirebaseFirestore.instance
-            .collection(user_constants.USERS_KEY)
-            .doc(getCurrentUser().uid)
-            .collection(goal_constants.GOALS_KEY)
-            .doc(goalRef)
             .collection(goal_constants.STACKS_KEY)
             .doc(id)
             .set(toJson());
@@ -113,22 +109,12 @@ class TasksStack extends InboxItem {
   Future delete() async {
     assert(id != null);
     DocumentReference reference = goalRef == 'inbox'
-        ? FirebaseFirestore.instance
-            .collection(user_constants.USERS_KEY)
-            .doc(getCurrentUser().uid)
-            .collection(INBOX_COLLECTION)
-            .doc(id)
+        ? FirebaseFirestore.instance.collection(INBOX_COLLECTION).doc(id)
         : FirebaseFirestore.instance
-            .collection(user_constants.USERS_KEY)
-            .doc(getCurrentUser().uid)
-            .collection(goal_constants.GOALS_KEY)
-            .doc(goalRef)
             .collection(goal_constants.STACKS_KEY)
             .doc(id);
 
     final tasks = await FirebaseFirestore.instance
-        .collection(user_constants.USERS_KEY)
-        .doc(getCurrentUser().uid)
         .collection(stack_constants.TASKS_KEY)
         .where(STACK_REF_KEY, isEqualTo: id)
         .get();

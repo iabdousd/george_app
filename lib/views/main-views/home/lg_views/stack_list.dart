@@ -13,8 +13,6 @@ import 'package:get/get.dart';
 import 'package:stackedtasks/widgets/shared/app_error_widget.dart';
 import 'package:stackedtasks/constants/models/goal.dart' as goal_constants;
 import 'package:stackedtasks/constants/models/stack.dart' as stack_constants;
-import 'package:stackedtasks/constants/user.dart' as user_constants;
-import 'package:stackedtasks/services/user/user_service.dart';
 
 class HomeLGStackListView extends StatefulWidget {
   final Goal goal;
@@ -203,11 +201,11 @@ class _HomeLGStackListViewState extends State<HomeLGStackListView> {
               ),
               StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance
-                      .collection(user_constants.USERS_KEY)
-                      .doc(getCurrentUser().uid)
-                      .collection(goal_constants.GOALS_KEY)
-                      .doc(widget.goal.id)
                       .collection(goal_constants.STACKS_KEY)
+                      .where(
+                        stack_constants.GOAL_REF_KEY,
+                        isEqualTo: widget.goal.id,
+                      )
                       .orderBy(stack_constants.CREATION_DATE_KEY,
                           descending: true)
                       .limit(limit)

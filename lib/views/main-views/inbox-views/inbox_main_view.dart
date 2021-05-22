@@ -4,8 +4,8 @@ import 'package:animate_do/animate_do.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:stackedtasks/constants/models/goal.dart';
-import 'package:stackedtasks/constants/user.dart';
+import 'package:stackedtasks/constants/models/goal.dart' as goal_constants;
+import 'package:stackedtasks/constants/models/task.dart';
 import 'package:stackedtasks/models/Goal.dart';
 import 'package:stackedtasks/models/InboxItem.dart';
 import 'package:stackedtasks/models/Task.dart';
@@ -292,7 +292,10 @@ class _InboxMainViewState extends State<InboxMainView>
                 ),
               );
           }
-          if (snapshot.hasError) return AppErrorWidget();
+          if (snapshot.hasError) {
+            print(snapshot.error);
+            return AppErrorWidget();
+          }
           return LoadingWidget();
         },
       ),
@@ -522,9 +525,12 @@ class _InboxMainViewState extends State<InboxMainView>
                                         ),
                                         StreamBuilder<QuerySnapshot>(
                                           stream: FirebaseFirestore.instance
-                                              .collection(USERS_KEY)
-                                              .doc(getCurrentUser().uid)
-                                              .collection(GOALS_KEY)
+                                              .collection(
+                                                  goal_constants.GOALS_KEY)
+                                              .where(
+                                                goal_constants.USER_ID_KEY,
+                                                isEqualTo: getCurrentUser().uid,
+                                              )
                                               .snapshots(),
                                           builder: (context, goalsSnapshot) {
                                             if (!goalsSnapshot.hasData)
@@ -535,11 +541,13 @@ class _InboxMainViewState extends State<InboxMainView>
                                                   QuerySnapshot>(
                                                 stream: FirebaseFirestore
                                                     .instance
-                                                    .collection(USERS_KEY)
-                                                    .doc(getCurrentUser().uid)
-                                                    .collection(GOALS_KEY)
-                                                    .doc(selectedGoal.id)
-                                                    .collection(STACKS_KEY)
+                                                    .collection(goal_constants
+                                                        .STACKS_KEY)
+                                                    .where(
+                                                      GOAL_REF_KEY,
+                                                      isEqualTo:
+                                                          selectedGoal.id,
+                                                    )
                                                     .snapshots(),
                                                 builder: (context,
                                                     goalStacksSnapshot) {

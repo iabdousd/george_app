@@ -4,14 +4,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:stackedtasks/models/stack_summary.dart';
 import 'package:stackedtasks/constants/models/goal_summary.dart'
     as goal_summary_constants;
-import 'package:stackedtasks/constants/user.dart' as user_constants;
 import 'package:stackedtasks/constants/feed.dart' as feed_constants;
-import 'package:stackedtasks/services/user/user_service.dart';
 
 import 'Stack.dart';
 
 class GoalSummary {
   String id;
+  String userID;
+  List<String> partnersIDs;
   String title;
   String color;
   int status;
@@ -23,6 +23,8 @@ class GoalSummary {
 
   GoalSummary({
     this.id,
+    this.userID,
+    this.partnersIDs: const [],
     this.title,
     this.color,
     this.status,
@@ -38,6 +40,9 @@ class GoalSummary {
     id,
   }) {
     this.id = id;
+    this.userID = jsonObject[goal_summary_constants.USER_ID_KEY];
+    this.partnersIDs =
+        List<String>.from(jsonObject[goal_summary_constants.PARTNERS_IDS_KEY]);
     this.title = jsonObject[goal_summary_constants.TITLE_KEY];
     this.color = jsonObject[goal_summary_constants.COLOR_KEY];
     this.status = jsonObject[goal_summary_constants.STATUS_KEY];
@@ -62,6 +67,8 @@ class GoalSummary {
   Map toJson() {
     return {
       goal_summary_constants.ID_KEY: id,
+      goal_summary_constants.USER_ID_KEY: userID,
+      goal_summary_constants.PARTNERS_IDS_KEY: partnersIDs,
       goal_summary_constants.TITLE_KEY: title,
       goal_summary_constants.COLOR_KEY: color,
       goal_summary_constants.STATUS_KEY: status,
@@ -79,13 +86,15 @@ class GoalSummary {
   fetchGoal() async {
     DocumentSnapshot<Map<String, dynamic>> snapshot = await FirebaseFirestore
         .instance
-        .collection(user_constants.USERS_KEY)
-        .doc(getCurrentUser().uid)
         .collection(feed_constants.GOALS_SUMMARIES_KEY)
         .doc(id)
         .get();
 
     var jsonObject = snapshot.data();
+    this.userID = jsonObject[goal_summary_constants.USER_ID_KEY];
+    this.partnersIDs = List<String>.from(
+      jsonObject[goal_summary_constants.PARTNERS_IDS_KEY] ?? [],
+    );
     this.title = jsonObject[goal_summary_constants.TITLE_KEY];
     this.color = jsonObject[goal_summary_constants.COLOR_KEY];
     this.status = jsonObject[goal_summary_constants.STATUS_KEY];
@@ -110,15 +119,11 @@ class GoalSummary {
   save({bool update: false, Map<String, dynamic> data}) async {
     if (update)
       FirebaseFirestore.instance
-          .collection(user_constants.USERS_KEY)
-          .doc(getCurrentUser().uid)
           .collection(feed_constants.GOALS_SUMMARIES_KEY)
           .doc(id)
           .update(Map<String, dynamic>.from(data));
     else
       FirebaseFirestore.instance
-          .collection(user_constants.USERS_KEY)
-          .doc(getCurrentUser().uid)
           .collection(feed_constants.GOALS_SUMMARIES_KEY)
           .doc(id)
           .set(Map<String, dynamic>.from(toJson()));
@@ -128,8 +133,6 @@ class GoalSummary {
     if (withFetch) await fetchGoal();
     DocumentReference<Map<String, dynamic>> reference = FirebaseFirestore
         .instance
-        .collection(user_constants.USERS_KEY)
-        .doc(getCurrentUser().uid)
         .collection(feed_constants.GOALS_SUMMARIES_KEY)
         .doc(id);
     stacksSummaries.add(
@@ -153,8 +156,6 @@ class GoalSummary {
     if (withFetch) await fetchGoal();
     DocumentReference<Map<String, dynamic>> reference = FirebaseFirestore
         .instance
-        .collection(user_constants.USERS_KEY)
-        .doc(getCurrentUser().uid)
         .collection(feed_constants.GOALS_SUMMARIES_KEY)
         .doc(id);
     int i = 0;
@@ -212,8 +213,6 @@ class GoalSummary {
     allocatedTime -= stackToRemove.allocatedTime;
 
     FirebaseFirestore.instance
-        .collection(user_constants.USERS_KEY)
-        .doc(getCurrentUser().uid)
         .collection(feed_constants.GOALS_SUMMARIES_KEY)
         .doc(id)
         .update(
@@ -242,8 +241,6 @@ class GoalSummary {
 
     DocumentReference<Map<String, dynamic>> reference = FirebaseFirestore
         .instance
-        .collection(user_constants.USERS_KEY)
-        .doc(getCurrentUser().uid)
         .collection(feed_constants.GOALS_SUMMARIES_KEY)
         .doc(id);
 
@@ -275,8 +272,6 @@ class GoalSummary {
 
     DocumentReference<Map<String, dynamic>> reference = FirebaseFirestore
         .instance
-        .collection(user_constants.USERS_KEY)
-        .doc(getCurrentUser().uid)
         .collection(feed_constants.GOALS_SUMMARIES_KEY)
         .doc(id);
 
@@ -303,8 +298,6 @@ class GoalSummary {
 
     DocumentReference<Map<String, dynamic>> reference = FirebaseFirestore
         .instance
-        .collection(user_constants.USERS_KEY)
-        .doc(getCurrentUser().uid)
         .collection(feed_constants.GOALS_SUMMARIES_KEY)
         .doc(id);
     await reference.update(
@@ -318,8 +311,6 @@ class GoalSummary {
 
   delete() async {
     await FirebaseFirestore.instance
-        .collection(user_constants.USERS_KEY)
-        .doc(getCurrentUser().uid)
         .collection(feed_constants.GOALS_SUMMARIES_KEY)
         .doc(id)
         .delete();

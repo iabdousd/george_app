@@ -1,6 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 import 'package:stackedtasks/constants/models/inbox_item.dart';
 import 'package:stackedtasks/models/Goal.dart';
@@ -10,7 +8,6 @@ import 'package:stackedtasks/services/feed-back/flush_bar.dart';
 import 'package:stackedtasks/services/feed-back/loader.dart';
 
 import '../../constants/models/stack.dart';
-import '../../constants/user.dart';
 import '../../models/Stack.dart';
 import '../../models/Task.dart';
 import '../../services/user/user_service.dart';
@@ -27,8 +24,6 @@ class InboxRepositoryResult {
 class InboxRepository {
   static Future<Task> getInboxTask(String taskRef) async {
     final res = await FirebaseFirestore.instance
-        .collection(USERS_KEY)
-        .doc(getCurrentUser().uid)
         .collection(TASKS_KEY)
         .doc(taskRef)
         .get();
@@ -41,8 +36,6 @@ class InboxRepository {
 
   static Future<TasksStack> getInboxStack(String reference) async {
     final res = await FirebaseFirestore.instance
-        .collection(USERS_KEY)
-        .doc(getCurrentUser().uid)
         .collection(INBOX_COLLECTION)
         .doc(reference)
         .get();
@@ -57,9 +50,8 @@ class InboxRepository {
 
   static Stream<List<InboxItem>> getInboxItems() {
     return FirebaseFirestore.instance
-        .collection(USERS_KEY)
-        .doc(getCurrentUser().uid)
         .collection(INBOX_COLLECTION)
+        .where(USER_ID_KEY, isEqualTo: getCurrentUser().uid)
         .orderBy(INBOX_ITEM_CREATION_DATE, descending: true)
         .snapshots()
         .asyncMap(
@@ -87,9 +79,8 @@ class InboxRepository {
 
   static Stream<List<TasksStack>> getInboxStacks() {
     return FirebaseFirestore.instance
-        .collection(USERS_KEY)
-        .doc(getCurrentUser().uid)
         .collection(INBOX_COLLECTION)
+        .where(USER_ID_KEY, isEqualTo: getCurrentUser().uid)
         .where(INBOX_ITEM_TYPE, isEqualTo: INBOX_STACK_ITEM_TYPE)
         .orderBy(INBOX_ITEM_CREATION_DATE, descending: true)
         .snapshots()
@@ -115,14 +106,13 @@ class InboxRepository {
     try {
       if (reference != null && reference.isNotEmpty) {
         final res = FirebaseFirestore.instance
-            .collection(USERS_KEY)
-            .doc(getCurrentUser().uid)
             .collection(INBOX_COLLECTION)
             .doc(reference);
 
         await res.set(
           {
             INBOX_ITEM_TYPE: type,
+            USER_ID_KEY: getCurrentUser().uid,
             INBOX_ITEM_CREATION_DATE: Timestamp.fromDate(
               DateTime.now(),
             ),
@@ -134,13 +124,14 @@ class InboxRepository {
           result: res.id,
         );
       } else {
-        final res = await FirebaseFirestore.instance
-            .collection(USERS_KEY)
-            .doc(getCurrentUser().uid)
-            .collection(INBOX_COLLECTION)
-            .add(
+        final res =
+            await FirebaseFirestore.instance.collection(INBOX_COLLECTION).add(
           {
             INBOX_ITEM_TYPE: type,
+            USER_ID_KEY: getCurrentUser().uid,
+            INBOX_ITEM_CREATION_DATE: Timestamp.fromDate(
+              DateTime.now(),
+            ),
             ...data,
           },
         );
@@ -160,8 +151,6 @@ class InboxRepository {
   static Future<bool> deleteInboxItem(String docRef) async {
     try {
       await FirebaseFirestore.instance
-          .collection(USERS_KEY)
-          .doc(getCurrentUser().uid)
           .collection(INBOX_COLLECTION)
           .doc(docRef)
           .delete();

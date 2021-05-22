@@ -4,6 +4,7 @@ import 'package:stackedtasks/models/Stack.dart' as stack_model;
 import 'package:stackedtasks/repositories/inbox/inbox_repository.dart';
 import 'package:stackedtasks/services/feed-back/flush_bar.dart';
 import 'package:stackedtasks/services/feed-back/loader.dart';
+import 'package:stackedtasks/services/user/user_service.dart';
 import 'package:stackedtasks/widgets/shared/app_appbar.dart';
 
 class SaveStackPage extends StatefulWidget {
@@ -35,6 +36,8 @@ class _SaveStackPageState extends State<SaveStackPage> {
       final res = await InboxRepository.saveInboxItem(
         INBOX_STACK_ITEM_TYPE,
         data: stack_model.TasksStack(
+          userID: getCurrentUser().uid,
+          partnersIDs: [],
           goalRef: widget.goalRef,
           id: widget.stack?.id,
           title: _titleController.text,
@@ -57,8 +60,10 @@ class _SaveStackPageState extends State<SaveStackPage> {
       }
     } else {
       final stack = stack_model.TasksStack(
-        goalRef: widget.goalRef,
         id: widget.stack?.id,
+        goalRef: widget.goalRef,
+        userID: getCurrentUser().uid,
+        partnersIDs: [],
         title: _titleController.text,
         color: widget.goalColor,
         creationDate: DateTime.now(),

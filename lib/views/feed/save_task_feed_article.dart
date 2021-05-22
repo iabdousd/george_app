@@ -28,8 +28,9 @@ class _SaveTaskFeedArticleState extends State<SaveTaskFeedArticle> {
 
     await (widget.task
           ..title = _titleController.text
-          ..description = _descriptionController.text)
-        .saveAsFeed();
+          ..description = _descriptionController.text
+          ..status = 2)
+        .saveAsFeed(widget.task.partnersIDs);
     toggleLoading(state: false);
     Navigator.of(context).pop();
     showFlushBar(

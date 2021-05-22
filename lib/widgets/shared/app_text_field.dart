@@ -9,6 +9,10 @@ class AppTextField extends StatelessWidget {
   final EdgeInsets contentPadding;
   final TextInputAction textInputAction;
   final int minLines, maxLines;
+  final Widget prefix, suffix;
+  final TextInputType keyboardType;
+  final Function(String) onSubmit;
+
   const AppTextField({
     Key key,
     @required this.controller,
@@ -25,8 +29,12 @@ class AppTextField extends StatelessWidget {
     this.obscureText: false,
     this.textInputAction: TextInputAction.done,
     this.autoFocus: false,
+    this.onSubmit,
     this.minLines,
     this.maxLines,
+    this.prefix,
+    this.suffix,
+    this.keyboardType,
   }) : super(key: key);
 
   @override
@@ -40,13 +48,17 @@ class AppTextField extends StatelessWidget {
       margin: margin,
       child: TextFormField(
         controller: controller,
+        onFieldSubmitted: onSubmit,
         autofocus: autoFocus,
         decoration: InputDecoration(
           labelText: label,
           hintText: hint,
           contentPadding: contentPadding,
           border: InputBorder.none,
+          prefix: prefix,
+          suffix: suffix,
         ),
+        keyboardType: keyboardType,
         obscureText: obscureText,
         validator: (t) {
           if (isRequired && t.replaceAll('\n', '').trim().isEmpty)

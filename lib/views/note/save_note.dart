@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:stackedtasks/models/Note.dart';
 import 'package:stackedtasks/services/feed-back/flush_bar.dart';
 import 'package:stackedtasks/services/feed-back/loader.dart';
+import 'package:stackedtasks/services/user/user_service.dart';
 import 'package:stackedtasks/widgets/shared/app_action_button.dart';
 import 'package:stackedtasks/widgets/shared/app_appbar.dart';
 import 'package:stackedtasks/widgets/shared/images_list_view.dart';
@@ -50,6 +51,7 @@ class _SaveNotePageState extends State<SaveNotePage> {
     if (!_formKey.currentState.validate()) return;
     toggleLoading(state: true);
     Note note = Note(
+      userID: getCurrentUser().uid,
       goalRef: widget.goalRef,
       stackRef: widget.stackRef,
       id: widget.note?.id,

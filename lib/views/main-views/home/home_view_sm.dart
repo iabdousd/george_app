@@ -88,9 +88,9 @@ class _HomeViewSMState extends State<HomeViewSM>
                   Container(
                     child: StreamBuilder<QuerySnapshot>(
                       stream: FirebaseFirestore.instance
-                          .collection(user_constants.USERS_KEY)
-                          .doc(getCurrentUser().uid)
                           .collection(goal_constants.GOALS_KEY)
+                          .where(goal_constants.USER_ID_KEY,
+                              isEqualTo: getCurrentUser().uid)
                           .orderBy(goal_constants.CREATION_DATE_KEY,
                               descending: true)
                           .snapshots(),
@@ -125,7 +125,10 @@ class _HomeViewSMState extends State<HomeViewSM>
                               ),
                             );
                         }
-                        if (snapshot.hasError) return AppErrorWidget();
+                        if (snapshot.hasError) {
+                          print(snapshot.error);
+                          return AppErrorWidget();
+                        }
                         return LoadingWidget();
                       },
                     ),

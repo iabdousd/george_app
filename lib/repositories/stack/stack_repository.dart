@@ -11,9 +11,9 @@ class StackRepository {
   static Future<List<Task>> getStackTasks(TasksStack stack, [int limit]) async {
     if (limit != null)
       return (await FirebaseFirestore.instance
-              .collection(user_constants.USERS_KEY)
-              .doc(getCurrentUser().uid)
               .collection(stack_constants.TASKS_KEY)
+              .where(task_constants.USER_ID_KEY,
+                  isEqualTo: getCurrentUser().uid)
               .where(task_constants.STACK_REF_KEY, isEqualTo: stack.id)
               .orderBy(task_constants.CREATION_DATE_KEY, descending: true)
               .limit(limit)
@@ -25,9 +25,8 @@ class StackRepository {
               ))
           .toList();
     return (await FirebaseFirestore.instance
-            .collection(user_constants.USERS_KEY)
-            .doc(getCurrentUser().uid)
             .collection(stack_constants.TASKS_KEY)
+            .where(task_constants.USER_ID_KEY, isEqualTo: getCurrentUser().uid)
             .where(task_constants.STACK_REF_KEY, isEqualTo: stack.id)
             .orderBy(task_constants.CREATION_DATE_KEY, descending: true)
             .get())
@@ -41,9 +40,8 @@ class StackRepository {
 
   static Stream<List<Task>> streamStackTasks(TasksStack stack, int limit) {
     return FirebaseFirestore.instance
-        .collection(user_constants.USERS_KEY)
-        .doc(getCurrentUser().uid)
         .collection(stack_constants.TASKS_KEY)
+        .where(task_constants.USER_ID_KEY, isEqualTo: getCurrentUser().uid)
         .where(task_constants.STACK_REF_KEY, isEqualTo: stack.id)
         .orderBy(task_constants.CREATION_DATE_KEY, descending: true)
         .limit(limit)

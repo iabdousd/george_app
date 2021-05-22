@@ -2,21 +2,21 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:date_util/date_util.dart';
 import 'package:flutter/material.dart';
 import 'package:stackedtasks/constants/models/task.dart' as task_constants;
-import 'package:stackedtasks/constants/user.dart' as user_constants;
 import 'package:stackedtasks/constants/models/stack.dart' as stack_constants;
-import 'package:stackedtasks/constants/models/goal.dart' as goal_constants;
 import 'package:stackedtasks/constants/feed.dart' as feed_constants;
 import 'package:stackedtasks/models/goal_summary.dart';
 import 'package:stackedtasks/repositories/feed/statistics.dart';
 import 'package:stackedtasks/repositories/inbox/inbox_repository.dart';
-import 'package:stackedtasks/services/user/user_service.dart';
 import 'package:intl/intl.dart';
+import 'package:stackedtasks/services/user/user_service.dart';
 
 import 'InboxItem.dart';
 import 'Note.dart';
 
 class Task extends InboxItem {
   String id;
+  String userID;
+  List<String> partnersIDs;
   String goalRef;
   String stackRef;
   String goalTitle;
@@ -43,8 +43,13 @@ class Task extends InboxItem {
   List<Note> detailedTaskNotes = [];
   Note lastNote;
 
+  String userName;
+  String userPhoto;
+
   Task({
     this.id,
+    this.userID,
+    this.partnersIDs: const [],
     this.goalRef,
     this.stackRef,
     this.goalTitle,
@@ -118,6 +123,9 @@ class Task extends InboxItem {
     String id,
   }) {
     this.id = id;
+    this.userID = jsonObject[task_constants.USER_ID_KEY];
+    this.partnersIDs =
+        List<String>.from(jsonObject[task_constants.PARTNERS_IDS_KEY]);
     this.goalRef = jsonObject[task_constants.GOAL_REF_KEY];
     this.stackRef = jsonObject[task_constants.STACK_REF_KEY];
     this.goalTitle = jsonObject[task_constants.GOAL_TITLE_KEY];
@@ -177,6 +185,8 @@ class Task extends InboxItem {
 
   Map<String, dynamic> toJson() {
     return {
+      task_constants.USER_ID_KEY: userID,
+      task_constants.PARTNERS_IDS_KEY: partnersIDs,
       task_constants.GOAL_REF_KEY: goalRef,
       task_constants.STACK_REF_KEY: stackRef,
       if (goalTitle != null) task_constants.GOAL_TITLE_KEY: goalTitle,
@@ -207,12 +217,6 @@ class Task extends InboxItem {
       detailedTaskNotes = [];
       for (String noteKey in taskNotes) {
         var data = await FirebaseFirestore.instance
-            .collection(user_constants.USERS_KEY)
-            .doc(getCurrentUser().uid)
-            .collection(goal_constants.GOALS_KEY)
-            .doc(goalRef)
-            .collection(goal_constants.STACKS_KEY)
-            .doc(stackRef)
             .collection(stack_constants.NOTES_KEY)
             .doc(noteKey)
             .get();
@@ -313,8 +317,6 @@ class Task extends InboxItem {
           updateSummaries: false,
         );
         await FirebaseFirestore.instance
-            .collection(user_constants.USERS_KEY)
-            .doc(getCurrentUser().uid)
             .collection(feed_constants.FEED_KEY)
             .doc(
               id + DateFormat('yyyy_MM_dd').format(startDate),
@@ -336,14 +338,13 @@ class Task extends InboxItem {
           updateSummaries: false,
         );
         await FirebaseFirestore.instance
-            .collection(user_constants.USERS_KEY)
-            .doc(getCurrentUser().uid)
             .collection(feed_constants.FEED_KEY)
             .doc(
               id + DateFormat('yyyy_MM_dd').format(startDate),
             )
             .set(
           {
+            feed_constants.TO_KEY: [getCurrentUser().uid],
             ...toJson(),
             task_constants.CREATION_DATE_KEY: DateTime.now(),
           },
@@ -379,8 +380,6 @@ class Task extends InboxItem {
         updateSummaries: false,
       );
       await FirebaseFirestore.instance
-          .collection(user_constants.USERS_KEY)
-          .doc(getCurrentUser().uid)
           .collection(feed_constants.FEED_KEY)
           .doc(
             id + DateFormat('yyyy_MM_dd').format(accompishedDate),
@@ -400,8 +399,6 @@ class Task extends InboxItem {
         updateSummaries: false,
       );
       await FirebaseFirestore.instance
-          .collection(user_constants.USERS_KEY)
-          .doc(getCurrentUser().uid)
           .collection(feed_constants.FEED_KEY)
           .doc(
             id + DateFormat('yyyy_MM_dd').format(accompishedDate),
@@ -409,6 +406,8 @@ class Task extends InboxItem {
           .set(
         {
           ...toJson(),
+          // TODO: PARTNER RELATED
+          feed_constants.TO_KEY: [getCurrentUser().uid],
           task_constants.CREATION_DATE_KEY: DateTime.now(),
         },
       );
@@ -571,8 +570,6 @@ class Task extends InboxItem {
     if (id == null) {
       DocumentReference<Map<String, dynamic>> docRef = await FirebaseFirestore
           .instance
-          .collection(user_constants.USERS_KEY)
-          .doc(getCurrentUser().uid)
           .collection(stack_constants.TASKS_KEY)
           .add(toJson());
 
@@ -582,8 +579,6 @@ class Task extends InboxItem {
     } else {
       DocumentReference<Map<String, dynamic>> docRef = FirebaseFirestore
           .instance
-          .collection(user_constants.USERS_KEY)
-          .doc(getCurrentUser().uid)
           .collection(stack_constants.TASKS_KEY)
           .doc(id);
       await docRef.set(toJson());
@@ -594,8 +589,6 @@ class Task extends InboxItem {
 
   Future delete() async {
     await FirebaseFirestore.instance
-        .collection(user_constants.USERS_KEY)
-        .doc(getCurrentUser().uid)
         .collection(stack_constants.TASKS_KEY)
         .doc(id)
         .delete();
@@ -619,21 +612,20 @@ class Task extends InboxItem {
       );
   }
 
-  Future saveAsFeed() async {
+  Future saveAsFeed(List<String> to) async {
     await FirebaseFirestore.instance
-        .collection(user_constants.USERS_KEY)
-        .doc(getCurrentUser().uid)
         .collection(feed_constants.FEED_KEY)
         .doc(
           id,
         )
-        .set(toJson());
+        .set({
+      feed_constants.TO_KEY: [getCurrentUser().uid, ...to],
+      ...toJson(),
+    });
   }
 
   Future deleteAsFeed() async {
     await FirebaseFirestore.instance
-        .collection(user_constants.USERS_KEY)
-        .doc(getCurrentUser().uid)
         .collection(feed_constants.FEED_KEY)
         .doc(
           id,

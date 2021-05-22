@@ -5,6 +5,7 @@ import 'package:stackedtasks/models/Task.dart';
 import 'package:stackedtasks/services/feed-back/loader.dart';
 import 'package:stackedtasks/views/task/save_task.dart';
 import 'package:stackedtasks/widgets/shared/app_action_button.dart';
+import 'package:stackedtasks/widgets/shared/app_error_widget.dart';
 import 'package:stackedtasks/widgets/task/task_list_tile_widget.dart';
 import 'package:stackedtasks/repositories/stack/stack_repository.dart';
 import 'package:get/get.dart';
@@ -103,6 +104,10 @@ class _TaskListViewState extends State<TaskListView>
                     );
                   else
                     return Container();
+                }
+                if (snapshot.hasError) {
+                  print(snapshot.error);
+                  return AppErrorWidget();
                 }
                 return LoadingWidget();
               }),

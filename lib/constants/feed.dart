@@ -1,4 +1,6 @@
 const String FEED_KEY = 'feed';
+const String USER_ID_KEY = 'userID';
+const String TO_KEY = 'to';
 
 const String GOALS_SUMMARIES_KEY = 'goalsSummaries';
 

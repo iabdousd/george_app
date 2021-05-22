@@ -4,7 +4,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:stackedtasks/services/feed-back/loader.dart';
 
 import 'package:stackedtasks/constants/models/goal.dart' as goal_constants;
-import 'package:stackedtasks/constants/user.dart' as user_constants;
 import 'package:stackedtasks/services/user/user_service.dart';
 import 'package:stackedtasks/widgets/home/tiles/lg_goal_tile.dart';
 import 'package:stackedtasks/widgets/shared/app_error_widget.dart';
@@ -49,9 +48,9 @@ class HomeLGGoalList extends StatelessWidget {
             margin: const EdgeInsets.only(bottom: 8.0),
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
-                  .collection(user_constants.USERS_KEY)
-                  .doc(getCurrentUser().uid)
                   .collection(goal_constants.GOALS_KEY)
+                  .where(goal_constants.USER_ID_KEY,
+                      isEqualTo: getCurrentUser().uid)
                   .orderBy(goal_constants.CREATION_DATE_KEY, descending: true)
                   .snapshots(),
               builder: (context, snapshot) {
@@ -80,7 +79,10 @@ class HomeLGGoalList extends StatelessWidget {
                       ),
                     );
                 }
-                if (snapshot.hasError) return AppErrorWidget();
+                if (snapshot.hasError) {
+                  print(snapshot.error);
+                  return AppErrorWidget();
+                }
                 return LoadingWidget();
               },
             ),

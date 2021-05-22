@@ -10,7 +10,6 @@ import 'package:stackedtasks/config/extensions/hex_color.dart';
 import 'package:stackedtasks/models/Task.dart';
 import 'package:stackedtasks/services/user/user_service.dart';
 import 'package:stackedtasks/views/task/save_task.dart';
-import 'package:stackedtasks/constants/user.dart' as user_constants;
 import 'package:stackedtasks/constants/models/task.dart' as task_constants;
 import 'package:stackedtasks/constants/models/stack.dart' as stack_constants;
 import 'package:get/get.dart';
@@ -32,16 +31,16 @@ class TasksListByWeek extends StatelessWidget {
     final tabsCount = kIsWeb ? 3 : 3;
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
-          .collection(user_constants.USERS_KEY)
-          .doc(getCurrentUser().uid)
           .collection(stack_constants.TASKS_KEY)
+          .where(
+            task_constants.USER_ID_KEY,
+            isEqualTo: getCurrentUser().uid,
+          )
           .where(
             task_constants.DUE_DATES_KEY,
             arrayContainsAny: [
               for (int i = 0; i < tabsCount; i++)
                 DateTime(day.year, day.month, day.day + i - tabsCount ~/ 2),
-              // DateTime(day.year, day.month, day.day),
-              // DateTime(day.year, day.month, day.day + tabsCount ~/ 2)
             ],
           )
           .orderBy(

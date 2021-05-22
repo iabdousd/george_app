@@ -4,7 +4,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:stackedtasks/models/Task.dart';
 
 import 'package:stackedtasks/services/user/user_service.dart';
-import 'package:stackedtasks/constants/user.dart' as user_constants;
 import 'package:stackedtasks/constants/feed.dart' as feed_constants;
 // import 'package:stackedtasks/constants/models/task.dart' as task_constants;
 // import 'package:stackedtasks/constants/models/stack.dart' as stack_constants;
@@ -18,10 +17,8 @@ addTaskAccomplishment(Task task) async {
 
   DocumentReference<Map<String, dynamic>> documentReference = FirebaseFirestore
       .instance
-      .collection(user_constants.USERS_KEY)
-      .doc(getCurrentUser().uid)
       .collection(feed_constants.STATISTICS_KEY)
-      .doc(task.creationDate.year.toString())
+      .doc(getCurrentUser().uid + task.creationDate.year.toString())
       .collection(feed_constants.WEEKLY_STATISTICS_KEY)
       .doc(start.toString());
 
@@ -46,10 +43,8 @@ removeTaskAccomplishment(Task task) async {
 
   DocumentReference<Map<String, dynamic>> documentReference = FirebaseFirestore
       .instance
-      .collection(user_constants.USERS_KEY)
-      .doc(getCurrentUser().uid)
       .collection(feed_constants.STATISTICS_KEY)
-      .doc(task.creationDate.year.toString())
+      .doc(getCurrentUser().uid + task.creationDate.year.toString())
       .collection(feed_constants.WEEKLY_STATISTICS_KEY)
       .doc(start.toString());
 
@@ -72,10 +67,8 @@ Stream<QuerySnapshot> getWeeklyAccomlishements() {
   DateTime start = now.subtract(Duration(days: now.weekday - 1));
 
   return FirebaseFirestore.instance
-      .collection(user_constants.USERS_KEY)
-      .doc(getCurrentUser().uid)
       .collection(feed_constants.STATISTICS_KEY)
-      .doc(now.year.toString())
+      .doc(getCurrentUser().uid + now.year.toString())
       .collection(feed_constants.WEEKLY_STATISTICS_KEY)
       .where(
         feed_constants.WEEK_START_DATE_KEY,

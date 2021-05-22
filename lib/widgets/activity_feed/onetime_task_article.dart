@@ -3,7 +3,6 @@ import 'package:flutter_svg/svg.dart';
 import 'package:stackedtasks/models/Task.dart';
 import 'package:stackedtasks/providers/cache/cached_image_provider.dart';
 import 'package:stackedtasks/widgets/activity_feed/task_feed_article_actions.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:shimmer/shimmer.dart';

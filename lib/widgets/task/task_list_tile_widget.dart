@@ -14,10 +14,10 @@ import 'package:stackedtasks/constants/models/stack.dart';
 import 'package:stackedtasks/constants/user.dart';
 import 'package:stackedtasks/models/Note.dart';
 import 'package:stackedtasks/models/Task.dart';
+import 'package:stackedtasks/models/UserModel.dart';
 import 'package:stackedtasks/providers/cache/cached_image_provider.dart';
 import 'package:stackedtasks/services/feed-back/flush_bar.dart';
 import 'package:stackedtasks/services/feed-back/loader.dart';
-import 'package:stackedtasks/services/user/user_service.dart';
 import 'package:stackedtasks/views/task/save_task.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -33,6 +33,7 @@ class TaskListTileWidget extends StatefulWidget {
       showDescription,
       showHirachy,
       showLastNotes,
+      showPartners,
       selected;
   final VoidCallback onLongPress;
   final VoidCallback onClickEvent;
@@ -47,6 +48,7 @@ class TaskListTileWidget extends StatefulWidget {
     this.showNoteInput: false,
     this.showHirachy: false,
     this.showLastNotes: false,
+    this.showPartners: false,
     this.selected: false,
     this.onLongPress,
     this.onClickEvent,
@@ -59,6 +61,8 @@ class TaskListTileWidget extends StatefulWidget {
 class _TaskListTileWidgetState extends State<TaskListTileWidget> {
   bool loading = false;
   bool showAll = false;
+  bool loadingPartners = true;
+  List<UserModel> partners = [];
   final StreamController _realTimeUpdateTimer = StreamController.broadcast();
   TextEditingController _contentController = TextEditingController();
   Timer updateTimer;
@@ -127,6 +131,27 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
     super.initState();
     updateTimer = Timer.periodic(Duration(seconds: 1), (timer) {
       _realTimeUpdateTimer.add(0);
+    });
+    _init();
+  }
+
+  void _init() async {
+    if (widget.showPartners) {
+      final partnersQuery = await FirebaseFirestore.instance
+          .collection(USERS_KEY)
+          .where(
+            USER_UID_KEY,
+            whereIn: widget.task.partnersIDs,
+          )
+          .get();
+      partners = partnersQuery.docs
+          .map(
+            (e) => UserModel.fromMap(e.data()),
+          )
+          .toList();
+    }
+    setState(() {
+      loadingPartners = false;
     });
   }
 
@@ -603,7 +628,7 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                             ],
                           ),
                           SizedBox(height: 12),
-                          if (widget.showDescription)
+                          if (widget.showPartners)
                             Container(
                               decoration: BoxDecoration(
                                 border: Border(
@@ -623,29 +648,46 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                                 mainAxisSize: MainAxisSize.max,
                                 mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(32),
-                                    child: Image.network(
-                                      'https://monteluke.com.au/wp-content/gallery/linkedin-profile-pictures/1.jpg',
+                                  if (loadingPartners)
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        color: Color(0xFFEEEEEE),
+                                        shape: BoxShape.circle,
+                                      ),
                                       width: 28,
                                       height: 28,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                  Container(
-                                    margin: EdgeInsets.symmetric(
-                                      horizontal: 2,
-                                    ),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(32),
-                                      child: Image.network(
-                                        'https://monteluke.com.au/wp-content/gallery/linkedin-profile-pictures/1.jpg',
-                                        width: 28,
-                                        height: 28,
-                                        fit: BoxFit.cover,
+                                      padding: EdgeInsets.all(4),
+                                      child: Center(
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 1.5,
+                                          valueColor: AlwaysStoppedAnimation(
+                                            HexColor.fromHex(
+                                              widget.task.stackColor,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                  else
+                                    ...partners.map(
+                                      (e) => Container(
+                                        margin: EdgeInsets.symmetric(
+                                          horizontal: 2,
+                                        ),
+                                        child: ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(32),
+                                          child: Image(
+                                            image: CachedImageProvider(
+                                              e.photoURL,
+                                            ),
+                                            width: 28,
+                                            height: 28,
+                                            fit: BoxFit.cover,
+                                          ),
+                                        ),
                                       ),
                                     ),
-                                  ),
                                   Container(
                                     decoration: BoxDecoration(
                                       color: Color(0xFFEEEEEE),
@@ -666,8 +708,6 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                           if (widget.showLastNotes)
                             StreamBuilder<QuerySnapshot>(
                               stream: FirebaseFirestore.instance
-                                  .collection(USERS_KEY)
-                                  .doc(getCurrentUser().uid)
                                   .collection(NOTES_KEY)
                                   .where(
                                     note_constants.TASK_REF_KEY,

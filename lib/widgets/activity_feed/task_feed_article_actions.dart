@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:stackedtasks/config/extensions/hex_color.dart';
 
 import 'package:stackedtasks/models/Task.dart';
 import 'package:stackedtasks/services/feed-back/flush_bar.dart';
@@ -32,17 +33,24 @@ class TaskFeedArticleActions extends StatelessWidget {
               child: Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                color: task.status == 1 ? Theme.of(context).primaryColor : null,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
-                      Icons.edit_outlined,
+                      task.status == 1 ? Icons.ios_share : Icons.edit_outlined,
                       size: 18,
-                      color: Colors.black38,
+                      color: task.status == 1
+                          ? Theme.of(context).backgroundColor
+                          : Colors.black38,
                     ),
                     Text(
-                      ' Edit',
-                      style: Theme.of(context).textTheme.bodyText2,
+                      task.status == 1 ? ' Publish' : ' Edit',
+                      style: Theme.of(context).textTheme.bodyText2.copyWith(
+                            color: task.status == 1
+                                ? Theme.of(context).backgroundColor
+                                : null,
+                          ),
                     ),
                   ],
                 ),

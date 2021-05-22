@@ -7,6 +7,7 @@ import 'package:stackedtasks/views/note/save_note.dart';
 import 'package:stackedtasks/widgets/note/note_lsit_tile.dart';
 import 'package:stackedtasks/widgets/shared/app_action_button.dart';
 import 'package:get/get.dart';
+import 'package:stackedtasks/widgets/shared/app_error_widget.dart';
 
 class NoteListView extends StatefulWidget {
   final stack_model.TasksStack stack;
@@ -77,7 +78,10 @@ class _NoteListViewState extends State<NoteListView>
                   );
                 else
                   return Container();
-
+                if (snapshot.hasError) {
+                  print(snapshot.error);
+                  return AppErrorWidget();
+                }
                 return LoadingWidget();
               }),
         ],

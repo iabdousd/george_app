@@ -1,3 +1,5 @@
+const String USER_ID_KEY = 'userID';
+const String PARTNERS_IDS_KEY = 'partnersIDs';
 const String CREATION_DATE_KEY = 'creationDate';
 const String CONTENT_KEY = 'content';
 const String TASK_REF_KEY = 'taskRef';

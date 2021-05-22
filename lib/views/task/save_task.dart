@@ -1,15 +1,25 @@
+import 'package:badges/badges.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:stackedtasks/config/extensions/hex_color.dart';
 import 'package:stackedtasks/constants/models/inbox_item.dart';
+import 'package:stackedtasks/constants/user.dart';
 import 'package:stackedtasks/models/Task.dart';
+import 'package:stackedtasks/models/UserModel.dart';
 import 'package:stackedtasks/repositories/inbox/inbox_repository.dart';
 import 'package:stackedtasks/services/feed-back/flush_bar.dart';
 import 'package:stackedtasks/services/feed-back/loader.dart';
+import 'package:stackedtasks/services/user/user_service.dart';
 import 'package:stackedtasks/widgets/forms/date_picker.dart';
 import 'package:stackedtasks/widgets/forms/time_picker.dart';
+import 'package:stackedtasks/widgets/shared/app_action_button.dart';
 import 'package:stackedtasks/widgets/shared/app_appbar.dart';
 import 'package:stackedtasks/constants/models/task.dart' as task_constants;
+import 'package:stackedtasks/widgets/shared/app_expansion_tile.dart';
+import 'package:stackedtasks/widgets/shared/app_text_field.dart';
+import 'package:stackedtasks/widgets/shared/card/app_button_card.dart';
+import 'package:stackedtasks/widgets/shared/user/user_card.dart';
 
 class SaveTaskPage extends StatefulWidget {
   final String goalRef;
@@ -41,6 +51,9 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
   TextEditingController _monthsCountController = TextEditingController();
   TextEditingController _descriptionController = TextEditingController();
   List<int> selectedWeekDays = [];
+
+  bool loadingPartners = true;
+  List<UserModel> partners = [];
 
   DateTime startDate = DateTime.now();
   DateTime endDate = DateTime.now().add(Duration(days: 1));
@@ -110,6 +123,8 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
 
     Task task = Task(
       id: widget.task?.id,
+      userID: getCurrentUser().uid,
+      partnersIDs: partners.map((e) => e.uid).toList(),
       goalRef: widget.goalRef,
       stackRef: widget.stackRef,
       goalTitle: widget.goalTitle,
@@ -239,6 +254,28 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
             (widget.task.repetition.monthsCount ?? '').toString();
       }
     }
+    _init();
+  }
+
+  _init() async {
+    if (widget.task?.partnersIDs != null &&
+        widget.task.partnersIDs.isNotEmpty) {
+      final partnersQuery = await FirebaseFirestore.instance
+          .collection(USERS_KEY)
+          .where(
+            USER_UID_KEY,
+            whereIn: widget.task.partnersIDs,
+          )
+          .get();
+      partners = partnersQuery.docs
+          .map(
+            (e) => UserModel.fromMap(e.data()),
+          )
+          .toList();
+    }
+    setState(() {
+      loadingPartners = false;
+    });
   }
 
   @override
@@ -622,10 +659,288 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
                     ],
                   ),
                 ),
+
+              // PARTNERS
+              if (loadingPartners)
+                Center(
+                  child: LoadingWidget(),
+                )
+              else
+                AppExpansionTile(
+                  title: Row(
+                    children: [
+                      Text('Partners'),
+                      SizedBox(width: 8),
+                      Badge(
+                        padding: EdgeInsets.all(8),
+                        badgeColor: HexColor.fromHex(widget.stackColor),
+                        animationType: BadgeAnimationType.fade,
+                        badgeContent: Text(
+                          '${partners.length}',
+                          style: TextStyle(
+                            color: Theme.of(context).backgroundColor,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  color: HexColor.fromHex(widget.stackColor).darken(),
+                  trailing: Icon(
+                    Icons.group_rounded,
+                    size: 28,
+                  ),
+                  children: [
+                    ...partners.map(
+                      (e) => UserCard(
+                        user: e,
+                        onDelete: () => setState(() {
+                          partners.remove(e);
+                        }),
+                      ),
+                    ),
+                    AppActionButton(
+                      onPressed: addPartner,
+                      margin: EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      backgroundColor:
+                          HexColor.fromHex(widget.stackColor).darken(),
+                      label: 'Add Partner',
+                    ),
+                  ],
+                ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  void addPartner() async {
+    String addType;
+    bool loading = false;
+    UserModel foundUser;
+    final emailFieldController = TextEditingController();
+
+    void searchByEmail(StateSetter smallSetState) async {
+      foundUser = null;
+      if (getCurrentUser().email.toLowerCase() ==
+          emailFieldController.text.trim().toLowerCase()) {
+        smallSetState(() {
+          loading = false;
+          foundUser = null;
+        });
+        showFlushBar(
+          title: 'Hmm..',
+          message: 'You can\'t add your self as partner !',
+          success: false,
+        );
+        return;
+      }
+      smallSetState(() => loading = true);
+      final userQuery = await FirebaseFirestore.instance
+          .collection(USERS_KEY)
+          .where(
+            USER_EMAIL_KEY,
+            isEqualTo: emailFieldController.text,
+          )
+          .get();
+      if (userQuery.size > 0) {
+        final user = UserModel.fromMap(
+          userQuery.docs.first.data(),
+        );
+        if (partners
+            .where((element) => element.email == user.email)
+            .isNotEmpty) {
+          showFlushBar(
+            title: 'Already Present',
+            message:
+                'The sought user is already present in your partners list.',
+            success: false,
+          );
+          smallSetState(() {
+            loading = false;
+            foundUser = null;
+          });
+        } else
+          smallSetState(() {
+            loading = false;
+            foundUser = user;
+          });
+      } else {
+        showFlushBar(
+          title: 'Not Found',
+          message: 'Couldn\'t found a user with the selected email.',
+          success: false,
+        );
+        smallSetState(() {
+          loading = false;
+          foundUser = null;
+        });
+      }
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          child: StatefulBuilder(
+            builder: (context, smallSetState) => Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  margin: EdgeInsets.only(
+                    top: 16,
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Text(
+                    'Add Partner',
+                    style: Theme.of(context).textTheme.headline6,
+                  ),
+                ),
+                // AppButtonCard(
+                //   icon: Icon(
+                //     Icons.person_outline_rounded,
+                //     size: 44.0,
+                //   ),
+                //   text: 'Add By Username',
+                //   onPressed: () {
+                //     //
+                //   },
+                //   margin: EdgeInsets.symmetric(
+                //     horizontal: 16,
+                //     vertical: 8,
+                //   ),
+                //   textStyle: TextStyle(
+                //     color: Theme.of(context).primaryColor,
+                //   ),
+                // ),
+                AnimatedContainer(
+                  duration: Duration(milliseconds: 350),
+                  height: addType != 'email' ? 0 : 178,
+                  margin: EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  child: ClipRect(
+                    child: loading
+                        ? Center(
+                            child: LoadingWidget(),
+                          )
+                        : Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Row(
+                                children: [
+                                  IconButton(
+                                    icon: Icon(
+                                      Icons.email_outlined,
+                                      color: Theme.of(context).primaryColor,
+                                    ),
+                                    onPressed: () => smallSetState(
+                                      () {
+                                        foundUser = null;
+                                        addType = null;
+                                      },
+                                    ),
+                                  ),
+                                  Text(
+                                    'Add By Email',
+                                    style:
+                                        Theme.of(context).textTheme.subtitle1,
+                                  ),
+                                ],
+                              ),
+                              AppTextField(
+                                label: 'Email',
+                                controller: emailFieldController,
+                                margin: EdgeInsets.zero,
+                                autoFocus: true,
+                                keyboardType: TextInputType.emailAddress,
+                                onSubmit: (email) => searchByEmail(
+                                  smallSetState,
+                                ),
+                                suffix: InkWell(
+                                  onTap: () => searchByEmail(smallSetState),
+                                  child: Container(
+                                    width: 44,
+                                    height: 44,
+                                    child: Center(
+                                      child: Icon(
+                                        Icons.search,
+                                        color: Theme.of(context).primaryColor,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
+                ),
+                AnimatedContainer(
+                  duration: Duration(milliseconds: 350),
+                  height: addType == 'email' ? 0 : 144,
+                  child: ClipRect(
+                    child: AppButtonCard(
+                      icon: Icon(
+                        Icons.email_outlined,
+                        size: 44.0,
+                      ),
+                      text: 'Add By Email',
+                      onPressed: () => smallSetState(
+                        () {
+                          foundUser = null;
+                          addType = 'email';
+                        },
+                      ),
+                      margin: EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      textStyle: TextStyle(
+                        color: Theme.of(context).primaryColor,
+                      ),
+                    ),
+                  ),
+                ),
+                if (foundUser != null)
+                  UserCard(
+                    user: foundUser,
+                    onDelete: () => smallSetState(
+                      () => foundUser = null,
+                    ),
+                  ),
+
+                if (!loading)
+                  AppActionButton(
+                    onPressed: foundUser != null
+                        ? () async {
+                            setState(() {
+                              partners.add(foundUser);
+                            });
+                            Navigator.pop(context);
+                          }
+                        : addType != null
+                            ? () => searchByEmail(smallSetState)
+                            : () => Navigator.pop(context),
+                    label: foundUser != null
+                        ? 'Add'
+                        : addType != null
+                            ? 'Search'
+                            : 'Close',
+                    margin: EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

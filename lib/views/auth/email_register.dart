@@ -272,7 +272,8 @@ class EmailRegisterViewState extends State<EmailRegisterView> {
         photoURL: pictureUrl,
       );
       await FirebaseFirestore.instance.collection(USERS_KEY).doc(user.uid).set({
-        USER_USERNAME_KEY: _usernameController.text,
+        USER_UID_KEY: user.uid,
+        USER_FULL_NAME_KEY: _usernameController.text,
         USER_EMAIL_KEY: _emailController.text,
         USER_PROFILE_PICTURE_KEY: pictureUrl,
       });

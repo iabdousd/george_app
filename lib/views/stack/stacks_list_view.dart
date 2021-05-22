@@ -3,12 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:stackedtasks/config/extensions/hex_color.dart';
 
 import 'package:stackedtasks/constants/models/goal.dart' as goal_constants;
-import 'package:stackedtasks/constants/user.dart' as user_constants;
 import 'package:stackedtasks/constants/models/stack.dart' as stack_constants;
 import 'package:stackedtasks/models/Stack.dart' as stack_model;
 import 'package:stackedtasks/models/Goal.dart';
 import 'package:stackedtasks/services/feed-back/loader.dart';
-import 'package:stackedtasks/services/user/user_service.dart';
 import 'package:stackedtasks/views/stack/save_stack.dart';
 import 'package:stackedtasks/widgets/shared/app_error_widget.dart';
 import 'package:stackedtasks/widgets/stack/StackTile.dart';
@@ -55,43 +53,48 @@ class StacksListView extends StatelessWidget {
           ),
         ),
         StreamBuilder<QuerySnapshot>(
-            stream: FirebaseFirestore.instance
-                .collection(user_constants.USERS_KEY)
-                .doc(getCurrentUser().uid)
-                .collection(goal_constants.GOALS_KEY)
-                .doc(goal.id)
-                .collection(goal_constants.STACKS_KEY)
-                .orderBy(stack_constants.CREATION_DATE_KEY, descending: true)
-                .limit(limit)
-                .snapshots(),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                updateCount(snapshot.data.docs.length);
-                if (snapshot.data.docs.length > 0)
-                  return ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: snapshot.data.docs.length,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemBuilder: (context, index) {
-                      return StackListTileWidget(
-                        stack: stack_model.TasksStack.fromJson(
-                          snapshot.data.docs[index].data(),
-                          goalRef: goal.id,
-                          goalTitle: goal.title,
-                          id: snapshot.data.docs[index].id,
-                        ),
-                      );
-                    },
-                  );
-                else
-                  return AppErrorWidget(
-                    status: 404,
-                    customMessage: 'No tasks added yet',
-                  );
-              }
+          stream: FirebaseFirestore.instance
+              .collection(goal_constants.STACKS_KEY)
+              .where(
+                stack_constants.GOAL_REF_KEY,
+                isEqualTo: goal.id,
+              )
+              .orderBy(stack_constants.CREATION_DATE_KEY, descending: true)
+              .limit(limit)
+              .snapshots(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              updateCount(snapshot.data.docs.length);
+              if (snapshot.data.docs.length > 0)
+                return ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: snapshot.data.docs.length,
+                  physics: NeverScrollableScrollPhysics(),
+                  itemBuilder: (context, index) {
+                    return StackListTileWidget(
+                      stack: stack_model.TasksStack.fromJson(
+                        snapshot.data.docs[index].data(),
+                        goalRef: goal.id,
+                        goalTitle: goal.title,
+                        id: snapshot.data.docs[index].id,
+                      ),
+                    );
+                  },
+                );
+              else
+                return AppErrorWidget(
+                  status: 404,
+                  customMessage: 'No tasks added yet',
+                );
+            }
 
-              return LoadingWidget();
-            }),
+            if (snapshot.hasError) {
+              return AppErrorWidget();
+            }
+
+            return LoadingWidget();
+          },
+        ),
       ],
     );
   }

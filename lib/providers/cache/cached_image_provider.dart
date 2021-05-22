@@ -7,8 +7,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:stackedtasks/services/cache/images/cached_image.dart';
 
-import '../../models/cache/cached_image.dart';
-
 class CachedImageProvider extends ImageProvider<CachedImageProvider> {
   final String url;
   final List<String> customPathList;

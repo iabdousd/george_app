@@ -49,6 +49,7 @@ class AppExpansionTile extends StatefulWidget {
     this.expandedCrossAxisAlignment,
     this.expandedAlignment,
     this.childrenPadding,
+    this.color,
   })  : assert(initiallyExpanded != null),
         assert(maintainState != null),
         assert(
@@ -57,6 +58,8 @@ class AppExpansionTile extends StatefulWidget {
           'are aligned in a column, not a row. Try to use another constant.',
         ),
         super(key: key);
+
+  final Color color;
 
   /// A widget to display before the title.
   ///
@@ -265,10 +268,10 @@ class _AppExpansionTileState extends State<AppExpansionTile>
     _borderColorTween.end = theme.dividerColor;
     _headerColorTween
       ..begin = theme.textTheme.subtitle1.color
-      ..end = theme.primaryColor;
+      ..end = widget.color ?? theme.primaryColor;
     _iconColorTween
       ..begin = theme.unselectedWidgetColor
-      ..end = theme.primaryColor;
+      ..end = widget.color ?? theme.primaryColor;
     _backgroundColorTween.end = widget.backgroundColor;
     super.didChangeDependencies();
   }

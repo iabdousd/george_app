@@ -3,13 +3,13 @@ import 'package:stackedtasks/services/storage/image_upload.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'package:stackedtasks/constants/models/note.dart' as note_constants;
-import 'package:stackedtasks/constants/user.dart' as user_constants;
 import 'package:stackedtasks/constants/models/stack.dart' as stack_constants;
-import 'package:stackedtasks/services/user/user_service.dart';
 import 'Attachment.dart';
 
 class Note {
   String id;
+  String userID;
+  List<String> partnersIDs;
   String goalRef;
   String stackRef;
   String taskRef;
@@ -21,6 +21,8 @@ class Note {
 
   Note({
     this.id,
+    this.userID,
+    this.partnersIDs: const [],
     this.goalRef,
     this.stackRef,
     this.taskRef,
@@ -33,6 +35,9 @@ class Note {
 
   Note.fromJson(jsonObject, {String id}) {
     this.id = id;
+    this.userID = jsonObject[note_constants.USER_ID_KEY];
+    this.partnersIDs =
+        List<String>.from(jsonObject[note_constants.PARTNERS_IDS_KEY]);
     this.goalRef = jsonObject[note_constants.GOAL_REF_KEY];
     this.stackRef = jsonObject[note_constants.STACK_REF_KEY];
     this.taskRef = jsonObject[note_constants.TASK_REF_KEY];
@@ -48,6 +53,8 @@ class Note {
 
   Map<String, dynamic> toJson() {
     return {
+      note_constants.USER_ID_KEY: this.userID,
+      note_constants.PARTNERS_IDS_KEY: this.partnersIDs,
       note_constants.GOAL_REF_KEY: this.goalRef,
       note_constants.STACK_REF_KEY: this.stackRef,
       note_constants.TASK_REF_KEY: this.taskRef,
@@ -64,15 +71,11 @@ class Note {
     if (id == null) {
       DocumentReference<Map<String, dynamic>> docRef = await FirebaseFirestore
           .instance
-          .collection(user_constants.USERS_KEY)
-          .doc(getCurrentUser().uid)
           .collection(stack_constants.NOTES_KEY)
           .add(toJson());
       this.id = docRef.id;
     } else {
       await FirebaseFirestore.instance
-          .collection(user_constants.USERS_KEY)
-          .doc(getCurrentUser().uid)
           .collection(stack_constants.NOTES_KEY)
           .doc(id)
           .update(toJson());
@@ -82,8 +85,6 @@ class Note {
   delete() async {
     assert(id != null);
     await FirebaseFirestore.instance
-        .collection(user_constants.USERS_KEY)
-        .doc(getCurrentUser().uid)
         .collection(stack_constants.NOTES_KEY)
         .doc(id)
         .delete();
@@ -95,8 +96,6 @@ class Note {
 
     await deleteFile(attachment.path);
     await FirebaseFirestore.instance
-        .collection(user_constants.USERS_KEY)
-        .doc(getCurrentUser().uid)
         .collection(stack_constants.NOTES_KEY)
         .doc(id)
         .update({
@@ -121,8 +120,6 @@ class Note {
     this.attachmentsCount += images.length;
 
     await FirebaseFirestore.instance
-        .collection(user_constants.USERS_KEY)
-        .doc(getCurrentUser().uid)
         .collection(stack_constants.NOTES_KEY)
         .doc(id)
         .update({

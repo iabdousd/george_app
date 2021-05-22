@@ -1,5 +1,7 @@
 const String GOALS_KEY = 'goals';
 const String ID_KEY = 'id';
+const String USER_ID_KEY = 'userID';
+const String PARTNERS_IDS_KEY = 'partnersIDs';
 const String TITLE_KEY = 'title';
 const String COLOR_KEY = 'color';
 const String STATUS_KEY = 'status';

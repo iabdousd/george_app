@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:stackedtasks/constants/user.dart';
+import 'package:stackedtasks/models/UserModel.dart';
 import 'package:stackedtasks/widgets/activity_feed/feed_articles_empty.dart';
 import 'package:intl/intl.dart';
 
@@ -9,8 +11,8 @@ import 'package:stackedtasks/services/user/user_service.dart';
 import 'package:stackedtasks/widgets/activity_feed/article_skeleton.dart';
 import 'package:stackedtasks/widgets/activity_feed/onetime_task_article.dart';
 import 'package:stackedtasks/widgets/activity_feed/recurring_task_article.dart';
-import 'package:stackedtasks/constants/user.dart' as user_constants;
 import 'package:stackedtasks/constants/feed.dart' as feed_constants;
+import 'package:stackedtasks/widgets/shared/app_error_widget.dart';
 
 class FeedArticlesList extends StatefulWidget {
   const FeedArticlesList({Key key}) : super(key: key);
@@ -24,30 +26,58 @@ class _FeedArticlesListState extends State<FeedArticlesList>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return StreamBuilder<QuerySnapshot>(
+    return StreamBuilder<List<Task>>(
       stream: FirebaseFirestore.instance
-          .collection(user_constants.USERS_KEY)
-          .doc(getCurrentUser().uid)
           .collection(feed_constants.FEED_KEY)
+          .where(
+            feed_constants.TO_KEY,
+            arrayContains: getCurrentUser().uid,
+          )
           .orderBy(
             feed_constants.CREATION_DATE_KEY,
             descending: true,
           )
-          .snapshots(),
+          .snapshots()
+          .asyncMap(
+        (event) async {
+          List<Task> tasks = [];
+          for (final doc in event.docs) {
+            Task task = Task.fromJson(
+              doc.data(),
+              id: doc.id,
+            );
+            if (task.userID != getCurrentUser().uid) {
+              final user = UserModel.fromMap(
+                (await FirebaseFirestore.instance
+                        .collection(USERS_KEY)
+                        .doc(task.userID)
+                        .get())
+                    .data(),
+              );
+              task.userName = user.fullName;
+              task.userPhoto = user.photoURL;
+            } else {
+              task.userName = getCurrentUser().displayName;
+              task.userPhoto = getCurrentUser().photoURL;
+            }
+            tasks.add(task);
+          }
+          return tasks;
+        },
+      ),
       builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return AppErrorWidget();
+        }
         if (snapshot.hasData) {
-          if (snapshot.data.docs.length == 0) {
+          if (snapshot.data.length == 0) {
             return FeedArticlesEmptyWidget();
           }
           DateTime lastDate;
           return ListView(
             addAutomaticKeepAlives: true,
-            children: snapshot.data.docs.map(
-              (e) {
-                Task task = Task.fromJson(
-                  e.data(),
-                  id: e.id,
-                );
+            children: snapshot.data.map(
+              (task) {
                 bool showDate = false;
                 if (lastDate == null) {
                   showDate = true;
@@ -133,9 +163,8 @@ class _FeedArticlesListState extends State<FeedArticlesList>
                       Expanded(
                         child: OnetimeTaskArticleWidget(
                           key: Key(task.id),
-                          name: FirebaseAuth.instance.currentUser.displayName,
-                          profilePicture:
-                              FirebaseAuth.instance.currentUser.photoURL,
+                          name: task.userName,
+                          profilePicture: task.userPhoto,
                           task: task,
                           showAuthorRow: showDate,
                         ),
@@ -144,9 +173,8 @@ class _FeedArticlesListState extends State<FeedArticlesList>
                       Expanded(
                         child: RecurringTaskArticleWidget(
                           key: Key(task.id),
-                          name: FirebaseAuth.instance.currentUser.displayName,
-                          profilePicture:
-                              FirebaseAuth.instance.currentUser.photoURL,
+                          name: task.userName,
+                          profilePicture: task.userPhoto,
                           task: task,
                           showAuthorRow: showDate,
                         ),

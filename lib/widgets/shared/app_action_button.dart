@@ -47,29 +47,19 @@ class AppActionButton extends StatelessWidget {
         boxShadow: shadows,
         borderRadius: BorderRadius.circular(radius),
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(radius),
-        child: label == null
-            ? InkWell(
-                onTap: onPressed,
-                child: Container(
-                  padding: iconPadding,
-                  decoration: BoxDecoration(
-                    color: backgroundColor ?? Theme.of(context).primaryColor,
-                  ),
-                  child: icon is IconData
-                      ? Icon(
-                          icon,
-                          color: iconColor ?? Theme.of(context).backgroundColor,
-                          size: iconSize,
-                        )
-                      : icon,
-                ),
-              )
-            : icon != null
-                ? TextButton.icon(
-                    onPressed: onPressed,
-                    icon: icon is IconData
+      child: InkWell(
+        onTap: onPressed,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(radius),
+          child: label == null
+              ? InkWell(
+                  onTap: onPressed,
+                  child: Container(
+                    padding: iconPadding,
+                    decoration: BoxDecoration(
+                      color: backgroundColor ?? Theme.of(context).primaryColor,
+                    ),
+                    child: icon is IconData
                         ? Icon(
                             icon,
                             color:
@@ -77,25 +67,19 @@ class AppActionButton extends StatelessWidget {
                             size: iconSize,
                           )
                         : icon,
-                    style: ButtonStyle(
-                      alignment: alignment,
-                      backgroundColor:
-                          MaterialStateProperty.all(backgroundColor),
-                      padding: MaterialStateProperty.all(
-                        padding,
-                      ),
-                    ),
-                    label: Text(
-                      label,
-                      style: textStyle ??
-                          Theme.of(context).textTheme.subtitle1.copyWith(
-                                color: Theme.of(context).backgroundColor,
-                              ),
-                    ),
-                  )
-                : Center(
-                    child: TextButton(
+                  ),
+                )
+              : icon != null
+                  ? TextButton.icon(
                       onPressed: onPressed,
+                      icon: icon is IconData
+                          ? Icon(
+                              icon,
+                              color: iconColor ??
+                                  Theme.of(context).backgroundColor,
+                              size: iconSize,
+                            )
+                          : icon,
                       style: ButtonStyle(
                         alignment: alignment,
                         backgroundColor:
@@ -104,16 +88,36 @@ class AppActionButton extends StatelessWidget {
                           padding,
                         ),
                       ),
-                      child: Text(
+                      label: Text(
                         label,
                         style: textStyle ??
                             Theme.of(context).textTheme.subtitle1.copyWith(
                                   color: Theme.of(context).backgroundColor,
                                 ),
-                        textAlign: TextAlign.center,
+                      ),
+                    )
+                  : Center(
+                      child: TextButton(
+                        onPressed: onPressed,
+                        style: ButtonStyle(
+                          alignment: alignment,
+                          backgroundColor:
+                              MaterialStateProperty.all(backgroundColor),
+                          padding: MaterialStateProperty.all(
+                            padding,
+                          ),
+                        ),
+                        child: Text(
+                          label,
+                          style: textStyle ??
+                              Theme.of(context).textTheme.subtitle1.copyWith(
+                                    color: Theme.of(context).backgroundColor,
+                                  ),
+                          textAlign: TextAlign.center,
+                        ),
                       ),
                     ),
-                  ),
+        ),
       ),
     );
   }

@@ -9,7 +9,6 @@ import 'package:stackedtasks/models/Task.dart';
 import 'package:stackedtasks/services/feed-back/loader.dart';
 import 'package:stackedtasks/services/user/user_service.dart';
 import 'package:stackedtasks/views/task/save_task.dart';
-import 'package:stackedtasks/constants/user.dart' as user_constants;
 import 'package:stackedtasks/constants/models/task.dart' as task_constants;
 import 'package:stackedtasks/constants/models/stack.dart' as stack_constants;
 import 'package:stackedtasks/widgets/shared/app_error_widget.dart';
@@ -28,9 +27,11 @@ class TasksListByDay extends StatelessWidget {
     if (fullScreen)
       return StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
-            .collection(user_constants.USERS_KEY)
-            .doc(getCurrentUser().uid)
             .collection(stack_constants.TASKS_KEY)
+            .where(
+              task_constants.USER_ID_KEY,
+              isEqualTo: getCurrentUser().uid,
+            )
             .where(
               task_constants.DUE_DATES_KEY,
               arrayContains: DateTime(day.year, day.month, day.day),
@@ -40,6 +41,10 @@ class TasksListByDay extends StatelessWidget {
             )
             .snapshots(),
         builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            print(snapshot.error);
+            return AppErrorWidget();
+          }
           List<Task> tasks = [];
           if (snapshot.hasData && snapshot.data.docs.length > 0)
             tasks = snapshot.data.docs
@@ -187,9 +192,11 @@ class TasksListByDay extends StatelessWidget {
           ),
           StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance
-                .collection(user_constants.USERS_KEY)
-                .doc(getCurrentUser().uid)
                 .collection(stack_constants.TASKS_KEY)
+                .where(
+                  task_constants.USER_ID_KEY,
+                  isEqualTo: getCurrentUser().uid,
+                )
                 .where(
                   task_constants.DUE_DATES_KEY,
                   arrayContains: DateTime(day.year, day.month, day.day),
@@ -199,6 +206,10 @@ class TasksListByDay extends StatelessWidget {
                 )
                 .snapshots(),
             builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                print(snapshot.error);
+                return AppErrorWidget();
+              }
               if (snapshot.hasData) if (snapshot.data.docs.isNotEmpty)
                 return ListView.builder(
                   itemCount: snapshot.data.docs.length,

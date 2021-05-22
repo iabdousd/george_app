@@ -6,6 +6,7 @@ import 'package:stackedtasks/models/Goal.dart';
 import 'package:stackedtasks/services/feed-back/flush_bar.dart';
 import 'package:stackedtasks/services/feed-back/loader.dart';
 import 'package:stackedtasks/services/shared/color.dart';
+import 'package:stackedtasks/services/user/user_service.dart';
 import 'package:stackedtasks/widgets/forms/date_picker.dart';
 import 'package:stackedtasks/widgets/shared/app_appbar.dart';
 
@@ -31,6 +32,8 @@ class _SaveGoalPageState extends State<SaveGoalPage> {
     toggleLoading(state: true);
     await Goal(
       id: widget.goal?.id,
+      userID: getCurrentUser().uid,
+      partnersIDs: [],
       title: _titleController.text,
       color: selectedColor,
       creationDate: DateTime.now(),

@@ -8,8 +8,8 @@ import 'package:stackedtasks/services/user/user_service.dart';
 import 'package:stackedtasks/widgets/activity_feed/feed_articles_empty.dart';
 import 'package:stackedtasks/widgets/activity_feed/week_progress.dart';
 import 'package:stackedtasks/widgets/goal/goal_summary.dart';
-import 'package:stackedtasks/constants/user.dart' as user_constants;
 import 'package:stackedtasks/constants/feed.dart' as feed_constants;
+import 'package:stackedtasks/widgets/shared/app_error_widget.dart';
 
 class GoalsSummaryView extends StatefulWidget {
   GoalsSummaryView({Key key}) : super(key: key);
@@ -22,12 +22,19 @@ class _GoalsSummaryViewState extends State<GoalsSummaryView> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
+      // TODO: Replace with a better stream
       stream: FirebaseFirestore.instance
-          .collection(user_constants.USERS_KEY)
-          .doc(getCurrentUser().uid)
           .collection(feed_constants.GOALS_SUMMARIES_KEY)
+          .where(
+            feed_constants.USER_ID_KEY,
+            isEqualTo: getCurrentUser().uid,
+          )
           .snapshots(),
       builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          print(snapshot.error);
+          return AppErrorWidget();
+        }
         if (snapshot.hasData && snapshot.data.docs.length == 0)
           return FeedArticlesEmptyWidget();
         else if (snapshot.hasData)

@@ -6,7 +6,6 @@ import 'package:stackedtasks/services/user/user_service.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:stackedtasks/constants/models/task.dart' as task_constants;
 import 'package:stackedtasks/constants/models/stack.dart' as stack_constants;
-import 'package:stackedtasks/constants/user.dart' as user_constants;
 
 class TodayTasks extends StatelessWidget {
   const TodayTasks({Key key}) : super(key: key);
@@ -29,9 +28,11 @@ class TodayTasks extends StatelessWidget {
       ),
       child: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
-            .collection(user_constants.USERS_KEY)
-            .doc(getCurrentUser().uid)
             .collection(stack_constants.TASKS_KEY)
+            .where(
+              task_constants.USER_ID_KEY,
+              isEqualTo: getCurrentUser().uid,
+            )
             .where(
               task_constants.DUE_DATES_KEY,
               arrayContains: DateTime(DateTime.now().year, DateTime.now().month,

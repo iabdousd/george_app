@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:stackedtasks/repositories/feed/statistics.dart';
 import 'package:intl/intl.dart';
 import 'package:stackedtasks/constants/feed.dart' as feed_constants;
+import 'package:stackedtasks/widgets/shared/app_error_widget.dart';
 
 class WeekProgress extends StatefulWidget {
   @override
@@ -54,6 +55,10 @@ class WeekProgressState extends State<WeekProgress> {
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
       stream: weeklyAccsStream,
       builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          print(snapshot.error);
+          return AppErrorWidget();
+        }
         if (snapshot.hasData) {
           for (var item in snapshot.data.docs) {
             if (weeks.contains(
