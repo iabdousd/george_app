@@ -688,17 +688,33 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                                         ),
                                       ),
                                     ),
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      color: Color(0xFFEEEEEE),
-                                      shape: BoxShape.circle,
+                                  GestureDetector(
+                                    onTap: () => Get.to(
+                                      () => SaveTaskPage(
+                                        task: widget.task,
+                                        goalRef: widget.task.goalRef,
+                                        stackRef: widget.task.stackRef,
+                                        goalTitle: widget.task.goalTitle,
+                                        stackTitle: widget.task.stackTitle,
+                                        stackColor: widget.task.stackColor,
+                                        addingPartner: true,
+                                      ),
+                                      popGesture: true,
+                                      transition:
+                                          Transition.rightToLeftWithFade,
                                     ),
-                                    width: 28,
-                                    height: 28,
-                                    child: Center(
-                                      child: Icon(
-                                        Icons.add,
-                                        size: 18,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Color(0xFFEEEEEE),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      width: 28,
+                                      height: 28,
+                                      child: Center(
+                                        child: Icon(
+                                          Icons.add,
+                                          size: 18,
+                                        ),
                                       ),
                                     ),
                                   ),

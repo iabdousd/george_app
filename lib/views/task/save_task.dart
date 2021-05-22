@@ -29,6 +29,7 @@ class SaveTaskPage extends StatefulWidget {
 
   final String stackColor;
   final Task task;
+  final bool addingPartner;
   SaveTaskPage(
       {Key key,
       @required this.goalRef,
@@ -36,6 +37,7 @@ class SaveTaskPage extends StatefulWidget {
       @required this.goalTitle,
       @required this.stackTitle,
       @required this.stackColor,
+      this.addingPartner: false,
       this.task})
       : super(key: key);
 
@@ -272,6 +274,9 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
             (e) => UserModel.fromMap(e.data()),
           )
           .toList();
+    }
+    if (widget.addingPartner) {
+      addPartner();
     }
     setState(() {
       loadingPartners = false;
