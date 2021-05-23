@@ -6,13 +6,16 @@ import 'package:stackedtasks/constants/user.dart';
 Future<bool> checkAuthorization() async {
   await Firebase.initializeApp();
   User user = FirebaseAuth.instance.currentUser;
-
-  await FirebaseFirestore.instance.collection(USERS_KEY).doc(user.uid).update({
-    USER_UID_KEY: user.uid,
-    USER_FULL_NAME_KEY: user.displayName,
-    USER_EMAIL_KEY: user.email,
-    USER_PROFILE_PICTURE_KEY: user.photoURL,
-  });
+  if (user != null)
+    await FirebaseFirestore.instance
+        .collection(USERS_KEY)
+        .doc(user.uid)
+        .update({
+      USER_UID_KEY: user.uid,
+      USER_FULL_NAME_KEY: user.displayName,
+      USER_EMAIL_KEY: user.email,
+      USER_PROFILE_PICTURE_KEY: user.photoURL,
+    });
 
   return user != null && !user.isAnonymous;
 }
