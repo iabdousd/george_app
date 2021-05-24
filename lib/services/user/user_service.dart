@@ -14,6 +14,7 @@ Future<bool> checkAuthorization() async {
         .update({
       USER_UID_KEY: user.uid,
       USER_FULL_NAME_KEY: user.displayName,
+      USER_PHONE_NUMBER_KEY: user.phoneNumber,
       USER_EMAIL_KEY: user.email.trim().toLowerCase(),
       USER_PROFILE_PICTURE_KEY: user.photoURL,
     });
@@ -39,6 +40,22 @@ class UserService {
     return null;
   }
 
+  static Future<UserModel> fetchUserByPhone(String phone) async {
+    final userRaw = await FirebaseFirestore.instance
+        .collection(USERS_KEY)
+        .where(
+          USER_PHONE_NUMBER_KEY,
+          isEqualTo: phone,
+        )
+        .get();
+    if (userRaw.size > 0) {
+      return UserModel.fromMap(
+        userRaw.docs.first.data(),
+      );
+    }
+    return null;
+  }
+
   static Future<UserModel> getUser(String uid) async {
     if (users.containsKey(uid)) {
       return users[uid];
@@ -48,6 +65,22 @@ class UserService {
         uid,
         () => user,
       );
+      return user;
+    }
+  }
+
+  static Future<UserModel> getUserByPhone(String phone) async {
+    final sameUsers =
+        users.values.where((element) => element.phoneNumber == phone);
+    if (sameUsers.isNotEmpty) {
+      return sameUsers.first;
+    } else {
+      final user = await fetchUserByPhone(phone);
+      if (user != null)
+        users.putIfAbsent(
+          user.uid,
+          () => user,
+        );
       return user;
     }
   }

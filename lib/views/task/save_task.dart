@@ -2,6 +2,9 @@ import 'package:badges/badges.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fluttercontactpicker/fluttercontactpicker.dart';
+import 'package:get/get.dart';
+import 'package:share/share.dart';
 import 'package:stackedtasks/config/extensions/hex_color.dart';
 import 'package:stackedtasks/constants/models/inbox_item.dart';
 import 'package:stackedtasks/constants/user.dart';
@@ -9,6 +12,7 @@ import 'package:stackedtasks/models/Task.dart';
 import 'package:stackedtasks/models/UserModel.dart';
 import 'package:stackedtasks/repositories/inbox/inbox_repository.dart';
 import 'package:stackedtasks/repositories/notification/notification_repository.dart';
+import 'package:stackedtasks/repositories/task/task_repository.dart';
 import 'package:stackedtasks/services/feed-back/flush_bar.dart';
 import 'package:stackedtasks/services/feed-back/loader.dart';
 import 'package:stackedtasks/services/user/user_service.dart';
@@ -778,10 +782,35 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
             foundUser = user;
           });
       } else {
-        showFlushBar(
-          title: 'Not Found',
-          message: 'Couldn\'t found a user with the selected email.',
-          success: false,
+        await showDialog(
+          context: Get.context,
+          builder: (context) {
+            return AlertDialog(
+              title: Text('User not found'),
+              content: Text(
+                  'The typed email doesn\'t have an account associated to it, would you like to invite them ?'),
+              actions: [
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all(
+                      Colors.red[400],
+                    ),
+                  ),
+                  child: Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    Navigator.pop(context);
+                    await Share.share(
+                      'I would suggest that you start organizing your time with StackedTasks, Start now by downloading it from here: stackedtasks.com !',
+                    );
+                  },
+                  child: Text('Invite'),
+                ),
+              ],
+            );
+          },
         );
         smallSetState(() {
           loading = false;
@@ -809,23 +838,6 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
                     style: Theme.of(context).textTheme.headline6,
                   ),
                 ),
-                // AppButtonCard(
-                //   icon: Icon(
-                //     Icons.person_outline_rounded,
-                //     size: 44.0,
-                //   ),
-                //   text: 'Add By Username',
-                //   onPressed: () {
-                //     //
-                //   },
-                //   margin: EdgeInsets.symmetric(
-                //     horizontal: 16,
-                //     vertical: 8,
-                //   ),
-                //   textStyle: TextStyle(
-                //     color: Theme.of(context).primaryColor,
-                //   ),
-                // ),
                 AnimatedContainer(
                   duration: Duration(milliseconds: 350),
                   height: addType != 'email' ? 0 : 178,
@@ -915,6 +927,92 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
                     ),
                   ),
                 ),
+
+                /** --- EXTERNAL INVITATION METHODS --- **/
+                AnimatedContainer(
+                  duration: Duration(milliseconds: 350),
+                  height: addType != 'phone' ? 0 : 178,
+                  margin: EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  child: ClipRect(
+                    child: loading
+                        ? Center(
+                            child: LoadingWidget(),
+                          )
+                        : Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Row(
+                                children: [
+                                  IconButton(
+                                    icon: Icon(
+                                      Icons.phone_iphone_outlined,
+                                      color: Colors.green[400],
+                                    ),
+                                    onPressed: () => smallSetState(
+                                      () {
+                                        foundUser = null;
+                                        addType = null;
+                                      },
+                                    ),
+                                  ),
+                                  Text(
+                                    'Add By Phone',
+                                    style:
+                                        Theme.of(context).textTheme.subtitle1,
+                                  ),
+                                ],
+                              ),
+                              AppActionButton(
+                                onPressed: () async {
+                                  final PhoneContact contact =
+                                      await FlutterContactPicker
+                                          .pickPhoneContact();
+                                  if (contact != null) {
+                                    foundUser = await TaskRepository
+                                        .inviteTaskPartnerByPhone(
+                                      widget.task,
+                                      contact.phoneNumber.number,
+                                    );
+                                    smallSetState(() {});
+                                  }
+                                },
+                                backgroundColor: Colors.green[400],
+                                label: 'Choose Contact',
+                              ),
+                            ],
+                          ),
+                  ),
+                ),
+                AnimatedContainer(
+                  duration: Duration(milliseconds: 350),
+                  height: addType == 'phone' ? 0 : 144,
+                  child: ClipRect(
+                    child: AppButtonCard(
+                      icon: Icon(
+                        Icons.phone_iphone_outlined,
+                        size: 44.0,
+                        color: Colors.green[400],
+                      ),
+                      text: 'Add By Phone',
+                      onPressed: () => smallSetState(
+                        () {
+                          foundUser = null;
+                          addType = 'phone';
+                        },
+                      ),
+                      margin: EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      textStyle: TextStyle(
+                        color: Colors.green[400],
+                      ),
+                    ),
+                  ),
+                ),
                 if (foundUser != null)
                   UserCard(
                     user: foundUser,
@@ -922,7 +1020,6 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
                       () => foundUser = null,
                     ),
                   ),
-
                 if (!loading)
                   AppActionButton(
                     onPressed: foundUser != null
@@ -938,12 +1035,12 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
                                   'Your partner has been invited to partner up in this task with you!',
                             );
                           }
-                        : addType != null
+                        : addType == 'email'
                             ? () => searchByEmail(smallSetState)
                             : () => Navigator.pop(context),
                     label: foundUser != null
                         ? 'Add'
-                        : addType != null
+                        : addType == 'email'
                             ? 'Search'
                             : 'Close',
                     margin: EdgeInsets.symmetric(
