@@ -1,13 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:date_util/date_util.dart';
 import 'package:flutter/material.dart';
-import 'package:stackedtasks/constants/models/task.dart' as task_constants;
-import 'package:stackedtasks/constants/models/stack.dart' as stack_constants;
+import 'package:intl/intl.dart';
+
 import 'package:stackedtasks/constants/feed.dart' as feed_constants;
+import 'package:stackedtasks/constants/models/stack.dart' as stack_constants;
+import 'package:stackedtasks/constants/models/task.dart' as task_constants;
 import 'package:stackedtasks/models/goal_summary.dart';
 import 'package:stackedtasks/repositories/feed/statistics.dart';
 import 'package:stackedtasks/repositories/inbox/inbox_repository.dart';
-import 'package:intl/intl.dart';
 import 'package:stackedtasks/services/user/user_service.dart';
 
 import 'InboxItem.dart';
@@ -17,6 +18,7 @@ class Task extends InboxItem {
   String id;
   String userID;
   List<String> partnersIDs;
+  List<String> to;
   String goalRef;
   String stackRef;
   String goalTitle;
@@ -124,6 +126,9 @@ class Task extends InboxItem {
   }) {
     this.id = id;
     this.userID = jsonObject[task_constants.USER_ID_KEY];
+    this.to = jsonObject[feed_constants.TO_KEY] == null
+        ? []
+        : List<String>.from(jsonObject[feed_constants.TO_KEY]);
     this.partnersIDs =
         List<String>.from(jsonObject[task_constants.PARTNERS_IDS_KEY]);
     this.goalRef = jsonObject[task_constants.GOAL_REF_KEY];
@@ -567,6 +572,14 @@ class Task extends InboxItem {
 
   Future save({bool updateSummaries: true}) async {
     assert(goalRef != null && stackRef != null);
+    if (anyTime) {
+      startTime = DateTime.fromMillisecondsSinceEpoch(0).add(
+        Duration(hours: 23),
+      );
+      endTime = DateTime.fromMillisecondsSinceEpoch(0).add(
+        Duration(hours: 23, minutes: 59),
+      );
+    }
     if (id == null) {
       DocumentReference<Map<String, dynamic>> docRef = await FirebaseFirestore
           .instance
@@ -631,6 +644,62 @@ class Task extends InboxItem {
           id,
         )
         .delete();
+  }
+
+  Task copyWith({
+    String id,
+    String userID,
+    List<String> partnersIDs,
+    String goalRef,
+    String stackRef,
+    String goalTitle,
+    String stackTitle,
+    List<String> taskNotes,
+    String title,
+    String description,
+    int status,
+    int oldDueDatesCount,
+    Duration oldDuration,
+    bool anyTime,
+    DateTime creationDate,
+    List<DateTime> dueDates,
+    List<DateTime> donesHistory,
+    DateTime startDate,
+    DateTime endDate,
+    DateTime startTime,
+    DateTime endTime,
+    String stackColor,
+    bool notesFetched,
+    List<Note> detailedTaskNotes,
+    Note lastNote,
+    String userName,
+    String userPhoto,
+  }) {
+    return Task(
+      id: id ?? this.id,
+      userID: userID ?? this.userID,
+      partnersIDs: partnersIDs ?? this.partnersIDs,
+      goalRef: goalRef ?? this.goalRef,
+      stackRef: stackRef ?? this.stackRef,
+      goalTitle: goalTitle ?? this.goalTitle,
+      stackTitle: stackTitle ?? this.stackTitle,
+      taskNotes: taskNotes ?? this.taskNotes,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      status: status ?? this.status,
+      oldDueDatesCount: oldDueDatesCount ?? this.oldDueDatesCount,
+      oldDuration: oldDuration ?? this.oldDuration,
+      anyTime: anyTime ?? this.anyTime,
+      creationDate: creationDate ?? this.creationDate,
+      dueDates: dueDates ?? this.dueDates,
+      donesHistory: donesHistory ?? this.donesHistory,
+      startDate: startDate ?? this.startDate,
+      endDate: endDate ?? this.endDate,
+      startTime: startTime ?? this.startTime,
+      endTime: endTime ?? this.endTime,
+      stackColor: stackColor ?? this.stackColor,
+      lastNote: lastNote ?? this.lastNote,
+    );
   }
 }
 

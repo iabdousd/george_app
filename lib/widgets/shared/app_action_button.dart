@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 class AppActionButton extends StatelessWidget {
   final VoidCallback onPressed;
+  final bool loading;
   final icon;
   final String label;
   final Color backgroundColor;
@@ -18,6 +19,7 @@ class AppActionButton extends StatelessWidget {
     Key key,
     @required this.onPressed,
     this.icon,
+    this.loading: false,
     this.label,
     this.backgroundColor,
     this.alignment = Alignment.centerLeft,
@@ -48,12 +50,12 @@ class AppActionButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(radius),
       ),
       child: InkWell(
-        onTap: onPressed,
+        onTap: loading ? null : onPressed,
         child: ClipRRect(
           borderRadius: BorderRadius.circular(radius),
           child: label == null
               ? InkWell(
-                  onTap: onPressed,
+                  onTap: loading ? null : onPressed,
                   child: Container(
                     padding: iconPadding,
                     decoration: BoxDecoration(
@@ -71,7 +73,7 @@ class AppActionButton extends StatelessWidget {
                 )
               : icon != null
                   ? TextButton.icon(
-                      onPressed: onPressed,
+                      onPressed: loading ? null : onPressed,
                       icon: icon is IconData
                           ? Icon(
                               icon,
@@ -98,7 +100,7 @@ class AppActionButton extends StatelessWidget {
                     )
                   : Center(
                       child: TextButton(
-                        onPressed: onPressed,
+                        onPressed: loading ? null : onPressed,
                         style: ButtonStyle(
                           alignment: alignment,
                           backgroundColor:
@@ -107,13 +109,37 @@ class AppActionButton extends StatelessWidget {
                             padding,
                           ),
                         ),
-                        child: Text(
-                          label,
-                          style: textStyle ??
-                              Theme.of(context).textTheme.subtitle1.copyWith(
-                                    color: Theme.of(context).backgroundColor,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (loading)
+                              Padding(
+                                padding: const EdgeInsets.only(right: 8.0),
+                                child: SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 1.5,
+                                    valueColor: AlwaysStoppedAnimation(
+                                      textStyle?.color ??
+                                          Theme.of(context).backgroundColor,
+                                    ),
                                   ),
-                          textAlign: TextAlign.center,
+                                ),
+                              ),
+                            Text(
+                              label,
+                              style: textStyle ??
+                                  Theme.of(context)
+                                      .textTheme
+                                      .subtitle1
+                                      .copyWith(
+                                        color:
+                                            Theme.of(context).backgroundColor,
+                                      ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
                         ),
                       ),
                     ),

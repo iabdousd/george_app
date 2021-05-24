@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:stackedtasks/models/UserModel.dart';
 import 'package:stackedtasks/services/storage/image_upload.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -19,6 +20,8 @@ class Note {
   List<Attachment> attachments;
   int attachmentsCount;
 
+  UserModel creator;
+
   Note({
     this.id,
     this.userID,
@@ -31,10 +34,11 @@ class Note {
     this.content,
     this.attachments,
     this.attachmentsCount = 0,
+    this.creator,
   });
 
   Note.fromJson(jsonObject, {String id}) {
-    this.id = id;
+    this.id = id ?? jsonObject[note_constants.NOTE_ID_KEY];
     this.userID = jsonObject[note_constants.USER_ID_KEY];
     this.partnersIDs =
         List<String>.from(jsonObject[note_constants.PARTNERS_IDS_KEY]);
@@ -53,6 +57,7 @@ class Note {
 
   Map<String, dynamic> toJson() {
     return {
+      note_constants.NOTE_ID_KEY: this.id,
       note_constants.USER_ID_KEY: this.userID,
       note_constants.PARTNERS_IDS_KEY: this.partnersIDs,
       note_constants.GOAL_REF_KEY: this.goalRef,
@@ -74,6 +79,12 @@ class Note {
           .collection(stack_constants.NOTES_KEY)
           .add(toJson());
       this.id = docRef.id;
+      await FirebaseFirestore.instance
+          .collection(stack_constants.NOTES_KEY)
+          .doc(id)
+          .update({
+        note_constants.NOTE_ID_KEY: id,
+      });
     } else {
       await FirebaseFirestore.instance
           .collection(stack_constants.NOTES_KEY)

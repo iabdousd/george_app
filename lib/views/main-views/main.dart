@@ -13,6 +13,7 @@ import '../stack/save_stack.dart';
 import '../task/save_task.dart';
 import 'activity_feed_view.dart';
 import 'home_view.dart';
+import 'notification-views/notifications-view.dart';
 import 'time_tracking_views.dart';
 
 class MainView extends StatefulWidget {
@@ -165,7 +166,7 @@ A pro tip is to add maintaining your task management system itself as one of you
   void initState() {
     _init();
     pageIndexStreamController.add(0);
-    _tabController = _tabController = TabController(length: 3, vsync: this);
+    _tabController = _tabController = TabController(length: 4, vsync: this);
     super.initState();
   }
 
@@ -213,6 +214,7 @@ A pro tip is to add maintaining your task management system itself as one of you
                 pageIndexStreamController: pageIndexStreamController,
               ),
               TimeTrackingViews(),
+              NotificationsView(),
               ActivityFeedView(),
             ],
           ),

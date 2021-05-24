@@ -8,6 +8,7 @@ import 'package:stackedtasks/constants/user.dart';
 import 'package:stackedtasks/models/Task.dart';
 import 'package:stackedtasks/models/UserModel.dart';
 import 'package:stackedtasks/repositories/inbox/inbox_repository.dart';
+import 'package:stackedtasks/repositories/notification/notification_repository.dart';
 import 'package:stackedtasks/services/feed-back/flush_bar.dart';
 import 'package:stackedtasks/services/feed-back/loader.dart';
 import 'package:stackedtasks/services/user/user_service.dart';
@@ -110,9 +111,10 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
         );
       }
     }
-    if (DateTime(endDate.year, endDate.month, endDate.day, endTime.hour,
-            endTime.minute)
-        .isBefore(DateTime.now())) {
+    if (!anyTime &&
+        DateTime(endDate.year, endDate.month, endDate.day, endTime.hour,
+                endTime.minute)
+            .isBefore(DateTime.now())) {
       await toggleLoading(state: false);
       await showFlushBar(
         title: 'Malformat dates',
@@ -275,9 +277,11 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
           )
           .toList();
     }
-    if (widget.addingPartner) {
-      addPartner();
-    }
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      if (widget.addingPartner) {
+        addPartner();
+      }
+    });
     setState(() {
       loadingPartners = false;
     });
@@ -923,10 +927,16 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
                   AppActionButton(
                     onPressed: foundUser != null
                         ? () async {
-                            setState(() {
-                              partners.add(foundUser);
-                            });
                             Navigator.pop(context);
+                            await NotificationRepository.addTaskNotification(
+                              widget.task,
+                              foundUser.uid,
+                            );
+                            showFlushBar(
+                              title: 'Invitation Sent',
+                              message:
+                                  'Your partner has been invited to partner up in this task with you!',
+                            );
                           }
                         : addType != null
                             ? () => searchByEmail(smallSetState)

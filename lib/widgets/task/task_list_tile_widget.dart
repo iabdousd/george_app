@@ -1,16 +1,10 @@
 import 'dart:async';
-import 'dart:math';
 
-import 'package:animate_do/animate_do.dart';
-import 'package:animated_rotation/animated_rotation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:stackedtasks/config/extensions/hex_color.dart';
-import 'package:stackedtasks/constants/models/note.dart' as note_constants;
-import 'package:stackedtasks/constants/models/stack.dart';
 import 'package:stackedtasks/constants/user.dart';
 import 'package:stackedtasks/models/Note.dart';
 import 'package:stackedtasks/models/Task.dart';
@@ -18,10 +12,12 @@ import 'package:stackedtasks/models/UserModel.dart';
 import 'package:stackedtasks/providers/cache/cached_image_provider.dart';
 import 'package:stackedtasks/services/feed-back/flush_bar.dart';
 import 'package:stackedtasks/services/feed-back/loader.dart';
+import 'package:stackedtasks/services/user/user_service.dart';
 import 'package:stackedtasks/views/task/save_task.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:stackedtasks/widgets/note/task_notes_thread.dart';
 import 'package:stackedtasks/widgets/shared/app_expansion_tile.dart';
 
 class TaskListTileWidget extends StatefulWidget {
@@ -60,8 +56,8 @@ class TaskListTileWidget extends StatefulWidget {
 
 class _TaskListTileWidgetState extends State<TaskListTileWidget> {
   bool loading = false;
-  bool showAll = false;
   bool loadingPartners = true;
+  bool privateNotes = false;
   List<UserModel> partners = [];
   final StreamController _realTimeUpdateTimer = StreamController.broadcast();
   TextEditingController _contentController = TextEditingController();
@@ -137,18 +133,20 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
 
   void _init() async {
     if (widget.showPartners) {
-      final partnersQuery = await FirebaseFirestore.instance
-          .collection(USERS_KEY)
-          .where(
+      if (widget.task.partnersIDs.isNotEmpty) {
+        dynamic partnersRef = FirebaseFirestore.instance.collection(USERS_KEY);
+        if (widget.task.partnersIDs.isNotEmpty) {
+          partnersRef = partnersRef.where(
             USER_UID_KEY,
             whereIn: widget.task.partnersIDs,
-          )
-          .get();
-      partners = partnersQuery.docs
-          .map(
-            (e) => UserModel.fromMap(e.data()),
-          )
-          .toList();
+          );
+        }
+
+        final partnersQuery = await partnersRef.get();
+        partners = List<UserModel>.from(partnersQuery.docs.map(
+          (e) => UserModel.fromMap(e.data()),
+        ));
+      }
     }
     setState(() {
       loadingPartners = false;
@@ -164,7 +162,6 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
 
   @override
   Widget build(BuildContext context) {
-    // print('${widget.task.title}: ${widget.task.dueDates}');
     bool inSchedule = DateTime(
           widget.task.startDate.year,
           widget.task.startDate.month,
@@ -224,11 +221,22 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    IconButton(
-                      onPressed: () {
-                        //
-                      },
-                      icon: Icon(Icons.attach_file),
+                    Row(
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            //
+                          },
+                          icon: Icon(Icons.attach_file),
+                        ),
+                        Switch(
+                          value: privateNotes,
+                          onChanged: (val) => setState(
+                            () => privateNotes = val,
+                          ),
+                        ),
+                        Text('Private'),
+                      ],
                     ),
                     ElevatedButton(
                       onPressed: () async {
@@ -238,6 +246,7 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                             '') return;
                         setState(() => loading = true);
                         Note note = Note(
+                          userID: getCurrentUser().uid,
                           content: _contentController.text.trim(),
                           goalRef: widget.task.goalRef,
                           stackRef: widget.task.stackRef,
@@ -246,7 +255,9 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                           creationDate: DateTime.now(),
                         );
                         await note.save();
-                        await widget.task.addNote(note);
+
+                        if (!privateNotes) await widget.task.addNote(note);
+
                         _contentController.text = '';
                         setState(() => loading = false);
                         showFlushBar(
@@ -722,245 +733,9 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                               ),
                             ),
                           if (widget.showLastNotes)
-                            StreamBuilder<QuerySnapshot>(
-                              stream: FirebaseFirestore.instance
-                                  .collection(NOTES_KEY)
-                                  .where(
-                                    note_constants.TASK_REF_KEY,
-                                    isEqualTo: widget.task.id,
-                                  )
-                                  .orderBy(
-                                    note_constants.CREATION_DATE_KEY,
-                                    descending: true,
-                                  )
-                                  .snapshots(),
-                              builder: (context, snapshot) {
-                                if (!snapshot.hasData) {
-                                  return Container(
-                                    padding: const EdgeInsets.all(8.0),
-                                    height: 64,
-                                    child: Center(
-                                      child: LoadingWidget(),
-                                    ),
-                                  );
-                                }
-
-                                return StatefulBuilder(
-                                  builder: (context, notesSetState) {
-                                    return Padding(
-                                      padding: const EdgeInsets.only(top: 20.0),
-                                      child: ListView.builder(
-                                        shrinkWrap: true,
-                                        physics: NeverScrollableScrollPhysics(),
-                                        itemCount: showAll
-                                            ? snapshot.data.docs.length + 1
-                                            : min(
-                                                snapshot.data.docs.length,
-                                                (showAll
-                                                    ? snapshot.data.docs.length
-                                                    : 2)),
-                                        itemBuilder: (context, index) {
-                                          if ((showAll &&
-                                                  index ==
-                                                      snapshot
-                                                          .data.docs.length) ||
-                                              (!showAll &&
-                                                  index == 1 &&
-                                                  snapshot.data.docs.length >
-                                                      1))
-                                            return TextButton(
-                                              key: Key(
-                                                  'SHOW_NOTES_${widget.task.id}'),
-                                              onPressed: () => notesSetState(
-                                                () => showAll = !showAll,
-                                              ),
-                                              style: ButtonStyle(
-                                                padding:
-                                                    MaterialStateProperty.all(
-                                                  EdgeInsets.symmetric(
-                                                    vertical: 16,
-                                                  ),
-                                                ),
-                                              ),
-                                              child: Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            right: 8.0),
-                                                    child: AnimatedRotation(
-                                                      angle: showAll ? 90 : -90,
-                                                      child: Icon(
-                                                        Icons
-                                                            .arrow_back_ios_outlined,
-                                                        size: 18,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    showAll
-                                                        ? 'Show less notes'
-                                                        : 'Show all notes',
-                                                  ),
-                                                ],
-                                              ),
-                                            );
-
-                                          final note = Note.fromJson(
-                                            snapshot.data.docs[index].data(),
-                                            id: snapshot.data.docs[index].id,
-                                          );
-                                          return FadeIn(
-                                            key: Key(note.id),
-                                            duration:
-                                                Duration(milliseconds: 350),
-                                            child: Container(
-                                              decoration: BoxDecoration(
-                                                  // border: index == 0
-                                                  //     ? null
-                                                  //     : Border(
-                                                  //         top: BorderSide(
-                                                  //           color: Colors.black26,
-                                                  //         ),
-                                                  //       ),
-                                                  ),
-                                              child: IntrinsicHeight(
-                                                child: Row(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Column(
-                                                      mainAxisSize:
-                                                          MainAxisSize.max,
-                                                      children: [
-                                                        Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .only(
-                                                            top: 4.0,
-                                                            bottom: 4.0,
-                                                            left: 12.0,
-                                                            right: 12.0,
-                                                          ),
-                                                          child: ClipRRect(
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        52),
-                                                            child: Image(
-                                                              image:
-                                                                  CachedImageProvider(
-                                                                FirebaseAuth
-                                                                    .instance
-                                                                    .currentUser
-                                                                    .photoURL,
-                                                              ),
-                                                              width: 52,
-                                                              height: 52,
-                                                              fit: BoxFit.cover,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        if (index !=
-                                                                snapshot
-                                                                        .data
-                                                                        .docs
-                                                                        .length -
-                                                                    1 &&
-                                                            (showAll ||
-                                                                (!showAll &&
-                                                                    index !=
-                                                                        0)))
-                                                          Expanded(
-                                                            child: Container(
-                                                              width: 1.5,
-                                                              color: Color(
-                                                                  0xFFAAAAAA),
-                                                            ),
-                                                          ),
-                                                      ],
-                                                    ),
-                                                    Expanded(
-                                                      child: Padding(
-                                                        padding: EdgeInsets
-                                                            .symmetric(
-                                                          horizontal: 12,
-                                                        ),
-                                                        child: Column(
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .start,
-                                                          children: [
-                                                            Row(
-                                                              children: [
-                                                                Text(
-                                                                  FirebaseAuth
-                                                                      .instance
-                                                                      .currentUser
-                                                                      .displayName
-                                                                      .split(
-                                                                          ' ')
-                                                                      .first,
-                                                                  style:
-                                                                      TextStyle(
-                                                                    fontSize:
-                                                                        14,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w600,
-                                                                  ),
-                                                                ),
-                                                                Text(
-                                                                  ' - Task Notes ' +
-                                                                      DateFormat(
-                                                                              'EEE, dd MMM')
-                                                                          .format(
-                                                                        note.creationDate,
-                                                                      ),
-                                                                  style:
-                                                                      TextStyle(
-                                                                    fontSize:
-                                                                        14,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w500,
-                                                                  ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                            Container(
-                                                              margin: EdgeInsets
-                                                                  .only(
-                                                                top: 4,
-                                                                bottom: 32,
-                                                              ),
-                                                              child: Text(
-                                                                note.content,
-                                                                style:
-                                                                    TextStyle(
-                                                                  fontSize: 14,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w400,
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                    );
-                                  },
-                                );
-                              },
+                            TaskNotesThread(
+                              task: widget.task,
+                              allTaskNotes: true,
                             ),
                         ],
                       ),

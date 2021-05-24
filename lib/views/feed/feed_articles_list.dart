@@ -31,7 +31,7 @@ class _FeedArticlesListState extends State<FeedArticlesList>
           .collection(feed_constants.FEED_KEY)
           .where(
             feed_constants.TO_KEY,
-            arrayContains: getCurrentUser().uid,
+            arrayContainsAny: ['*', getCurrentUser().uid],
           )
           .orderBy(
             feed_constants.CREATION_DATE_KEY,
@@ -39,34 +39,35 @@ class _FeedArticlesListState extends State<FeedArticlesList>
           )
           .snapshots()
           .asyncMap(
-        (event) async {
-          List<Task> tasks = [];
-          for (final doc in event.docs) {
-            Task task = Task.fromJson(
-              doc.data(),
-              id: doc.id,
-            );
-            if (task.userID != getCurrentUser().uid) {
-              final user = UserModel.fromMap(
-                (await FirebaseFirestore.instance
-                        .collection(USERS_KEY)
-                        .doc(task.userID)
-                        .get())
-                    .data(),
-              );
-              task.userName = user.fullName;
-              task.userPhoto = user.photoURL;
-            } else {
-              task.userName = getCurrentUser().displayName;
-              task.userPhoto = getCurrentUser().photoURL;
-            }
-            tasks.add(task);
-          }
-          return tasks;
-        },
-      ),
+            (event) async {
+              List<Task> tasks = [];
+              for (final doc in event.docs) {
+                Task task = Task.fromJson(
+                  doc.data(),
+                  id: doc.id,
+                );
+                if (task.userID != getCurrentUser().uid) {
+                  final user = UserModel.fromMap(
+                    (await FirebaseFirestore.instance
+                            .collection(USERS_KEY)
+                            .doc(task.userID)
+                            .get())
+                        .data(),
+                  );
+                  task.userName = user.fullName;
+                  task.userPhoto = user.photoURL;
+                } else {
+                  task.userName = getCurrentUser().displayName;
+                  task.userPhoto = getCurrentUser().photoURL;
+                }
+                tasks.add(task);
+              }
+              return tasks;
+            },
+          ),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
+          print(snapshot.error);
           return AppErrorWidget();
         }
         if (snapshot.hasData) {
@@ -88,6 +89,7 @@ class _FeedArticlesListState extends State<FeedArticlesList>
 
                 lastDate = task.creationDate;
                 return Row(
+                  key: Key(task.id),
                   crossAxisAlignment: showDate
                       ? CrossAxisAlignment.start
                       : CrossAxisAlignment.center,
@@ -162,7 +164,6 @@ class _FeedArticlesListState extends State<FeedArticlesList>
                     if (task.repetition == null)
                       Expanded(
                         child: OnetimeTaskArticleWidget(
-                          key: Key(task.id),
                           name: task.userName,
                           profilePicture: task.userPhoto,
                           task: task,
@@ -172,7 +173,6 @@ class _FeedArticlesListState extends State<FeedArticlesList>
                     else
                       Expanded(
                         child: RecurringTaskArticleWidget(
-                          key: Key(task.id),
                           name: task.userName,
                           profilePicture: task.userPhoto,
                           task: task,
