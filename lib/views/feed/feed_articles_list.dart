@@ -5,8 +5,8 @@ import 'package:intl/intl.dart';
 
 import 'package:stackedtasks/models/Task.dart';
 import 'package:stackedtasks/widgets/activity_feed/article_skeleton.dart';
-import 'package:stackedtasks/widgets/activity_feed/onetime_task_article.dart';
-import 'package:stackedtasks/widgets/activity_feed/recurring_task_article.dart';
+import 'package:stackedtasks/widgets/activity_feed/cards/onetime_task_article.dart';
+import 'package:stackedtasks/widgets/activity_feed/cards/recurring_task_article.dart';
 import 'package:stackedtasks/widgets/shared/app_error_widget.dart';
 
 class FeedArticlesList extends StatefulWidget {

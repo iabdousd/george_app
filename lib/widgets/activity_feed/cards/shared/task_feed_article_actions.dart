@@ -11,7 +11,6 @@ import 'package:stackedtasks/services/shared/sharing/sharing_task.dart';
 import 'package:stackedtasks/services/user/user_service.dart';
 import 'package:stackedtasks/views/feed/save_task_feed_article.dart';
 import 'package:screenshot/screenshot.dart';
-import 'package:stackedtasks/widgets/note/note_lsit_tile.dart';
 import 'package:stackedtasks/widgets/note/note_thread_tile.dart';
 import 'package:stackedtasks/widgets/shared/app_error_widget.dart';
 import 'package:stackedtasks/widgets/shared/app_text_field.dart';

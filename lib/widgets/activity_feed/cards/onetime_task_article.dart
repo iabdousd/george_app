@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:stackedtasks/models/Task.dart';
 import 'package:stackedtasks/providers/cache/cached_image_provider.dart';
-import 'package:stackedtasks/widgets/activity_feed/task_feed_article_actions.dart';
+import 'package:stackedtasks/widgets/activity_feed/cards/shared/task_feed_article_actions.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:stackedtasks/widgets/note/task_notes_thread.dart';
+
+import 'shared/task_feed_header.dart';
 
 class OnetimeTaskArticleWidget extends StatelessWidget {
   final String name, profilePicture;
@@ -41,49 +43,10 @@ class OnetimeTaskArticleWidget extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   if (showAuthorRow)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16.0, vertical: 12.0),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(42.0),
-                            child: profilePicture != null
-                                ? Image(
-                                    image: CachedImageProvider(profilePicture),
-                                    fit: BoxFit.cover,
-                                    width: 42,
-                                    height: 42,
-                                  )
-                                : SvgPicture.asset(
-                                    'assets/images/profile.svg',
-                                    fit: BoxFit.cover,
-                                    width: 42,
-                                    height: 42,
-                                  ),
-                          ),
-                          SizedBox(width: 12),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                name,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .subtitle1
-                                    .copyWith(
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                              ),
-                              // Text(
-                              //   DateFormat('hh:mm a').format(task.creationDate),
-                              //   style: Theme.of(context).textTheme.bodyText2,
-                              // ),
-                            ],
-                          ),
-                        ],
-                      ),
+                    TaskFeedHeader(
+                      userID: task.userID,
+                      name: name,
+                      profilePicture: profilePicture,
                     ),
                   Container(
                     padding: const EdgeInsets.only(

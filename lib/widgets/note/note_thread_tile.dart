@@ -1,5 +1,6 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 
 import 'package:stackedtasks/models/Note.dart';
@@ -51,14 +52,21 @@ class NoteThreadTile extends StatelessWidget {
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(52),
-                      child: Image(
-                        image: CachedImageProvider(
-                          note.creator.photoURL,
-                        ),
-                        width: 32,
-                        height: 32,
-                        fit: BoxFit.cover,
-                      ),
+                      child: note.creator.photoURL == null
+                          ? SvgPicture.asset(
+                              'assets/images/profile.svg',
+                              fit: BoxFit.cover,
+                              width: 32,
+                              height: 32,
+                            )
+                          : Image(
+                              image: CachedImageProvider(
+                                note.creator.photoURL,
+                              ),
+                              width: 32,
+                              height: 32,
+                              fit: BoxFit.cover,
+                            ),
                     ),
                   ),
                   if (isLast && (showAll || (!showAll && index != 0)))

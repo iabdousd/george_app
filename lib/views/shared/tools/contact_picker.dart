@@ -1,3 +1,4 @@
+import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_contact/contacts.dart';
 import 'package:flutter_contact/flutter_contact.dart';
@@ -58,6 +59,8 @@ class _ContactPickerViewState extends State<ContactPickerView> {
           contactList.add(contact);
         }
       }
+      print(foundContactList.length);
+      print(contactList.length);
       setState(() {
         loading = false;
       });
@@ -108,82 +111,83 @@ class _ContactPickerViewState extends State<ContactPickerView> {
                       )
                     else
                       for (final user in selectedUsers)
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).backgroundColor,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Color(0x22000000),
-                                blurRadius: 4,
-                              ),
-                            ],
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          padding: EdgeInsets.symmetric(
-                            vertical: 4,
-                            horizontal: 8,
-                          ),
-                          margin: EdgeInsets.only(right: 8),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                margin: EdgeInsets.only(
-                                  right: 6,
+                        FadeIn(
+                          duration: Duration(milliseconds: 350),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).backgroundColor,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Color(0x22000000),
+                                  blurRadius: 4,
                                 ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(32),
-                                  child: user.photoURL != null
-                                      ? Image(
-                                          image: CachedImageProvider(
-                                            user.photoURL,
-                                          ),
-                                          width: 32,
-                                          height: 32,
-                                          fit: BoxFit.cover,
-                                        )
-                                      : Container(
-                                          width: 32,
-                                          height: 32,
-                                          decoration: BoxDecoration(
-                                            color: Theme.of(context)
-                                                .textTheme
-                                                .headline6
-                                                .color
-                                                .withOpacity(.25),
-                                            borderRadius:
-                                                BorderRadius.circular(32),
-                                          ),
-                                          child: Center(
-                                            child: Text(
-                                              user.fullName[0].toUpperCase(),
-                                              style: TextStyle(
-                                                color: Theme.of(context)
-                                                    .backgroundColor,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 18,
+                              ],
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            padding: EdgeInsets.symmetric(
+                              vertical: 4,
+                              horizontal: 8,
+                            ),
+                            margin: EdgeInsets.only(right: 8),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  margin: EdgeInsets.only(
+                                    right: 8,
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(32),
+                                    child: user.photoURL != null
+                                        ? Image(
+                                            image: CachedImageProvider(
+                                              user.photoURL,
+                                            ),
+                                            width: 32,
+                                            height: 32,
+                                            fit: BoxFit.cover,
+                                          )
+                                        : Container(
+                                            width: 32,
+                                            height: 32,
+                                            decoration: BoxDecoration(
+                                              color: Theme.of(context)
+                                                  .primaryColor
+                                                  .withOpacity(.75),
+                                              borderRadius:
+                                                  BorderRadius.circular(32),
+                                            ),
+                                            child: Center(
+                                              child: Text(
+                                                user.fullName[0].toUpperCase(),
+                                                style: TextStyle(
+                                                  color: Theme.of(context)
+                                                      .backgroundColor,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 18,
+                                                ),
                                               ),
                                             ),
                                           ),
-                                        ),
+                                  ),
                                 ),
-                              ),
-                              Text(
-                                user.fullName,
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(left: 6.0),
-                                child: InkWell(
-                                    onTap: () => setState(
-                                          () => selectedUsers.remove(user),
-                                        ),
-                                    child: Icon(
-                                      Icons.close,
-                                      color: Colors.red,
-                                      size: 16,
-                                    )),
-                              ),
-                            ],
+                                Text(
+                                  user.fullName,
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 6.0),
+                                  child: InkWell(
+                                      onTap: () => setState(
+                                            () => selectedUsers.remove(user),
+                                          ),
+                                      child: Icon(
+                                        Icons.close,
+                                        color: Colors.red,
+                                        size: 16,
+                                      )),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                   ],
@@ -203,7 +207,7 @@ class _ContactPickerViewState extends State<ContactPickerView> {
                   itemBuilder: (context, index) {
                     final contact = index < foundContactList.length
                         ? foundContactList[index]
-                        : contactList[index];
+                        : contactList[index - foundContactList.length];
                     final notUser = index >= foundContactList.length;
 
                     final userModel = notUser
@@ -256,7 +260,7 @@ class _ContactPickerViewState extends State<ContactPickerView> {
                                 ),
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(44),
-                                  child: userModel != null ||
+                                  child: userModel?.photoURL != null ||
                                           contact.avatar != null
                                       ? Image(
                                           image: userModel?.photoURL != null
@@ -272,11 +276,15 @@ class _ContactPickerViewState extends State<ContactPickerView> {
                                           width: 44,
                                           height: 44,
                                           decoration: BoxDecoration(
-                                            color: Theme.of(context)
-                                                .textTheme
-                                                .headline6
-                                                .color
-                                                .withOpacity(.25),
+                                            color: notUser
+                                                ? Theme.of(context)
+                                                    .textTheme
+                                                    .headline6
+                                                    .color
+                                                    .withOpacity(.25)
+                                                : Theme.of(context)
+                                                    .primaryColor
+                                                    .withOpacity(.75),
                                             borderRadius:
                                                 BorderRadius.circular(32),
                                           ),

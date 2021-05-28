@@ -7,6 +7,57 @@ import 'package:stackedtasks/services/user/user_service.dart';
 import 'package:stackedtasks/constants/feed.dart' as feed_constants;
 
 class FeedRepository {
+  static Stream<List<Task>> fetchUserArticles(String uid) {
+    return FirebaseFirestore.instance
+        .collection(feed_constants.FEED_KEY)
+        .where(
+          feed_constants.USER_ID_KEY,
+          isEqualTo: uid,
+        )
+        .orderBy(
+          feed_constants.CREATION_DATE_KEY,
+          descending: true,
+        )
+        .snapshots()
+        .asyncMap(
+      (event) async {
+        List<Task> tasks = [];
+        for (final doc in event.docs) {
+          Task task = Task.fromJson(
+            doc.data(),
+            id: doc.id,
+          );
+          if (task.userID != getCurrentUser().uid) {
+            final user = UserModel.fromMap(
+              (await FirebaseFirestore.instance
+                      .collection(USERS_KEY)
+                      .doc(task.userID)
+                      .get())
+                  .data(),
+            );
+            task.userName = user.fullName;
+            task.userPhoto = user.photoURL;
+          } else {
+            task.userName = getCurrentUser().displayName;
+            task.userPhoto = getCurrentUser().photoURL;
+          }
+          task.isLiked = FirebaseFirestore.instance
+              .collection(feed_constants.FEED_KEY)
+              .doc(task.id)
+              .collection(feed_constants.FEED_LIKES_COLLECTION)
+              .doc(getCurrentUser().uid)
+              .snapshots()
+              .map(
+                (event) => event.exists && event.data() != null,
+              );
+
+          tasks.add(task);
+        }
+        return tasks;
+      },
+    );
+  }
+
   static Stream<List<Task>> fetchArticles() {
     return FirebaseFirestore.instance
         .collection(feed_constants.FEED_KEY)

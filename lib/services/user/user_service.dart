@@ -7,6 +7,7 @@ import 'package:hive/hive.dart';
 import 'package:stackedtasks/constants/user.dart';
 import 'package:stackedtasks/models/UserModel.dart';
 import 'package:stackedtasks/models/cache/contact_user.dart';
+import 'package:stackedtasks/services/feed-back/flush_bar.dart';
 
 Future<bool> checkAuthorization() async {
   await Firebase.initializeApp();
@@ -145,5 +146,103 @@ class UserService {
       }
     }
     return syncedMap;
+  }
+
+  static Stream<int> countUserFollowing(String uid) {
+    return FirebaseFirestore.instance
+        .collection(USERS_KEY)
+        .doc(uid)
+        .snapshots()
+        .map(
+          (event) => event.data()[USER_FOLLOWERS_KEY],
+        );
+  }
+
+  static Stream<int> countUserFollowers(String uid) {
+    return FirebaseFirestore.instance
+        .collection(USERS_KEY)
+        .doc(uid)
+        .snapshots()
+        .map(
+          (event) => event.data()[USER_FOLLOWING_KEY],
+        );
+  }
+
+  static Future<void> followUser(UserModel user) async {
+    assert(user?.uid != null);
+
+    if (user.uid == getCurrentUser().uid) {
+      showFlushBar(
+        title: 'Hmmm..',
+        message: 'Unfortunately, you cannot follow your self !',
+        success: false,
+      );
+      return;
+    }
+
+    final followDoc = await FirebaseFirestore.instance
+        .collection(USER_FOLLOWERS_COLLECTION)
+        .doc(getCurrentUser().uid + '_TO_' + user.uid)
+        .get();
+    final oldUser = await FirebaseFirestore.instance
+        .collection(USERS_KEY)
+        .doc(user.uid)
+        .get();
+
+    if (followDoc.exists && followDoc.data() != null) {
+      await FirebaseFirestore.instance
+          .collection(USERS_KEY)
+          .doc(user.uid)
+          .update({
+        USER_FOLLOWERS_KEY:
+            min(0, (oldUser.data()[USER_FOLLOWERS_KEY] ?? 0) - 1),
+      });
+      await FirebaseFirestore.instance
+          .collection(USERS_KEY)
+          .doc(getCurrentUser().uid)
+          .update({
+        USER_FOLLOWING_KEY:
+            min(0, (oldUser.data()[USER_FOLLOWING_KEY] ?? 0) - 1),
+      });
+      await followDoc.reference.delete();
+      showFlushBar(
+        title: 'Unfollowed',
+        message: 'Successfully unfollowed ${user.fullName}',
+      );
+    } else {
+      await FirebaseFirestore.instance
+          .collection(USERS_KEY)
+          .doc(user.uid)
+          .update({
+        USER_FOLLOWERS_KEY: (oldUser.data()[USER_FOLLOWERS_KEY] ?? 0) + 1,
+      });
+      await FirebaseFirestore.instance
+          .collection(USERS_KEY)
+          .doc(getCurrentUser().uid)
+          .update({
+        USER_FOLLOWING_KEY: (oldUser.data()[USER_FOLLOWING_KEY] ?? 0) + 1,
+      });
+
+      await followDoc.reference.set({
+        USER_FOLLOW_DATE_KEY: Timestamp.now(),
+        USER_FOLLOWER_KEY: getCurrentUser().uid,
+        USER_FOLLOWED_KEY: user.uid,
+      });
+
+      showFlushBar(
+        title: 'Followed',
+        message: 'Successfully followed ${user.fullName}',
+      );
+    }
+  }
+
+  static Stream<bool> streamIsFollowed(UserModel user) {
+    return FirebaseFirestore.instance
+        .collection(USER_FOLLOWERS_COLLECTION)
+        .doc(getCurrentUser().uid + '_TO_' + user.uid)
+        .snapshots()
+        .map(
+          (event) => event.exists && event.data() != null,
+        );
   }
 }
