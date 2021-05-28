@@ -148,6 +148,7 @@ class _SaveStackPageState extends State<SaveStackPage> {
                         ),
                         child: TextFormField(
                           controller: _titleController,
+                          autofocus: true,
                           decoration: InputDecoration(
                             labelText: 'Stack title',
                             hintText: 'The title of the stack',
@@ -160,7 +161,6 @@ class _SaveStackPageState extends State<SaveStackPage> {
                               borderSide: BorderSide(width: 1),
                             ),
                           ),
-                          autofocus: true,
                           validator: (t) => t.isEmpty
                               ? 'Please enter the stack\'s title'
                               : null,

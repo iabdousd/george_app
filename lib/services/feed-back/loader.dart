@@ -3,12 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class LoadingWidget extends StatelessWidget {
-  const LoadingWidget({Key key}) : super(key: key);
+  final EdgeInsets padding;
+  const LoadingWidget({
+    Key key,
+    this.padding: const EdgeInsets.symmetric(vertical: 64.0),
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 64.0),
+      padding: padding,
       child: Center(
         child: SpinKitFoldingCube(
           itemBuilder: (BuildContext context, int index) {

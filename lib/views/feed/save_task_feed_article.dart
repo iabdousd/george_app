@@ -26,12 +26,14 @@ class _SaveTaskFeedArticleState extends State<SaveTaskFeedArticle> {
   _submitArticle() async {
     if (!_formKey.currentState.validate()) return;
     toggleLoading(state: true);
-
+    final allPartners = await widget.task.getAllPartners();
     await (widget.task
           ..title = _titleController.text
           ..description = _descriptionController.text
           ..status = 2)
-        .saveAsFeed((publicPost ? ['*'] : []) + widget.task.partnersIDs);
+        .saveAsFeed(
+      (publicPost ? ['*'] : <String>[]) + allPartners,
+    );
     toggleLoading(state: false);
     Navigator.of(context).pop();
     showFlushBar(

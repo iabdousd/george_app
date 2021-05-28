@@ -1,17 +1,12 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:stackedtasks/constants/user.dart';
-import 'package:stackedtasks/models/UserModel.dart';
+import 'package:stackedtasks/repositories/feed/feed_repository.dart';
 import 'package:stackedtasks/widgets/activity_feed/feed_articles_empty.dart';
 import 'package:intl/intl.dart';
 
 import 'package:stackedtasks/models/Task.dart';
-import 'package:stackedtasks/services/user/user_service.dart';
 import 'package:stackedtasks/widgets/activity_feed/article_skeleton.dart';
 import 'package:stackedtasks/widgets/activity_feed/onetime_task_article.dart';
 import 'package:stackedtasks/widgets/activity_feed/recurring_task_article.dart';
-import 'package:stackedtasks/constants/feed.dart' as feed_constants;
 import 'package:stackedtasks/widgets/shared/app_error_widget.dart';
 
 class FeedArticlesList extends StatefulWidget {
@@ -27,44 +22,7 @@ class _FeedArticlesListState extends State<FeedArticlesList>
   Widget build(BuildContext context) {
     super.build(context);
     return StreamBuilder<List<Task>>(
-      stream: FirebaseFirestore.instance
-          .collection(feed_constants.FEED_KEY)
-          .where(
-            feed_constants.TO_KEY,
-            arrayContainsAny: ['*', getCurrentUser().uid],
-          )
-          .orderBy(
-            feed_constants.CREATION_DATE_KEY,
-            descending: true,
-          )
-          .snapshots()
-          .asyncMap(
-            (event) async {
-              List<Task> tasks = [];
-              for (final doc in event.docs) {
-                Task task = Task.fromJson(
-                  doc.data(),
-                  id: doc.id,
-                );
-                if (task.userID != getCurrentUser().uid) {
-                  final user = UserModel.fromMap(
-                    (await FirebaseFirestore.instance
-                            .collection(USERS_KEY)
-                            .doc(task.userID)
-                            .get())
-                        .data(),
-                  );
-                  task.userName = user.fullName;
-                  task.userPhoto = user.photoURL;
-                } else {
-                  task.userName = getCurrentUser().displayName;
-                  task.userPhoto = getCurrentUser().photoURL;
-                }
-                tasks.add(task);
-              }
-              return tasks;
-            },
-          ),
+      stream: FeedRepository.fetchArticles(),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           print(snapshot.error);

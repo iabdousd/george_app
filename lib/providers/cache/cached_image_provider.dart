@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:flutter/foundation.dart';
@@ -33,50 +34,58 @@ class CachedImageProvider extends ImageProvider<CachedImageProvider> {
   }
 
   Future<ui.Codec> _loadAsync(DecoderCallback decode) async {
-    if (kIsWeb) {
-      final res = await http.get(
-        Uri.parse(url),
-      );
-
-      return await decode(res.bodyBytes);
-    }
     try {
-      final cachedImage = await getCachedImage(
-        url,
-        customPathList: this.customPathList,
-        quality: this.quality,
-      );
+      if (kIsWeb) {
+        final res = await http.get(
+          Uri.parse(url),
+        );
 
-      final file = File(cachedImage.filePath);
-      final Uint8List bytes = await file.readAsBytes();
-
-      if (bytes.lengthInBytes == 0) {
-        PaintingBinding.instance?.imageCache?.evict(this);
-        throw StateError('$url is empty and cannot be loaded as an image.');
+        return await decode(res.bodyBytes);
       }
+      try {
+        final cachedImage = await getCachedImage(
+          url,
+          customPathList: this.customPathList,
+          quality: this.quality,
+        );
 
-      return await decode(bytes);
-    } on FileSystemException {
-      final res = await http.get(
-        Uri.parse(url),
-      );
+        final file = File(cachedImage.filePath);
+        final Uint8List bytes = await file.readAsBytes();
 
-      final cachedImage = await cacheImage(
-        url,
-        res.bodyBytes,
-        customPathList: this.customPathList,
-        quality: this.quality,
-      );
+        if (bytes.lengthInBytes == 0) {
+          PaintingBinding.instance?.imageCache?.evict(this);
+          throw StateError('$url is empty and cannot be loaded as an image.');
+        }
 
-      final file = File(cachedImage.filePath);
-      final Uint8List bytes = await file.readAsBytes();
+        return await decode(bytes);
+      } on FileSystemException {
+        final res = await http.get(
+          Uri.parse(url),
+        );
 
-      if (bytes.lengthInBytes == 0) {
-        PaintingBinding.instance?.imageCache?.evict(this);
-        throw StateError('$url is empty and cannot be loaded as an image.');
+        final cachedImage = await cacheImage(
+          url,
+          res.bodyBytes,
+          customPathList: this.customPathList,
+          quality: this.quality,
+        );
+
+        final file = File(cachedImage.filePath);
+        final Uint8List bytes = await file.readAsBytes();
+
+        if (bytes.lengthInBytes == 0) {
+          PaintingBinding.instance?.imageCache?.evict(this);
+          throw StateError('$url is empty and cannot be loaded as an image.');
+        }
+
+        return await decode(bytes);
       }
-
-      return await decode(bytes);
+    } catch (e) {
+      return decode(
+        (await rootBundle.load('assets/images/icons/no_photo.png'))
+            .buffer
+            .asUint8List(),
+      );
     }
   }
 

@@ -1,8 +1,6 @@
-import 'package:badges/badges.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:fluttercontactpicker/fluttercontactpicker.dart';
 import 'package:get/get.dart';
 import 'package:share/share.dart';
 import 'package:stackedtasks/config/extensions/hex_color.dart';
@@ -10,18 +8,18 @@ import 'package:stackedtasks/constants/models/inbox_item.dart';
 import 'package:stackedtasks/constants/user.dart';
 import 'package:stackedtasks/models/Task.dart';
 import 'package:stackedtasks/models/UserModel.dart';
+import 'package:stackedtasks/providers/cache/cached_image_provider.dart';
 import 'package:stackedtasks/repositories/inbox/inbox_repository.dart';
 import 'package:stackedtasks/repositories/notification/notification_repository.dart';
-import 'package:stackedtasks/repositories/task/task_repository.dart';
 import 'package:stackedtasks/services/feed-back/flush_bar.dart';
 import 'package:stackedtasks/services/feed-back/loader.dart';
 import 'package:stackedtasks/services/user/user_service.dart';
+import 'package:stackedtasks/views/shared/tools/contact_picker.dart';
 import 'package:stackedtasks/widgets/forms/date_picker.dart';
 import 'package:stackedtasks/widgets/forms/time_picker.dart';
 import 'package:stackedtasks/widgets/shared/app_action_button.dart';
 import 'package:stackedtasks/widgets/shared/app_appbar.dart';
 import 'package:stackedtasks/constants/models/task.dart' as task_constants;
-import 'package:stackedtasks/widgets/shared/app_expansion_tile.dart';
 import 'package:stackedtasks/widgets/shared/app_text_field.dart';
 import 'package:stackedtasks/widgets/shared/card/app_button_card.dart';
 import 'package:stackedtasks/widgets/shared/user/user_card.dart';
@@ -316,6 +314,174 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
             padding: const EdgeInsets.all(16.0),
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             children: [
+              // PARTNERS
+              Container(
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: Colors.black12,
+                    ),
+                  ),
+                ),
+                padding: EdgeInsets.only(
+                  left: 16,
+                  right: 16,
+                  bottom: 12,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 16,
+                          child: Divider(
+                            color: Colors.black26,
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                          ),
+                          height: 24,
+                          child: Center(
+                            child: Text('Partners'),
+                          ),
+                        ),
+                        Expanded(
+                          child: Divider(
+                            color: Colors.black26,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Stack(
+                      children: [
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.max,
+                            children: [
+                              Container(
+                                width: 32,
+                                height: 32,
+                              ),
+                              if (loadingPartners)
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: Color(0xFFEEEEEE),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  width: 32,
+                                  height: 32,
+                                  padding: EdgeInsets.all(4),
+                                  child: Center(
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 1.5,
+                                      valueColor: AlwaysStoppedAnimation(
+                                        HexColor.fromHex(
+                                          widget.task.stackColor,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              else
+                                ...partners.map(
+                                  (e) => Container(
+                                    margin: EdgeInsets.symmetric(
+                                      horizontal: 2,
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(32),
+                                      child: e.photoURL == null
+                                          ? Container(
+                                              width: 32,
+                                              height: 32,
+                                              decoration: BoxDecoration(
+                                                color: Theme.of(context)
+                                                    .textTheme
+                                                    .headline6
+                                                    .color
+                                                    .withOpacity(.25),
+                                                borderRadius:
+                                                    BorderRadius.circular(32),
+                                              ),
+                                              child: Center(
+                                                child: Text(
+                                                  e.fullName[0].toUpperCase(),
+                                                  style: TextStyle(
+                                                    color: Theme.of(context)
+                                                        .backgroundColor,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 18,
+                                                  ),
+                                                ),
+                                              ),
+                                            )
+                                          : Image(
+                                              image: CachedImageProvider(
+                                                e.photoURL,
+                                              ),
+                                              width: 32,
+                                              height: 32,
+                                              fit: BoxFit.cover,
+                                            ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                        Positioned(
+                          left: 0,
+                          top: 0,
+                          bottom: 0,
+                          child: Container(
+                            padding: EdgeInsets.only(right: 12),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Theme.of(context).backgroundColor,
+                                  Theme.of(context)
+                                      .backgroundColor
+                                      .withOpacity(.9),
+                                  Theme.of(context)
+                                      .backgroundColor
+                                      .withOpacity(.75),
+                                  Theme.of(context)
+                                      .backgroundColor
+                                      .withOpacity(0),
+                                ],
+                              ),
+                            ),
+                            child: GestureDetector(
+                              onTap: addPartner,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Color(0xFFEEEEEE),
+                                  shape: BoxShape.circle,
+                                ),
+                                width: 28,
+                                height: 28,
+                                child: Center(
+                                  child: Icon(
+                                    Icons.add,
+                                    size: 18,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              SizedBox(height: 20),
+
               Container(
                 decoration: BoxDecoration(
                   color: Theme.of(context).backgroundColor,
@@ -672,57 +838,6 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
                     ],
                   ),
                 ),
-
-              // PARTNERS
-              if (loadingPartners)
-                Center(
-                  child: LoadingWidget(),
-                )
-              else
-                AppExpansionTile(
-                  title: Row(
-                    children: [
-                      Text('Partners'),
-                      SizedBox(width: 8),
-                      Badge(
-                        padding: EdgeInsets.all(8),
-                        badgeColor: HexColor.fromHex(widget.stackColor),
-                        animationType: BadgeAnimationType.fade,
-                        badgeContent: Text(
-                          '${partners.length}',
-                          style: TextStyle(
-                            color: Theme.of(context).backgroundColor,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  color: HexColor.fromHex(widget.stackColor).darken(),
-                  trailing: Icon(
-                    Icons.group_rounded,
-                    size: 28,
-                  ),
-                  children: [
-                    ...partners.map(
-                      (e) => UserCard(
-                        user: e,
-                        onDelete: () => setState(() {
-                          partners.remove(e);
-                        }),
-                      ),
-                    ),
-                    AppActionButton(
-                      onPressed: addPartner,
-                      margin: EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      backgroundColor:
-                          HexColor.fromHex(widget.stackColor).darken(),
-                      label: 'Add Partner',
-                    ),
-                  ],
-                ),
             ],
           ),
         ),
@@ -733,16 +848,16 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
   void addPartner() async {
     String addType;
     bool loading = false;
-    UserModel foundUser;
+    List<UserModel> foundUsers = [];
     final emailFieldController = TextEditingController();
 
     void searchByEmail(StateSetter smallSetState) async {
-      foundUser = null;
+      foundUsers = [];
       if (getCurrentUser().email.toLowerCase() ==
           emailFieldController.text.trim().toLowerCase()) {
         smallSetState(() {
           loading = false;
-          foundUser = null;
+          foundUsers = [];
         });
         showFlushBar(
           title: 'Hmm..',
@@ -774,12 +889,12 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
           );
           smallSetState(() {
             loading = false;
-            foundUser = null;
+            foundUsers = [];
           });
         } else
           smallSetState(() {
             loading = false;
-            foundUser = user;
+            foundUsers = [user];
           });
       } else {
         await showDialog(
@@ -803,7 +918,7 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
                   onPressed: () async {
                     Navigator.pop(context);
                     await Share.share(
-                      'I would suggest that you start organizing your time with StackedTasks, Start now by downloading it from here: stackedtasks.com !',
+                      'Hey. I\'m using the Stacked Tasks app to get more done. Could you please help me out by being my accountability buddy? stackedtasks.com',
                     );
                   },
                   child: Text('Invite'),
@@ -814,7 +929,7 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
         );
         smallSetState(() {
           loading = false;
-          foundUser = null;
+          foundUsers = [];
         });
       }
     }
@@ -846,87 +961,91 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
                     vertical: 8,
                   ),
                   child: ClipRect(
-                    child: loading
-                        ? Center(
-                            child: LoadingWidget(),
-                          )
-                        : Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Row(
+                    child: addType != 'email'
+                        ? Container()
+                        : loading
+                            ? Center(
+                                child: LoadingWidget(),
+                              )
+                            : Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  IconButton(
-                                    icon: Icon(
-                                      Icons.email_outlined,
-                                      color: Theme.of(context).primaryColor,
-                                    ),
-                                    onPressed: () => smallSetState(
-                                      () {
-                                        foundUser = null;
-                                        addType = null;
-                                      },
-                                    ),
+                                  Row(
+                                    children: [
+                                      IconButton(
+                                        icon: Icon(
+                                          Icons.email_outlined,
+                                          color: Theme.of(context).primaryColor,
+                                        ),
+                                        onPressed: () => smallSetState(
+                                          () {
+                                            foundUsers = [];
+                                            addType = null;
+                                          },
+                                        ),
+                                      ),
+                                      Text(
+                                        'Add By Email',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .subtitle1,
+                                      ),
+                                    ],
                                   ),
-                                  Text(
-                                    'Add By Email',
-                                    style:
-                                        Theme.of(context).textTheme.subtitle1,
-                                  ),
-                                ],
-                              ),
-                              AppTextField(
-                                label: 'Email',
-                                controller: emailFieldController,
-                                margin: EdgeInsets.zero,
-                                autoFocus: true,
-                                keyboardType: TextInputType.emailAddress,
-                                onSubmit: (email) => searchByEmail(
-                                  smallSetState,
-                                ),
-                                suffix: InkWell(
-                                  onTap: () => searchByEmail(smallSetState),
-                                  child: Container(
-                                    width: 44,
-                                    height: 44,
-                                    child: Center(
-                                      child: Icon(
-                                        Icons.search,
-                                        color: Theme.of(context).primaryColor,
+                                  AppTextField(
+                                    label: 'Email',
+                                    controller: emailFieldController,
+                                    margin: EdgeInsets.zero,
+                                    keyboardType: TextInputType.emailAddress,
+                                    onSubmit: (email) => searchByEmail(
+                                      smallSetState,
+                                    ),
+                                    suffix: InkWell(
+                                      onTap: () => searchByEmail(smallSetState),
+                                      child: Container(
+                                        width: 44,
+                                        height: 44,
+                                        child: Center(
+                                          child: Icon(
+                                            Icons.search,
+                                            color:
+                                                Theme.of(context).primaryColor,
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
+                                ],
                               ),
-                            ],
-                          ),
                   ),
                 ),
-                AnimatedContainer(
-                  duration: Duration(milliseconds: 350),
-                  height: addType == 'email' ? 0 : 144,
-                  child: ClipRect(
-                    child: AppButtonCard(
-                      icon: Icon(
-                        Icons.email_outlined,
-                        size: 44.0,
-                      ),
-                      text: 'Add By Email',
-                      onPressed: () => smallSetState(
-                        () {
-                          foundUser = null;
-                          addType = 'email';
-                        },
-                      ),
-                      margin: EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      textStyle: TextStyle(
-                        color: Theme.of(context).primaryColor,
+                if (addType == null)
+                  AnimatedContainer(
+                    duration: Duration(milliseconds: 350),
+                    height: addType == 'email' ? 0 : 144,
+                    child: ClipRect(
+                      child: AppButtonCard(
+                        icon: Icon(
+                          Icons.email_outlined,
+                          size: 44.0,
+                        ),
+                        text: 'Add By Email',
+                        onPressed: () => smallSetState(
+                          () {
+                            foundUsers = [];
+                            addType = 'email';
+                          },
+                        ),
+                        margin: EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        textStyle: TextStyle(
+                          color: Theme.of(context).primaryColor,
+                        ),
                       ),
                     ),
                   ),
-                ),
 
                 /** --- EXTERNAL INVITATION METHODS --- **/
                 AnimatedContainer(
@@ -937,98 +1056,107 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
                     vertical: 8,
                   ),
                   child: ClipRect(
-                    child: loading
-                        ? Center(
-                            child: LoadingWidget(),
-                          )
-                        : Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Row(
+                    child: addType != 'phone'
+                        ? Container()
+                        : loading
+                            ? Center(
+                                child: LoadingWidget(),
+                              )
+                            : Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  IconButton(
-                                    icon: Icon(
-                                      Icons.phone_iphone_outlined,
-                                      color: Colors.green[400],
-                                    ),
-                                    onPressed: () => smallSetState(
-                                      () {
-                                        foundUser = null;
-                                        addType = null;
-                                      },
-                                    ),
+                                  Row(
+                                    children: [
+                                      IconButton(
+                                        icon: Icon(
+                                          Icons.phone_iphone_outlined,
+                                          color: Colors.green[400],
+                                        ),
+                                        onPressed: () => smallSetState(
+                                          () {
+                                            foundUsers = [];
+                                            addType = null;
+                                          },
+                                        ),
+                                      ),
+                                      Text(
+                                        'Add By Phone',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .subtitle1,
+                                      ),
+                                    ],
                                   ),
-                                  Text(
-                                    'Add By Phone',
-                                    style:
-                                        Theme.of(context).textTheme.subtitle1,
+                                  AppActionButton(
+                                    onPressed: () async {
+                                      final List<UserModel> users =
+                                          await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => ContactPickerView(
+                                            actionButtonText: 'Invite to Task',
+                                          ),
+                                        ),
+                                      );
+                                      if (users != null && users.isNotEmpty) {
+                                        smallSetState(() {
+                                          foundUsers = users;
+                                        });
+                                      }
+                                    },
+                                    backgroundColor: Colors.green[400],
+                                    label: 'Choose Contact',
                                   ),
                                 ],
                               ),
-                              AppActionButton(
-                                onPressed: () async {
-                                  final PhoneContact contact =
-                                      await FlutterContactPicker
-                                          .pickPhoneContact();
-                                  if (contact != null) {
-                                    foundUser = await TaskRepository
-                                        .inviteTaskPartnerByPhone(
-                                      widget.task,
-                                      contact.phoneNumber.number,
-                                    );
-                                    smallSetState(() {});
-                                  }
-                                },
-                                backgroundColor: Colors.green[400],
-                                label: 'Choose Contact',
-                              ),
-                            ],
-                          ),
                   ),
                 ),
-                AnimatedContainer(
-                  duration: Duration(milliseconds: 350),
-                  height: addType == 'phone' ? 0 : 144,
-                  child: ClipRect(
-                    child: AppButtonCard(
-                      icon: Icon(
-                        Icons.phone_iphone_outlined,
-                        size: 44.0,
-                        color: Colors.green[400],
-                      ),
-                      text: 'Add By Phone',
-                      onPressed: () => smallSetState(
-                        () {
-                          foundUser = null;
-                          addType = 'phone';
-                        },
-                      ),
-                      margin: EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      textStyle: TextStyle(
-                        color: Colors.green[400],
+                if (addType == null)
+                  AnimatedContainer(
+                    duration: Duration(milliseconds: 350),
+                    height: addType == 'phone' ? 0 : 144,
+                    child: ClipRect(
+                      child: AppButtonCard(
+                        icon: Icon(
+                          Icons.phone_iphone_outlined,
+                          size: 44.0,
+                          color: Colors.green[400],
+                        ),
+                        text: 'Add By Phone',
+                        onPressed: () => smallSetState(
+                          () {
+                            foundUsers = [];
+                            addType = 'phone';
+                          },
+                        ),
+                        margin: EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        textStyle: TextStyle(
+                          color: Colors.green[400],
+                        ),
                       ),
                     ),
                   ),
-                ),
-                if (foundUser != null)
-                  UserCard(
-                    user: foundUser,
-                    onDelete: () => smallSetState(
-                      () => foundUser = null,
+                if (foundUsers != null && foundUsers.isNotEmpty)
+                  for (final foundUser in foundUsers)
+                    UserCard(
+                      user: foundUser,
+                      onDelete: () => smallSetState(
+                        () => foundUsers.remove(foundUser),
+                      ),
                     ),
-                  ),
                 if (!loading)
                   AppActionButton(
-                    onPressed: foundUser != null
+                    onPressed: (foundUsers != null && foundUsers.isNotEmpty)
                         ? () async {
                             Navigator.pop(context);
-                            await NotificationRepository.addTaskNotification(
-                              widget.task,
-                              foundUser.uid,
-                            );
+                            for (final foundUser in foundUsers)
+                              await NotificationRepository.addTaskNotification(
+                                widget.task,
+                                foundUser.uid,
+                              );
                             showFlushBar(
                               title: 'Invitation Sent',
                               message:
@@ -1038,7 +1166,7 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
                         : addType == 'email'
                             ? () => searchByEmail(smallSetState)
                             : () => Navigator.pop(context),
-                    label: foundUser != null
+                    label: foundUsers != null && foundUsers.isNotEmpty
                         ? 'Add'
                         : addType == 'email'
                             ? 'Search'

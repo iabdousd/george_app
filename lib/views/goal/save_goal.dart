@@ -118,7 +118,6 @@ class _SaveGoalPageState extends State<SaveGoalPage> {
                         borderSide: BorderSide(width: 1),
                       ),
                     ),
-                    autofocus: true,
                     validator: (t) =>
                         t.isEmpty ? 'Please enter the goal\'s title' : null,
                   ),

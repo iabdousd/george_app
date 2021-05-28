@@ -12,7 +12,7 @@ void remover(List message) async {
   }
 }
 
-removeOutdatedImages() async {
+void removeOutdatedImages() async {
   LazyBox<CachedImage> box = Hive.lazyBox<CachedImage>(cachedImagesBoxName);
 
   List<CachedImage> cachedImages = [];

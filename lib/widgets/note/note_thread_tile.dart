@@ -14,8 +14,8 @@ class NoteThreadTile extends StatelessWidget {
     Key key,
     this.note,
     this.index,
-    this.isLast,
-    this.showAll,
+    this.isLast: false,
+    this.showAll: false,
   }) : super(key: key);
 
   @override

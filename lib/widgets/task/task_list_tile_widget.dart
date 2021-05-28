@@ -688,14 +688,42 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                                         child: ClipRRect(
                                           borderRadius:
                                               BorderRadius.circular(32),
-                                          child: Image(
-                                            image: CachedImageProvider(
-                                              e.photoURL,
-                                            ),
-                                            width: 28,
-                                            height: 28,
-                                            fit: BoxFit.cover,
-                                          ),
+                                          child: e.photoURL == null
+                                              ? Container(
+                                                  width: 32,
+                                                  height: 32,
+                                                  decoration: BoxDecoration(
+                                                    color: Theme.of(context)
+                                                        .textTheme
+                                                        .headline6
+                                                        .color
+                                                        .withOpacity(.25),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            32),
+                                                  ),
+                                                  child: Center(
+                                                    child: Text(
+                                                      e.fullName[0]
+                                                          .toUpperCase(),
+                                                      style: TextStyle(
+                                                        color: Theme.of(context)
+                                                            .backgroundColor,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 18,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                )
+                                              : Image(
+                                                  image: CachedImageProvider(
+                                                    e.photoURL,
+                                                  ),
+                                                  width: 28,
+                                                  height: 28,
+                                                  fit: BoxFit.cover,
+                                                ),
                                         ),
                                       ),
                                     ),

@@ -35,7 +35,7 @@ class TaskRepository {
                 onPressed: () async {
                   Navigator.pop(context);
                   await Share.share(
-                    'I would suggest that you start organizing your time with StackedTasks, Start now by downloading it from here: stackedtasks.com !',
+                    'Hey. I\'m using the Stacked Tasks app to get more done. Could you please help me out by being my accountability buddy? stackedtasks.com',
                   );
                 },
                 child: Text('Invite'),

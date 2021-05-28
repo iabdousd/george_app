@@ -40,7 +40,9 @@ class Goal {
   Goal.fromJson(Map<String, dynamic> jsonObject, {String id}) {
     this.id = id;
     this.userID = jsonObject[goal_constants.USER_ID_KEY];
-    this.partnersIDs = List<String>.from([goal_constants.PARTNERS_IDS_KEY]);
+    this.partnersIDs = List<String>.from(
+      jsonObject[goal_constants.PARTNERS_IDS_KEY],
+    );
     this.title = jsonObject[goal_constants.TITLE_KEY];
     this.color = jsonObject[goal_constants.COLOR_KEY];
     this.status = jsonObject[goal_constants.STATUS_KEY];

@@ -4,8 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import 'package:stackedtasks/constants/feed.dart' as feed_constants;
+import 'package:stackedtasks/constants/models/goal.dart';
 import 'package:stackedtasks/constants/models/stack.dart' as stack_constants;
 import 'package:stackedtasks/constants/models/task.dart' as task_constants;
+import 'package:stackedtasks/models/Goal.dart';
+import 'package:stackedtasks/models/Stack.dart';
 import 'package:stackedtasks/models/goal_summary.dart';
 import 'package:stackedtasks/repositories/feed/statistics.dart';
 import 'package:stackedtasks/repositories/inbox/inbox_repository.dart';
@@ -47,6 +50,9 @@ class Task extends InboxItem {
 
   String userName;
   String userPhoto;
+  int likesCount;
+  int commentsCount;
+  Stream<bool> isLiked;
 
   Task({
     this.id,
@@ -186,6 +192,9 @@ class Task extends InboxItem {
     this.lastNote = jsonObject[task_constants.LAST_NOTE_KEY] != null
         ? Note.fromJson(jsonObject[task_constants.LAST_NOTE_KEY])
         : null;
+
+    this.likesCount = jsonObject[feed_constants.LIKES_COUNT_KEY] ?? 0;
+    this.commentsCount = jsonObject[feed_constants.COMMENTS_COUNT_KEY] ?? 0;
   }
 
   Map<String, dynamic> toJson() {
@@ -314,6 +323,33 @@ class Task extends InboxItem {
     return null;
   }
 
+  Future<List> getAllPartners() async {
+    List<String> allPartners = [...partnersIDs];
+    if (stackRef != null && stackRef != 'inbox') {
+      final stackRaw = await FirebaseFirestore.instance
+          .collection(STACKS_KEY)
+          .doc(stackRef)
+          .get();
+      final stack = TasksStack.fromJson(
+        stackRaw.data(),
+        id: stackRaw.id,
+      );
+      allPartners.addAll(stack.partnersIDs);
+      if (goalRef != null && goalRef != 'inbox') {
+        final goalRaw = await FirebaseFirestore.instance
+            .collection(GOALS_KEY)
+            .doc(goalRef)
+            .get();
+        final goal = Goal.fromJson(
+          goalRaw.data(),
+          id: goalRaw.id,
+        );
+        allPartners.addAll(goal.partnersIDs);
+      }
+    }
+    return allPartners;
+  }
+
   accomplish({DateTime customDate, bool unChecking: false}) async {
     if (repetition == null) {
       if (status == 1) {
@@ -342,6 +378,7 @@ class Task extends InboxItem {
         await save(
           updateSummaries: false,
         );
+        List<String> allPartners = await getAllPartners();
         await FirebaseFirestore.instance
             .collection(feed_constants.FEED_KEY)
             .doc(
@@ -349,7 +386,7 @@ class Task extends InboxItem {
             )
             .set(
           {
-            feed_constants.TO_KEY: [getCurrentUser().uid],
+            feed_constants.TO_KEY: [getCurrentUser().uid, ...allPartners],
             ...toJson(),
             task_constants.CREATION_DATE_KEY: DateTime.now(),
           },
@@ -403,6 +440,7 @@ class Task extends InboxItem {
       await save(
         updateSummaries: false,
       );
+      List<String> allPartners = await getAllPartners();
       await FirebaseFirestore.instance
           .collection(feed_constants.FEED_KEY)
           .doc(
@@ -412,7 +450,7 @@ class Task extends InboxItem {
         {
           ...toJson(),
           // TODO: PARTNER RELATED
-          feed_constants.TO_KEY: [getCurrentUser().uid],
+          feed_constants.TO_KEY: [getCurrentUser().uid, ...allPartners],
           task_constants.CREATION_DATE_KEY: DateTime.now(),
         },
       );
