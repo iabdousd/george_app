@@ -4,6 +4,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:stackedtasks/models/cache/cached_image.dart';
 import 'package:stackedtasks/models/cache/contact_user.dart';
 import 'package:stackedtasks/repositories/contact/contact_repository.dart';
+import 'package:stackedtasks/services/user/user_service.dart';
 import 'images/removers.dart';
 
 initializeCache() async {
@@ -27,5 +28,4 @@ initializeHive() async {
     await Hive.openLazyBox<ContactUser>(CONTACT_USER_BOX_NAME);
 
   removeOutdatedImages();
-  ContactRepository.syncContacts();
 }

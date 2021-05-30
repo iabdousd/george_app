@@ -1,3 +1,4 @@
+import 'package:stackedtasks/constants/models/task.dart';
 import 'package:stackedtasks/models/Note.dart';
 import 'package:stackedtasks/models/Task.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -63,7 +64,7 @@ class FeedRepository {
         .collection(feed_constants.FEED_KEY)
         .where(
           feed_constants.TO_KEY,
-          arrayContainsAny: ['*', getCurrentUser().uid],
+          arrayContainsAny: [getCurrentUser().uid],
         )
         .orderBy(
           feed_constants.CREATION_DATE_KEY,
@@ -159,9 +160,15 @@ class FeedRepository {
         .collection(feed_constants.FEED_KEY)
         .doc(task.id)
         .get();
+
+    if (task.taskNotes == null) task.taskNotes = [];
+    task.taskNotes.add(note.id);
+
     await articleDocument.reference.update({
       feed_constants.COMMENTS_COUNT_KEY:
           (articleDocument.data()[feed_constants.COMMENTS_COUNT_KEY] ?? 0) + 1,
+      TASK_NOTES_KEY:
+          (articleDocument.data()[TASK_NOTES_KEY] ?? []) + [note.id],
     });
   }
 }

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:country_codes/country_codes.dart';
 import 'package:flutter_contact/contacts.dart';
 import 'package:hive/hive.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -19,6 +20,9 @@ class ContactRepository {
           .trim();
 
   static void syncContacts() async {
+    await CountryCodes.init();
+    final CountryDetails details = CountryCodes.detailsForLocale();
+
     List<String> alreadySyncedPhoneContacts = List<String>.from(jsonDecode(
       (await SharedPreferences.getInstance()).getString('synced_contacts') ??
           '[]',
@@ -35,8 +39,9 @@ class ContactRepository {
       while (await contacts.moveNext()) {
         final contact = await contacts.current;
         for (final number in contact.phones) {
+          final phone = trimPhoneNumber(number.value);
           contactList.putIfAbsent(
-            trimPhoneNumber(number.value),
+            phone.startsWith('+') ? phone : details.dialCode + phone,
             () => contact,
           );
         }

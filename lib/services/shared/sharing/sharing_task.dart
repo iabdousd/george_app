@@ -12,8 +12,9 @@ shareTask(Task task, ScreenshotController screenshotController) async {
   File screenshot = File(tempPath + '/${task.id}.jpg');
   if (!screenshot.existsSync()) screenshot.createSync();
 
-  screenshot.writeAsBytesSync(
-      (await screenshotController.capture()).buffer.asUint8List());
+  final capture = await screenshotController.capture();
+  
+  screenshot.writeAsBytesSync(capture.buffer.asUint8List());
 
   await Share.shareFiles(
     [screenshot.path],

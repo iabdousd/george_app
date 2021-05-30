@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -5,8 +6,10 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:stackedtasks/constants/user.dart';
 import 'package:stackedtasks/services/feed-back/flush_bar.dart';
 import 'package:stackedtasks/services/feed-back/loader.dart';
+import 'package:stackedtasks/services/user/user_service.dart';
 import 'package:stackedtasks/views/main-views/main.dart';
 
 import 'email_register.dart';
@@ -223,6 +226,18 @@ class EmailLoginViewState extends State<EmailLoginView> {
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
+      await getCurrentUser().reload();
+      final user = getCurrentUser();
+      await FirebaseFirestore.instance
+          .collection(USERS_KEY)
+          .doc(user.uid)
+          .update({
+        USER_UID_KEY: user.uid,
+        USER_FULL_NAME_KEY: user.displayName,
+        USER_PHONE_NUMBER_KEY: user.phoneNumber,
+        USER_EMAIL_KEY: user.email.trim().toLowerCase(),
+        USER_PROFILE_PICTURE_KEY: user.photoURL,
+      });
       await toggleLoading(state: false);
       SharedPreferences preferences = await SharedPreferences.getInstance();
       await preferences.setBool('hasEnteredBefore', true);

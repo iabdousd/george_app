@@ -125,7 +125,7 @@ class _FeedArticlesListState extends State<FeedArticlesList>
                           name: task.userName,
                           profilePicture: task.userPhoto,
                           task: task,
-                          showAuthorRow: showDate,
+                          showAuthorRow: true,
                         ),
                       )
                     else
@@ -134,7 +134,7 @@ class _FeedArticlesListState extends State<FeedArticlesList>
                           name: task.userName,
                           profilePicture: task.userPhoto,
                           task: task,
-                          showAuthorRow: showDate,
+                          showAuthorRow: true,
                         ),
                       ),
                   ],

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:stackedtasks/services/cache/initializers.dart';
 import 'package:get/get.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:stackedtasks/views/main.dart';
 
 import 'config/theme.dart';
@@ -15,6 +16,7 @@ void main() async {
     final license = await rootBundle.loadString('google_fonts/OFL.txt');
     yield LicenseEntryWithLineBreaks(['google_fonts'], license);
   });
+  await Firebase.initializeApp();
 
   if (!kIsWeb) await initializeCache();
   runApp(MyApp());

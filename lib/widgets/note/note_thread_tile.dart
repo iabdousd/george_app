@@ -1,10 +1,12 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 import 'package:stackedtasks/models/Note.dart';
 import 'package:stackedtasks/providers/cache/cached_image_provider.dart';
+import 'package:stackedtasks/views/user/user_profile.dart';
 
 class NoteThreadTile extends StatelessWidget {
   final Note note;
@@ -50,23 +52,30 @@ class NoteThreadTile extends StatelessWidget {
                       left: 8.0,
                       right: 8.0,
                     ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(52),
-                      child: note.creator.photoURL == null
-                          ? SvgPicture.asset(
-                              'assets/images/profile.svg',
-                              fit: BoxFit.cover,
-                              width: 32,
-                              height: 32,
-                            )
-                          : Image(
-                              image: CachedImageProvider(
-                                note.creator.photoURL,
+                    child: InkWell(
+                      onTap: () => Get.to(
+                        () => UserProfileView(
+                          user: note.creator,
+                        ),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(52),
+                        child: note.creator.photoURL == null
+                            ? SvgPicture.asset(
+                                'assets/images/profile.svg',
+                                fit: BoxFit.cover,
+                                width: 32,
+                                height: 32,
+                              )
+                            : Image(
+                                image: CachedImageProvider(
+                                  note.creator.photoURL,
+                                ),
+                                width: 32,
+                                height: 32,
+                                fit: BoxFit.cover,
                               ),
-                              width: 32,
-                              height: 32,
-                              fit: BoxFit.cover,
-                            ),
+                      ),
                     ),
                   ),
                   if (isLast && (showAll || (!showAll && index != 0)))

@@ -61,12 +61,15 @@ class _UserProfileViewState extends State<UserProfileView> {
                                   ),
                                 );
                               },
-                              child: Image(
-                                image:
-                                    CachedImageProvider(widget.user.photoURL),
-                                width: 96,
-                                height: 96,
-                                fit: BoxFit.cover,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(96),
+                                child: Image(
+                                  image:
+                                      CachedImageProvider(widget.user.photoURL),
+                                  width: 96,
+                                  height: 96,
+                                  fit: BoxFit.cover,
+                                ),
                               ),
                             ),
                     ),
@@ -87,8 +90,9 @@ class _UserProfileViewState extends State<UserProfileView> {
                         builder: (context, snapshot) {
                           final followed = snapshot.data ?? false;
                           return ElevatedButton(
-                            onPressed: () =>
-                                UserService.followUser(widget.user),
+                            onPressed: () => !snapshot.hasData
+                                ? null
+                                : UserService.followUser(widget.user),
                             child: Text(followed ? 'Unfollow' : 'Follow'),
                             style: ButtonStyle(
                               backgroundColor: MaterialStateProperty.all(

@@ -26,86 +26,51 @@ class NoteRepository {
         .toList();
   }
 
+  static Stream<List<Note>> streamFeedComments(Task task) {
+    if (task.taskNotes != null && task.taskNotes.isNotEmpty)
+      return FirebaseFirestore.instance
+          .collection(NOTES_KEY)
+          .where(
+            note_constants.NOTE_ID_KEY,
+            whereIn: task.taskNotes,
+          )
+          .orderBy(
+            note_constants.CREATION_DATE_KEY,
+            descending: true,
+          )
+          .snapshots()
+          .asyncMap((event) async {
+        List<Note> notes = [];
+        for (final noteRaw in event.docs) {
+          Note note = Note.fromJson(
+            noteRaw.data(),
+            id: noteRaw.id,
+          );
+          if (note.userID != getCurrentUser().uid) {
+            final userModel = await UserService.getUser(note.userID);
+            note.creator = userModel;
+          } else {
+            note.creator = UserModel(
+              uid: getCurrentUser().uid,
+              fullName: getCurrentUser().displayName,
+              email: getCurrentUser().email,
+              photoURL: getCurrentUser().photoURL,
+            );
+          }
+          notes.add(note);
+        }
+        return notes;
+      });
+
+    return Stream.value(<Note>[]);
+  }
+
   static Stream<List<Note>> streamTaskNotes(
     Task task, {
-    bool bothNotes: false,
     bool allTaskNotes: false,
   }) {
-    if (!bothNotes &&
-        !allTaskNotes &&
-        (task.taskNotes == null || task.taskNotes.isEmpty)) {
+    if (!allTaskNotes && (task.taskNotes == null || task.taskNotes.isEmpty)) {
       return Stream.value([]);
-    }
-    if (bothNotes) {
-      return StreamGroup.merge(
-        [
-          FirebaseFirestore.instance
-              .collection(NOTES_KEY)
-              .where(note_constants.TASK_REF_KEY, isEqualTo: task.id)
-              .orderBy(
-                note_constants.CREATION_DATE_KEY,
-                descending: true,
-              )
-              .snapshots()
-              .asyncMap((event) async {
-            List<Note> notes = [];
-            for (final noteRaw in event.docs) {
-              Note note = Note.fromJson(
-                noteRaw.data(),
-                id: noteRaw.id,
-              );
-              if (note.userID != getCurrentUser().uid) {
-                final userModel = await UserService.getUser(note.userID);
-                note.creator = userModel;
-              } else {
-                note.creator = UserModel(
-                  uid: getCurrentUser().uid,
-                  fullName: getCurrentUser().displayName,
-                  email: getCurrentUser().email,
-                  photoURL: getCurrentUser().photoURL,
-                );
-              }
-              notes.add(note);
-            }
-            return notes;
-          }),
-          if (task.taskNotes != null && task.taskNotes.isNotEmpty)
-            FirebaseFirestore.instance
-                .collection(NOTES_KEY)
-                .where(
-                  note_constants.NOTE_ID_KEY,
-                  whereIn: task.taskNotes,
-                )
-                .orderBy(
-                  note_constants.CREATION_DATE_KEY,
-                  descending: true,
-                )
-                .snapshots()
-                .asyncMap((event) async {
-              List<Note> notes = [];
-              for (final noteRaw in event.docs) {
-                Note note = Note.fromJson(
-                  noteRaw.data(),
-                  id: noteRaw.id,
-                );
-                if (note.userID != getCurrentUser().uid) {
-                  final userModel = await UserService.getUser(note.userID);
-                  note.creator = userModel;
-                } else {
-                  note.creator = UserModel(
-                    uid: getCurrentUser().uid,
-                    fullName: getCurrentUser().displayName,
-                    email: getCurrentUser().email,
-                    photoURL: getCurrentUser().photoURL,
-                  );
-                }
-                notes.add(note);
-              }
-              print(notes);
-              return notes;
-            })
-        ],
-      );
     }
 
     Query ref = FirebaseFirestore.instance.collection(NOTES_KEY);

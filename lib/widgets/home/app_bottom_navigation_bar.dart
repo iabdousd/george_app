@@ -1,5 +1,7 @@
+import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:stackedtasks/repositories/notification/notification_repository.dart';
 
 class AppBottomNavigationBar extends StatelessWidget {
   final List<GlobalKey> keys;
@@ -43,12 +45,31 @@ class AppBottomNavigationBar extends StatelessWidget {
           tooltip: '',
         ),
         BottomNavigationBarItem(
-          icon: SvgPicture.asset(
-            'assets/images/icons/bell.svg',
-            key: keys[2],
-            width: 22,
-            height: 22,
-            color: index == 2 ? Theme.of(context).primaryColor : null,
+          icon: StreamBuilder<int>(
+            stream: NotificationRepository.countNotifications(),
+            builder: (context, snapshot) {
+              final count = snapshot.data ?? 0;
+              return Badge(
+                showBadge: count > 0,
+                badgeContent: Padding(
+                  padding: const EdgeInsets.all(2.0),
+                  child: Text(
+                    '$count',
+                    style: Theme.of(context).textTheme.bodyText2.copyWith(
+                          color: Theme.of(context).backgroundColor,
+                          fontSize: 11,
+                        ),
+                  ),
+                ),
+                child: SvgPicture.asset(
+                  'assets/images/icons/bell.svg',
+                  key: keys[2],
+                  width: 22,
+                  height: 22,
+                  color: index == 2 ? Theme.of(context).primaryColor : null,
+                ),
+              );
+            },
           ),
           label: '',
           tooltip: '',

@@ -1,4 +1,5 @@
 import 'package:animate_do/animate_do.dart';
+import 'package:country_codes/country_codes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_contact/contacts.dart';
 import 'package:flutter_contact/flutter_contact.dart';
@@ -6,6 +7,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:share/share.dart';
 import 'package:stackedtasks/models/UserModel.dart';
 import 'package:stackedtasks/providers/cache/cached_image_provider.dart';
+import 'package:stackedtasks/repositories/contact/contact_repository.dart';
 import 'package:stackedtasks/services/feed-back/flush_bar.dart';
 import 'package:stackedtasks/services/feed-back/loader.dart';
 import 'package:stackedtasks/services/user/user_service.dart';
@@ -28,8 +30,11 @@ class _ContactPickerViewState extends State<ContactPickerView> {
   List<UserModel> selectedUsers = [];
   Map<String, UserModel> users = {};
   bool loading = true;
+  CountryDetails details;
 
   _init() async {
+    await CountryCodes.init();
+    details = CountryCodes.detailsForLocale();
     await Permission.contacts.request();
     final status = await Permission.contacts.isGranted;
 
@@ -37,16 +42,18 @@ class _ContactPickerViewState extends State<ContactPickerView> {
       final contacts = Contacts.listContacts(
         bufferSize: 9999,
       );
-      // TODO:
+
       while (await contacts.moveNext()) {
         final contact = await contacts.current;
         // FETCH USERS BASED ON THE CONTACT
         bool contactAdded = false;
         for (final phone in contact.phones) {
+          final tPhone = ContactRepository.trimPhoneNumber(phone.value);
           final user = await UserService.getContactUserByPhone(
-            phone.value.replaceAll(' ', '').trim(),
+            tPhone.startsWith('+') ? tPhone : details.dialCode + tPhone,
           );
           if (user != null) {
+            print(user);
             contactAdded = true;
             foundContactList.add(contact);
             users.putIfAbsent(
@@ -83,7 +90,7 @@ class _ContactPickerViewState extends State<ContactPickerView> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Add By Phone',
+          'Add from contacts',
         ),
       ),
       body: SafeArea(
@@ -210,14 +217,26 @@ class _ContactPickerViewState extends State<ContactPickerView> {
                         : contactList[index - foundContactList.length];
                     final notUser = index >= foundContactList.length;
 
-                    final userModel = notUser
-                        ? null
-                        : users[contact.phones
-                            .where((element) => users
-                                .containsKey(element.value.replaceAll(' ', '')))
-                            .first
-                            .value
-                            .replaceAll(' ', '')];
+                    UserModel userModel;
+                    if (!notUser) {
+                      final phone =
+                          ContactRepository.trimPhoneNumber(contact.phones
+                              .where((element) {
+                                final tPhone =
+                                    ContactRepository.trimPhoneNumber(
+                                        element.value);
+                                return users.containsKey(
+                                  tPhone.startsWith('+')
+                                      ? tPhone
+                                      : details.dialCode + tPhone,
+                                );
+                              })
+                              .first
+                              .value);
+                      userModel = users[phone.startsWith('+')
+                          ? phone
+                          : details.dialCode + phone];
+                    }
 
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,

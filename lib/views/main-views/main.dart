@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:stackedtasks/repositories/contact/contact_repository.dart';
+import 'package:stackedtasks/services/user/user_service.dart';
 import 'package:stackedtasks/views/goal/save_goal.dart';
 import 'package:stackedtasks/widgets/home/app_bottom_navigation_bar.dart';
 import 'package:get/get.dart';
@@ -37,6 +39,7 @@ class _MainViewState extends State<MainView>
         await preferences.setBool('hasEnteredBefore', true);
       });
     }
+    if (getCurrentUser()?.uid != null) ContactRepository.syncContacts();
   }
 
   showTutorial() {

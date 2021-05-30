@@ -52,6 +52,17 @@ class NotificationRepository {
     );
   }
 
+  static Stream<int> countNotifications() {
+    return FirebaseFirestore.instance
+        .collection(NOTIFICATIONS_COLLECTION)
+        .where(NOTIFICATION_RECIEVER_KEY, isEqualTo: getCurrentUser().uid)
+        .where(NOTIFICATION_STATUS_KEY, isNotEqualTo: -1)
+        .snapshots()
+        .map(
+          (event) => event.size,
+        );
+  }
+
   static Future<bool> addGoalNotification(Goal goal, String invitedID) async {
     try {
       final res = await FirebaseFirestore.instance

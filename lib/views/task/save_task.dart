@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:share/share.dart';
+import 'package:mailto/mailto.dart';
 import 'package:stackedtasks/config/extensions/hex_color.dart';
 import 'package:stackedtasks/constants/models/inbox_item.dart';
 import 'package:stackedtasks/constants/user.dart';
@@ -23,6 +23,7 @@ import 'package:stackedtasks/constants/models/task.dart' as task_constants;
 import 'package:stackedtasks/widgets/shared/app_text_field.dart';
 import 'package:stackedtasks/widgets/shared/card/app_button_card.dart';
 import 'package:stackedtasks/widgets/shared/user/user_card.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SaveTaskPage extends StatefulWidget {
   final String goalRef;
@@ -917,9 +918,13 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
                 ElevatedButton(
                   onPressed: () async {
                     Navigator.pop(context);
-                    await Share.share(
-                      'Hey. I\'m using the Stacked Tasks app to get more done. Could you please help me out by being my accountability buddy? stackedtasks.com',
+                    final mailtoLink = Mailto(
+                      to: [emailFieldController.text.trim().toLowerCase()],
+                      subject: 'A new way to manage your time',
+                      body:
+                          'Hey. I\'m using the Stacked Tasks app to get more done. Could you please help me out by being my accountability buddy? stackedtasks.com',
                     );
+                    await launch('$mailtoLink');
                   },
                   child: Text('Invite'),
                 ),
@@ -1080,7 +1085,7 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
                                         ),
                                       ),
                                       Text(
-                                        'Add By Phone',
+                                        'Add from contacts',
                                         style: Theme.of(context)
                                             .textTheme
                                             .subtitle1,
@@ -1122,7 +1127,7 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
                           size: 44.0,
                           color: Colors.green[400],
                         ),
-                        text: 'Add By Phone',
+                        text: 'Add from contacts',
                         onPressed: () => smallSetState(
                           () {
                             foundUsers = [];

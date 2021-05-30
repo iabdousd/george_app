@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:hive/hive.dart';
 import 'package:stackedtasks/constants/user.dart';
 import 'package:stackedtasks/models/UserModel.dart';
@@ -10,7 +9,6 @@ import 'package:stackedtasks/models/cache/contact_user.dart';
 import 'package:stackedtasks/services/feed-back/flush_bar.dart';
 
 Future<bool> checkAuthorization() async {
-  await Firebase.initializeApp();
   User user = FirebaseAuth.instance.currentUser;
   if (user != null)
     await FirebaseFirestore.instance
@@ -154,7 +152,7 @@ class UserService {
         .doc(uid)
         .snapshots()
         .map(
-          (event) => event.data()[USER_FOLLOWERS_KEY],
+          (event) => event.data()[USER_FOLLOWING_KEY] ?? 0,
         );
   }
 
@@ -164,7 +162,7 @@ class UserService {
         .doc(uid)
         .snapshots()
         .map(
-          (event) => event.data()[USER_FOLLOWING_KEY],
+          (event) => event.data()[USER_FOLLOWERS_KEY],
         );
   }
 
@@ -184,45 +182,14 @@ class UserService {
         .collection(USER_FOLLOWERS_COLLECTION)
         .doc(getCurrentUser().uid + '_TO_' + user.uid)
         .get();
-    final oldUser = await FirebaseFirestore.instance
-        .collection(USERS_KEY)
-        .doc(user.uid)
-        .get();
 
     if (followDoc.exists && followDoc.data() != null) {
-      await FirebaseFirestore.instance
-          .collection(USERS_KEY)
-          .doc(user.uid)
-          .update({
-        USER_FOLLOWERS_KEY:
-            min(0, (oldUser.data()[USER_FOLLOWERS_KEY] ?? 0) - 1),
-      });
-      await FirebaseFirestore.instance
-          .collection(USERS_KEY)
-          .doc(getCurrentUser().uid)
-          .update({
-        USER_FOLLOWING_KEY:
-            min(0, (oldUser.data()[USER_FOLLOWING_KEY] ?? 0) - 1),
-      });
       await followDoc.reference.delete();
       showFlushBar(
         title: 'Unfollowed',
         message: 'Successfully unfollowed ${user.fullName}',
       );
     } else {
-      await FirebaseFirestore.instance
-          .collection(USERS_KEY)
-          .doc(user.uid)
-          .update({
-        USER_FOLLOWERS_KEY: (oldUser.data()[USER_FOLLOWERS_KEY] ?? 0) + 1,
-      });
-      await FirebaseFirestore.instance
-          .collection(USERS_KEY)
-          .doc(getCurrentUser().uid)
-          .update({
-        USER_FOLLOWING_KEY: (oldUser.data()[USER_FOLLOWING_KEY] ?? 0) + 1,
-      });
-
       await followDoc.reference.set({
         USER_FOLLOW_DATE_KEY: Timestamp.now(),
         USER_FOLLOWER_KEY: getCurrentUser().uid,
