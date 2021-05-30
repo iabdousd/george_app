@@ -48,7 +48,7 @@ class _ContactPickerViewState extends State<ContactPickerView> {
         // FETCH USERS BASED ON THE CONTACT
         bool contactAdded = false;
         for (final phone in contact.phones) {
-          if (contact?.displayName == null) continue;
+          // if (contact?.displayName == null) continue;
           final tPhone = ContactRepository.trimPhoneNumber(phone.value);
           final user = await UserService.getContactUserByPhone(
             tPhone.startsWith('+') ? tPhone : details.dialCode + tPhone,
@@ -218,6 +218,14 @@ class _ContactPickerViewState extends State<ContactPickerView> {
                         : contactList[index - foundContactList.length];
                     final notUser = index >= foundContactList.length;
 
+                    final displayname =
+                        contact.displayName ?? contact.givenName;
+
+                    if (displayname == null) {
+                      print(contact.phones.map((e) => e.value));
+                      return Container();
+                    }
+
                     UserModel userModel;
                     if (!notUser) {
                       final phone =
@@ -310,8 +318,7 @@ class _ContactPickerViewState extends State<ContactPickerView> {
                                           ),
                                           child: Center(
                                             child: Text(
-                                              contact.displayName[0]
-                                                  .toUpperCase(),
+                                              displayname[0].toUpperCase(),
                                               style: TextStyle(
                                                 color: Theme.of(context)
                                                     .backgroundColor,
@@ -325,7 +332,7 @@ class _ContactPickerViewState extends State<ContactPickerView> {
                               ),
                               Expanded(
                                 child: Text(
-                                  contact.displayName,
+                                  displayname,
                                 ),
                               ),
                               if (notUser)
