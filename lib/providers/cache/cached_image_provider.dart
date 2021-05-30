@@ -81,6 +81,7 @@ class CachedImageProvider extends ImageProvider<CachedImageProvider> {
         return await decode(bytes);
       }
     } catch (e) {
+      print(e);
       return decode(
         (await rootBundle.load('assets/images/icons/no_photo.png'))
             .buffer

@@ -664,15 +664,27 @@ class Task extends InboxItem {
   }
 
   Future saveAsFeed(List<String> to) async {
-    await FirebaseFirestore.instance
-        .collection(feed_constants.FEED_KEY)
-        .doc(
-          id,
-        )
-        .set({
-      feed_constants.TO_KEY: [getCurrentUser().uid, ...to],
-      ...toJson(),
-    });
+    try {
+      await FirebaseFirestore.instance
+          .collection(feed_constants.FEED_KEY)
+          .doc(
+            id,
+          )
+          .update({
+        feed_constants.TO_KEY: [getCurrentUser().uid, ...to],
+        task_constants.STATUS_KEY: status,
+      });
+    } catch (e) {
+      await FirebaseFirestore.instance
+          .collection(feed_constants.FEED_KEY)
+          .doc(
+            id,
+          )
+          .set({
+        feed_constants.TO_KEY: [getCurrentUser().uid, ...to],
+        ...toJson(),
+      });
+    }
   }
 
   Future deleteAsFeed() async {

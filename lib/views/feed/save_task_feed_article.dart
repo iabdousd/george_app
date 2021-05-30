@@ -27,11 +27,7 @@ class _SaveTaskFeedArticleState extends State<SaveTaskFeedArticle> {
     if (!_formKey.currentState.validate()) return;
     toggleLoading(state: true);
     final allPartners = await widget.task.getAllPartners();
-    await (widget.task
-          ..title = _titleController.text
-          ..description = _descriptionController.text
-          ..status = 2)
-        .saveAsFeed(
+    await (widget.task..status = 2).saveAsFeed(
       (publicPost ? ['*'] : <String>[]) + allPartners,
     );
     toggleLoading(state: false);

@@ -48,6 +48,7 @@ class _ContactPickerViewState extends State<ContactPickerView> {
         // FETCH USERS BASED ON THE CONTACT
         bool contactAdded = false;
         for (final phone in contact.phones) {
+          if (contact?.displayName == null) continue;
           final tPhone = ContactRepository.trimPhoneNumber(phone.value);
           final user = await UserService.getContactUserByPhone(
             tPhone.startsWith('+') ? tPhone : details.dialCode + tPhone,

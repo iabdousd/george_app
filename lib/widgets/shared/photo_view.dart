@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 
 class AppPhotoView extends StatelessWidget {
-  final imageProvider;
+  final ImageProvider imageProvider;
   const AppPhotoView({Key key, this.imageProvider}) : super(key: key);
 
   @override
