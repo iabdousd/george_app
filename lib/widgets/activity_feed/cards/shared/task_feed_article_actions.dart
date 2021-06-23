@@ -5,23 +5,25 @@ import 'package:stackedtasks/models/Note.dart';
 
 import 'package:stackedtasks/models/Task.dart';
 import 'package:stackedtasks/repositories/feed/feed_repository.dart';
-import 'package:stackedtasks/repositories/stack/note_repository.dart';
+import 'package:stackedtasks/repositories/note/note_repository.dart';
 import 'package:stackedtasks/services/feed-back/flush_bar.dart';
 import 'package:stackedtasks/services/feed-back/loader.dart';
 import 'package:stackedtasks/services/shared/sharing/sharing_task.dart';
 import 'package:stackedtasks/services/user/user_service.dart';
-import 'package:stackedtasks/views/feed/save_task_feed_article.dart';
-import 'package:screenshot/screenshot.dart';
+import 'package:stackedtasks/views/feed/add_post_photo.dart';
 import 'package:stackedtasks/widgets/note/note_thread_tile.dart';
+import 'package:stackedtasks/widgets/shared/app_action_button.dart';
 import 'package:stackedtasks/widgets/shared/app_error_widget.dart';
 import 'package:stackedtasks/widgets/shared/app_text_field.dart';
 
 class TaskFeedArticleActions extends StatelessWidget {
   final Task task;
-  final ScreenshotController screenshotController;
-  const TaskFeedArticleActions(
-      {Key key, @required this.task, @required this.screenshotController})
-      : super(key: key);
+  final GlobalKey screenshotKey;
+  const TaskFeedArticleActions({
+    Key key,
+    @required this.task,
+    @required this.screenshotKey,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -62,133 +64,44 @@ class TaskFeedArticleActions extends StatelessWidget {
             ),
           ),
           Expanded(
-            child: InkWell(
-              onTap: () => commentOnTask(context),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8.0,
-                  vertical: 8.0,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.mode_comment_outlined,
-                      size: 18,
-                      color: Theme.of(context).primaryColor,
+            child: StreamBuilder<int>(
+              stream: task.commentsCount,
+              builder: (context, snapshot) {
+                final commentsCount = snapshot.data ?? 0;
+                return InkWell(
+                  onTap: () => commentOnTask(context),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8.0,
+                      vertical: 8.0,
                     ),
-                    SizedBox(width: 4),
-                    Text(
-                      task.commentsCount.toString(),
-                      style: Theme.of(context).textTheme.bodyText2,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.mode_comment_outlined,
+                          size: 18,
+                          color: Theme.of(context).primaryColor,
+                        ),
+                        SizedBox(width: 4),
+                        Text(
+                          commentsCount.toString(),
+                          style: Theme.of(context).textTheme.bodyText2,
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
+                  ),
+                );
+              },
             ),
           ),
-          if (task.userID == getCurrentUser().uid ||
-              (task.partnersIDs ?? []).contains(getCurrentUser().uid))
-            Expanded(
-              child: InkWell(
-                onTap: () => Get.to(
-                  () => SaveTaskFeedArticle(
-                    task: task,
-                  ),
-                ),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8.0,
-                    vertical: 8.0,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        task.status == 1
-                            ? Icons.ios_share
-                            : Icons.edit_outlined,
-                        size: 18,
-                        color: task.status == 1
-                            ? Theme.of(context).primaryColor
-                            : Colors.black38,
-                      ),
-                      Text(
-                        '',
-                        style: Theme.of(context).textTheme.bodyText2.copyWith(
-                              color: task.status == 1
-                                  ? Theme.of(context).primaryColor
-                                  : null,
-                            ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          if (task.userID == getCurrentUser().uid ||
-              (task.partnersIDs ?? []).contains(getCurrentUser().uid))
-            Expanded(
-              child: InkWell(
-                onTap: () => showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: Text('Delete Article'),
-                    content: Text(
-                      'Are you sure you want to delete the article \"${task.title}\" ?',
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () async {
-                          Navigator.of(context).pop();
-                        },
-                        child: Text(
-                          'Cancel',
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () async {
-                          Navigator.of(context).pop();
-                          await task.deleteAsFeed();
-                          showFlushBar(
-                            title: 'Feed deleted',
-                            message: 'This feed was deleted successfully!',
-                            success: true,
-                          );
-                        },
-                        child: Text(
-                          'Delete',
-                          style: TextStyle(
-                            color: Colors.red[700],
-                          ),
-                        ),
-                      )
-                    ],
-                  ),
-                ),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 8.0, vertical: 8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.delete_outline,
-                        size: 18,
-                        color: Colors.black38,
-                      ),
-                      // Text(
-                      //   ' Delete',
-                      //   style: Theme.of(context).textTheme.bodyText2,
-                      // ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+          // if (task.userID == getCurrentUser().uid ||
+          //     (task.partnersIDs ?? []).contains(getCurrentUser().uid))
+          //
+
           Expanded(
             child: InkWell(
-              onTap: () => shareTask(task, screenshotController),
+              onTap: handleShare,
               child: Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
@@ -206,6 +119,77 @@ class TaskFeedArticleActions extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  handleShare() {
+    showMaterialModalBottomSheet(
+      context: Get.context,
+      backgroundColor: Colors.transparent,
+      expand: false,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).backgroundColor,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(12.0),
+            topRight: Radius.circular(12.0),
+          ),
+        ),
+        child: SafeArea(
+          top: false,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (task.userID == getCurrentUser().uid)
+                AppActionButton(
+                  onPressed: () => task
+                      .saveAsFeed(
+                        task.to.contains("*")
+                            ? task.partnersIDs
+                            : ['*', ...task.to],
+                      )
+                      .then(
+                        (value) => Get.back(),
+                      ),
+                  icon: Icons.public_rounded,
+                  label: task.to.contains('*')
+                      ? 'Make Private'
+                      : 'Make Public on Stacked Tasks',
+                  backgroundColor: Theme.of(context).backgroundColor,
+                  textStyle: Theme.of(context).textTheme.subtitle1,
+                  iconColor: Theme.of(context).primaryColor,
+                  shadows: [],
+                  margin: EdgeInsets.only(bottom: 0, top: 4),
+                  iconSize: 28,
+                ),
+              if (task.userID == getCurrentUser().uid)
+                AppActionButton(
+                  onPressed: addPhotoForPost,
+                  icon: Icons.add_a_photo_rounded,
+                  label: 'Add photo for the post',
+                  backgroundColor: Theme.of(context).backgroundColor,
+                  textStyle: Theme.of(context).textTheme.subtitle1,
+                  iconColor: Theme.of(context).primaryColor,
+                  shadows: [],
+                  margin: EdgeInsets.only(bottom: 0, top: 4),
+                  iconSize: 28,
+                ),
+              AppActionButton(
+                onPressed: () => shareTask(task, screenshotKey),
+                icon: Icons.share_rounded,
+                label: 'Share in another App',
+                backgroundColor: Theme.of(context).backgroundColor,
+                textStyle: Theme.of(context).textTheme.subtitle1,
+                iconColor: Theme.of(context).primaryColor,
+                shadows: [],
+                margin: EdgeInsets.only(bottom: 0, top: 4),
+                iconSize: 28,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -344,6 +328,7 @@ class TaskFeedArticleActions extends StatelessWidget {
                                                 .trim() ==
                                             '') return;
                                         setState(() => loading = true);
+
                                         await FeedRepository.commentOnArticle(
                                           task,
                                           _commentController.text.trim(),
@@ -373,6 +358,15 @@ class TaskFeedArticleActions extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  addPhotoForPost() {
+    Get.back();
+    Get.to(
+      () => AddPostPhoto(
+        task: task,
+      ),
     );
   }
 }

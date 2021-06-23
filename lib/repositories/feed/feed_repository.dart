@@ -1,4 +1,4 @@
-import 'package:stackedtasks/constants/models/task.dart';
+import 'package:stackedtasks/constants/models/stack.dart';
 import 'package:stackedtasks/models/Note.dart';
 import 'package:stackedtasks/models/Task.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -15,56 +15,9 @@ class FeedRepository {
           feed_constants.USER_ID_KEY,
           isEqualTo: uid,
         )
-        .orderBy(
-          feed_constants.CREATION_DATE_KEY,
-          descending: true,
-        )
-        .snapshots()
-        .asyncMap(
-      (event) async {
-        List<Task> tasks = [];
-        for (final doc in event.docs) {
-          Task task = Task.fromJson(
-            doc.data(),
-            id: doc.id,
-          );
-          if (task.userID != getCurrentUser().uid) {
-            final user = UserModel.fromMap(
-              (await FirebaseFirestore.instance
-                      .collection(USERS_KEY)
-                      .doc(task.userID)
-                      .get())
-                  .data(),
-            );
-            task.userName = user.fullName;
-            task.userPhoto = user.photoURL;
-          } else {
-            task.userName = getCurrentUser().displayName;
-            task.userPhoto = getCurrentUser().photoURL;
-          }
-          task.isLiked = FirebaseFirestore.instance
-              .collection(feed_constants.FEED_KEY)
-              .doc(task.id)
-              .collection(feed_constants.FEED_LIKES_COLLECTION)
-              .doc(getCurrentUser().uid)
-              .snapshots()
-              .map(
-                (event) => event.exists && event.data() != null,
-              );
-
-          tasks.add(task);
-        }
-        return tasks;
-      },
-    );
-  }
-
-  static Stream<List<Task>> fetchArticles() {
-    return FirebaseFirestore.instance
-        .collection(feed_constants.FEED_KEY)
         .where(
           feed_constants.TO_KEY,
-          arrayContainsAny: [getCurrentUser().uid],
+          arrayContainsAny: ['*'],
         )
         .orderBy(
           feed_constants.CREATION_DATE_KEY,
@@ -110,6 +63,113 @@ class FeedRepository {
         );
   }
 
+  static Stream<List<Task>> fetchArticles() {
+    return FirebaseFirestore.instance
+        .collection(feed_constants.FEED_KEY)
+        .where(
+          feed_constants.TO_KEY,
+          arrayContainsAny: [getCurrentUser().uid],
+        )
+        .orderBy(
+          feed_constants.CREATION_DATE_KEY,
+          descending: true,
+        )
+        .snapshots()
+        .asyncMap(
+          (event) async {
+            List<Task> tasks = [];
+            for (final doc in event.docs) {
+              Task task = Task.fromJson(
+                doc.data(),
+                id: doc.id,
+              );
+              task.commentsCount = FirebaseFirestore.instance
+                  .collection(TASKS_KEY)
+                  .doc(task.taskID)
+                  .snapshots()
+                  .map(
+                    (event) => event.data()[feed_constants.COMMENTS_COUNT_KEY],
+                  );
+
+              if (task.userID != getCurrentUser().uid) {
+                final user = UserModel.fromMap(
+                  (await FirebaseFirestore.instance
+                          .collection(USERS_KEY)
+                          .doc(task.userID)
+                          .get())
+                      .data(),
+                );
+                task.userName = user.fullName;
+                task.userPhoto = user.photoURL;
+              } else {
+                task.userName = getCurrentUser().displayName;
+                task.userPhoto = getCurrentUser().photoURL;
+              }
+              task.isLiked = FirebaseFirestore.instance
+                  .collection(feed_constants.FEED_KEY)
+                  .doc(task.id)
+                  .collection(feed_constants.FEED_LIKES_COLLECTION)
+                  .doc(getCurrentUser().uid)
+                  .snapshots()
+                  .map(
+                    (event) => event.exists && event.data() != null,
+                  );
+
+              tasks.add(task);
+            }
+            return tasks;
+          },
+        );
+  }
+
+  static Stream<Task> streamArticle(String articleID) {
+    return FirebaseFirestore.instance
+        .collection(feed_constants.FEED_KEY)
+        .doc(articleID)
+        .snapshots()
+        .asyncMap(
+      (event) async {
+        Task task = Task.fromJson(
+          event.data(),
+          id: event.id,
+        );
+        task.commentsCount = FirebaseFirestore.instance
+            .collection(TASKS_KEY)
+            .doc(task.taskID)
+            .snapshots()
+            .map(
+              (event) => event.data()[feed_constants.COMMENTS_COUNT_KEY],
+            );
+
+        if (task.userID != getCurrentUser().uid) {
+          final user = UserModel.fromMap(
+            (await FirebaseFirestore.instance
+                    .collection(USERS_KEY)
+                    .doc(task.userID)
+                    .get())
+                .data(),
+          );
+          task.userName = user.fullName;
+          task.userPhoto = user.photoURL;
+        } else {
+          task.userName = getCurrentUser().displayName;
+          task.userPhoto = getCurrentUser().photoURL;
+        }
+        task.isLiked = FirebaseFirestore.instance
+            .collection(feed_constants.FEED_KEY)
+            .doc(task.id)
+            .collection(feed_constants.FEED_LIKES_COLLECTION)
+            .doc(getCurrentUser().uid)
+            .snapshots()
+            .map(
+              (event) => event.exists && event.data() != null,
+            );
+
+        return task;
+      },
+    );
+  }
+
   static Future<void> likeArticle(String articleID) async {
     final likeDocument = await FirebaseFirestore.instance
         .collection(feed_constants.FEED_KEY)
@@ -139,7 +199,9 @@ class FeedRepository {
       });
       await articleDocument.reference.update({
         feed_constants.LIKES_COUNT_KEY:
-            (articleDocument.data()[feed_constants.LIKES_COUNT_KEY] ?? 0) + 1,
+            ((articleDocument.data() ?? {})[feed_constants.LIKES_COUNT_KEY] ??
+                    0) +
+                1,
       });
     }
   }
@@ -150,25 +212,21 @@ class FeedRepository {
       content: comment,
       goalRef: task.goalRef,
       stackRef: task.stackRef,
-      taskRef: task.id,
+      taskRef: task.taskID,
       taskTitle: task.title,
       creationDate: DateTime.now(),
+      feedArticleID: task.id,
     );
 
     await note.save();
     final articleDocument = await FirebaseFirestore.instance
-        .collection(feed_constants.FEED_KEY)
-        .doc(task.id)
+        .collection(TASKS_KEY)
+        .doc(task.taskID)
         .get();
-
-    if (task.taskNotes == null) task.taskNotes = [];
-    task.taskNotes.add(note.id);
 
     await articleDocument.reference.update({
       feed_constants.COMMENTS_COUNT_KEY:
           (articleDocument.data()[feed_constants.COMMENTS_COUNT_KEY] ?? 0) + 1,
-      TASK_NOTES_KEY:
-          (articleDocument.data()[TASK_NOTES_KEY] ?? []) + [note.id],
     });
   }
 }

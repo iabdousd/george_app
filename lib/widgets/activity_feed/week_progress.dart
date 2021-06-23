@@ -61,10 +61,14 @@ class WeekProgressState extends State<WeekProgress> {
         }
         if (snapshot.hasData) {
           for (var item in snapshot.data.docs) {
-            if (weeks.contains(
-                item.data()[feed_constants.WEEK_START_DATE_KEY].toDate())) {
-              int cIndex = weeks.indexOf(
-                  item.data()[feed_constants.WEEK_START_DATE_KEY].toDate());
+            if (weeks.contains(item
+                .data()[feed_constants.WEEK_START_DATE_KEY]
+                .toDate()
+                .toLocal())) {
+              int cIndex = weeks.indexOf(item
+                  .data()[feed_constants.WEEK_START_DATE_KEY]
+                  .toDate()
+                  .toLocal());
               weeksValues[cIndex] =
                   item.data()[feed_constants.ACCOMPLISHED_TASKS_KEY] is int
                       ? item

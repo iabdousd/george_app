@@ -1,10 +1,15 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:stackedtasks/config/extensions/hex_color.dart';
+import 'package:stackedtasks/constants/feed.dart';
+import 'package:stackedtasks/constants/models/stack.dart';
 import 'package:stackedtasks/constants/user.dart';
 import 'package:stackedtasks/models/Note.dart';
 import 'package:stackedtasks/models/Task.dart';
@@ -18,6 +23,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:stackedtasks/widgets/note/task_notes_thread.dart';
+import 'package:stackedtasks/widgets/shared/app_action_button.dart';
 import 'package:stackedtasks/widgets/shared/app_expansion_tile.dart';
 
 class TaskListTileWidget extends StatefulWidget {
@@ -58,6 +64,7 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
   bool loading = false;
   bool loadingPartners = true;
   bool privateNotes = false;
+  List<PickedFile> images = [];
   List<UserModel> partners = [];
   final StreamController _realTimeUpdateTimer = StreamController.broadcast();
   TextEditingController _contentController = TextEditingController();
@@ -197,6 +204,7 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                 ),
                 child: TextField(
                   controller: _contentController,
+                  enabled: !loading,
                   decoration: InputDecoration(
                     labelText: 'Task Notes',
                     hintText: 'The content of the note',
@@ -212,6 +220,39 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                   maxLines: 10,
                 ),
               ),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    for (final image in images)
+                      Padding(
+                        padding: const EdgeInsets.all(4.0),
+                        child: Stack(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.file(
+                                File(image.path),
+                                width: 128,
+                                height: 128,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            Positioned(
+                              child: InkWell(
+                                  onTap: () => setState(
+                                        () => images.remove(image),
+                                      ),
+                                  child: Icon(Icons.close)),
+                              top: 4,
+                              right: 4,
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
               Container(
                 margin: EdgeInsets.only(
                   bottom: 8.0,
@@ -224,9 +265,7 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                     Row(
                       children: [
                         IconButton(
-                          onPressed: () {
-                            //
-                          },
+                          onPressed: addAttachment,
                           icon: Icon(Icons.attach_file),
                         ),
                         Switch(
@@ -247,19 +286,36 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
                         setState(() => loading = true);
                         Note note = Note(
                           userID: getCurrentUser().uid,
+                          status: privateNotes ? 1 : 0,
                           content: _contentController.text.trim(),
                           goalRef: widget.task.goalRef,
                           stackRef: widget.task.stackRef,
                           taskRef: widget.task.id,
+                          feedArticleID: widget.task.id,
                           taskTitle: widget.task.title,
                           creationDate: DateTime.now(),
                         );
                         await note.save();
+                        if (images.isNotEmpty)
+                          await note.addAttachments(images);
 
-                        if (!privateNotes) await widget.task.addNote(note);
+                        if (!privateNotes) {
+                          final articleDocument = await FirebaseFirestore
+                              .instance
+                              .collection(TASKS_KEY)
+                              .doc(widget.task.taskID)
+                              .get();
 
+                          await articleDocument.reference.update({
+                            COMMENTS_COUNT_KEY:
+                                (articleDocument.data()[COMMENTS_COUNT_KEY] ??
+                                        0) +
+                                    1,
+                          });
+                        }
                         _contentController.text = '';
                         setState(() => loading = false);
+
                         showFlushBar(
                           title: 'Note added successfully!',
                           message: 'You can now see your note in notes list.',
@@ -846,5 +902,82 @@ class _TaskListTileWidgetState extends State<TaskListTileWidget> {
         ),
       ],
     );
+  }
+
+  addAttachment() {
+    if (kIsWeb) {
+      _pickImage(ImageSource.gallery);
+      return;
+    }
+    showMaterialModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      expand: false,
+      builder: (context) => SafeArea(
+        top: false,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(12.0),
+              topRight: Radius.circular(12.0),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AppActionButton(
+                onPressed: () => _pickImage(ImageSource.gallery),
+                icon: Icons.image_outlined,
+                label: 'Photos',
+                backgroundColor: Theme.of(context).backgroundColor,
+                textStyle: Theme.of(context).textTheme.headline6,
+                iconColor: Theme.of(context).primaryColor,
+                shadows: [],
+                margin: EdgeInsets.only(bottom: 0, top: 4),
+                iconSize: 28,
+              ),
+              AppActionButton(
+                onPressed: () => _pickImage(ImageSource.camera),
+                icon: Icons.camera_alt_outlined,
+                label: 'Camera',
+                backgroundColor: Theme.of(context).backgroundColor,
+                textStyle: Theme.of(context).textTheme.headline6,
+                iconColor: Theme.of(context).primaryColor,
+                shadows: [],
+                margin: EdgeInsets.only(bottom: 4, top: 0),
+                iconSize: 28,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  _pickImage(ImageSource imageSource) async {
+    PickedFile image;
+
+    try {
+      image = await ImagePicker().getImage(
+        imageQuality: 80,
+        source: imageSource,
+      );
+    } on Exception catch (e) {
+      print(e);
+      if (imageSource != ImageSource.gallery)
+        _pickImage(ImageSource.gallery);
+      else
+        showFlushBar(
+          title: 'Error',
+          message: 'Unknown error happened while importing your images.',
+          success: false,
+        );
+    }
+    if (image != null)
+      setState(() {
+        images.add(image);
+      });
   }
 }

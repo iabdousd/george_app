@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:async/async.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:stackedtasks/constants/models/stack.dart';
 import 'package:stackedtasks/models/Note.dart';
@@ -27,69 +26,58 @@ class NoteRepository {
   }
 
   static Stream<List<Note>> streamFeedComments(Task task) {
-    if (task.taskNotes != null && task.taskNotes.isNotEmpty)
-      return FirebaseFirestore.instance
-          .collection(NOTES_KEY)
-          .where(
-            note_constants.NOTE_ID_KEY,
-            whereIn: task.taskNotes,
-          )
-          .orderBy(
-            note_constants.CREATION_DATE_KEY,
-            descending: true,
-          )
-          .snapshots()
-          .asyncMap((event) async {
-        List<Note> notes = [];
-        for (final noteRaw in event.docs) {
-          Note note = Note.fromJson(
-            noteRaw.data(),
-            id: noteRaw.id,
+    return FirebaseFirestore.instance
+        .collection(NOTES_KEY)
+        .where(
+          note_constants.TASK_REF_KEY,
+          isEqualTo: task.taskID,
+        )
+        .where(
+          note_constants.STATUS_KEY,
+          isEqualTo: 0,
+        )
+        .orderBy(
+          note_constants.CREATION_DATE_KEY,
+          descending: true,
+        )
+        .snapshots()
+        .asyncMap((event) async {
+      List<Note> notes = [];
+      for (final noteRaw in event.docs) {
+        Note note = Note.fromJson(
+          noteRaw.data(),
+          id: noteRaw.id,
+        );
+        if (note.userID != getCurrentUser().uid) {
+          final userModel = await UserService.getUser(note.userID);
+          note.creator = userModel;
+        } else {
+          note.creator = UserModel(
+            uid: getCurrentUser().uid,
+            fullName: getCurrentUser().displayName,
+            email: getCurrentUser().email,
+            photoURL: getCurrentUser().photoURL,
           );
-          if (note.userID != getCurrentUser().uid) {
-            final userModel = await UserService.getUser(note.userID);
-            note.creator = userModel;
-          } else {
-            note.creator = UserModel(
-              uid: getCurrentUser().uid,
-              fullName: getCurrentUser().displayName,
-              email: getCurrentUser().email,
-              photoURL: getCurrentUser().photoURL,
-            );
-          }
-          notes.add(note);
         }
-        return notes;
-      });
-
-    return Stream.value(<Note>[]);
+        notes.add(note);
+      }
+      return notes;
+    });
   }
 
   static Stream<List<Note>> streamTaskNotes(
     Task task, {
     bool allTaskNotes: false,
   }) {
-    if (!allTaskNotes && (task.taskNotes == null || task.taskNotes.isEmpty)) {
-      return Stream.value([]);
-    }
-
-    Query ref = FirebaseFirestore.instance.collection(NOTES_KEY);
-
-    if (allTaskNotes) {
-      ref = ref.where(note_constants.TASK_REF_KEY, isEqualTo: task.id).orderBy(
-            note_constants.CREATION_DATE_KEY,
-            descending: true,
-          );
-    } else {
-      ref = ref
-          .where(
-            note_constants.NOTE_ID_KEY,
-            whereIn: task.taskNotes,
-          )
-          .orderBy(
-            note_constants.CREATION_DATE_KEY,
-            descending: true,
-          );
+    Query ref = FirebaseFirestore.instance
+        .collection(NOTES_KEY)
+        .where(note_constants.TASK_REF_KEY, isEqualTo: task.id)
+        .orderBy(
+          note_constants.CREATION_DATE_KEY,
+          descending: true,
+        );
+    if (!allTaskNotes) {
+      ref = ref.where(note_constants.STATUS_KEY, isEqualTo: 0);
     }
 
     return ref.snapshots().asyncMap((event) async {

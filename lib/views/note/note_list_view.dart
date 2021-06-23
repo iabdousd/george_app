@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:stackedtasks/models/Note.dart';
 import 'package:stackedtasks/models/Stack.dart' as stack_model;
-import 'package:stackedtasks/repositories/stack/note_repository.dart';
+import 'package:stackedtasks/repositories/note/note_repository.dart';
 import 'package:stackedtasks/services/feed-back/loader.dart';
 import 'package:stackedtasks/views/note/save_note.dart';
 import 'package:stackedtasks/widgets/note/note_lsit_tile.dart';

@@ -6,7 +6,9 @@ import 'package:stackedtasks/models/Goal.dart';
 import 'package:stackedtasks/models/Notification.dart';
 import 'package:stackedtasks/models/Stack.dart';
 import 'package:stackedtasks/models/Task.dart';
+import 'package:stackedtasks/services/feed-back/flush_bar.dart';
 import 'package:stackedtasks/services/user/user_service.dart';
+import "package:async/async.dart" show StreamZip;
 
 class NotificationRepository {
   static Stream<List<Notification>> streamNotifications() {
@@ -53,18 +55,55 @@ class NotificationRepository {
   }
 
   static Stream<int> countNotifications() {
-    return FirebaseFirestore.instance
-        .collection(NOTIFICATIONS_COLLECTION)
-        .where(NOTIFICATION_RECIEVER_KEY, isEqualTo: getCurrentUser().uid)
-        .where(NOTIFICATION_STATUS_KEY, isNotEqualTo: -1)
-        .snapshots()
-        .map(
-          (event) => event.size,
-        );
+    return StreamZip([
+      FirebaseFirestore.instance
+          .collection(NOTIFICATIONS_COLLECTION)
+          .where(NOTIFICATION_RECIEVER_KEY, isEqualTo: getCurrentUser().uid)
+          .where(NOTIFICATION_STATUS_KEY, isNotEqualTo: -1)
+          .snapshots()
+          .map(
+            (event) => event.size,
+          ),
+      // FirebaseFirestore.instance
+      //     .collection(NOTIFICATIONS_COLLECTION)
+      //     .where(NOTIFICATION_RECIEVER_KEY, isEqualTo: getCurrentUser().uid)
+      //     .where(NOTIFICATION_STATUS_KEY, isNotEqualTo: -1)
+      //     .snapshots()
+      //     .map(
+      //       (event) => event.size,
+      //     )
+    ]).map(
+      (counts) => counts[0],
+    );
   }
 
   static Future<bool> addGoalNotification(Goal goal, String invitedID) async {
     try {
+      if (goal.userID == invitedID) {
+        await showFlushBar(
+          title: 'Hmmm...',
+          message: 'Unfortunately, you cannot invite your self !',
+          success: false,
+        );
+      }
+
+      final alreadyNotification = await FirebaseFirestore.instance
+          .collection(NOTIFICATIONS_COLLECTION)
+          .where('senderID', isEqualTo: goal.userID)
+          .where(NOTIFICATION_RECIEVER_KEY, isEqualTo: invitedID)
+          .where('goalRef', isEqualTo: goal.id)
+          .where(NOTIFICATION_STATUS_KEY, isEqualTo: 0)
+          .get();
+
+      if (alreadyNotification.size > 0) {
+        showFlushBar(
+          title: 'Already Invited',
+          message: 'This user has been already invited to this task',
+          success: false,
+        );
+        return false;
+      }
+
       final res = await FirebaseFirestore.instance
           .collection(NOTIFICATIONS_COLLECTION)
           .add(
@@ -88,6 +127,31 @@ class NotificationRepository {
   static Future<bool> addStackNotification(
       TasksStack stack, String invitedID) async {
     try {
+      if (stack.userID == invitedID) {
+        await showFlushBar(
+          title: 'Hmmm...',
+          message: 'Unfortunately, you cannot invite your self !',
+          success: false,
+        );
+      }
+
+      final alreadyNotification = await FirebaseFirestore.instance
+          .collection(NOTIFICATIONS_COLLECTION)
+          .where('senderID', isEqualTo: stack.userID)
+          .where(NOTIFICATION_RECIEVER_KEY, isEqualTo: invitedID)
+          .where('stackRef', isEqualTo: stack.id)
+          .where(NOTIFICATION_STATUS_KEY, isEqualTo: 0)
+          .get();
+
+      if (alreadyNotification.size > 0) {
+        showFlushBar(
+          title: 'Already Invited',
+          message: 'This user has been already invited to this task',
+          success: false,
+        );
+        return false;
+      }
+
       final res = await FirebaseFirestore.instance
           .collection(NOTIFICATIONS_COLLECTION)
           .add(
@@ -110,6 +174,31 @@ class NotificationRepository {
 
   static Future<bool> addTaskNotification(Task task, String invitedID) async {
     try {
+      if (task.userID == invitedID) {
+        await showFlushBar(
+          title: 'Hmmm...',
+          message: 'Unfortunately, you cannot invite your self !',
+          success: false,
+        );
+      }
+
+      final alreadyNotification = await FirebaseFirestore.instance
+          .collection(NOTIFICATIONS_COLLECTION)
+          .where('senderID', isEqualTo: task.userID)
+          .where(NOTIFICATION_RECIEVER_KEY, isEqualTo: invitedID)
+          .where('taskRef', isEqualTo: task.id)
+          .where(NOTIFICATION_STATUS_KEY, isEqualTo: 0)
+          .get();
+
+      if (alreadyNotification.size > 0) {
+        showFlushBar(
+          title: 'Already Invited',
+          message: 'This user has been already invited to this task',
+          success: false,
+        );
+        return false;
+      }
+
       final res = await FirebaseFirestore.instance
           .collection(NOTIFICATIONS_COLLECTION)
           .add(
@@ -144,13 +233,23 @@ class NotificationRepository {
           goalRaw.data(),
           id: goalRaw.id,
         );
-        goal.partnersIDs.add(getCurrentUser().uid);
-        await goal.save();
+        if (!goal.partnersIDs.contains(getCurrentUser().uid)) {
+          goal.partnersIDs.add(getCurrentUser().uid);
+          await goal.save();
+        } else {
+          showFlushBar(
+            title: 'Already Partner',
+            message: 'You are already partnering in that Goal !',
+            success: false,
+          );
+          return null;
+        }
         await FirebaseFirestore.instance
             .collection(NOTIFICATIONS_COLLECTION)
             .doc(notification.id)
             .update({
           NOTIFICATION_STATUS_KEY: -1,
+          ACCEPTED_KEY: true,
         });
       } else if (type == 'STACK_PARTNER_INVITATION') {
         final stackRaw = await FirebaseFirestore.instance
@@ -161,15 +260,25 @@ class NotificationRepository {
           stackRaw.data(),
           id: stackRaw.id,
         );
-        stack.partnersIDs.add(getCurrentUser().uid);
-        await stack.save(
-          updateSummaries: false,
-        );
+        if (!stack.partnersIDs.contains(getCurrentUser().uid)) {
+          stack.partnersIDs.add(getCurrentUser().uid);
+          await stack.save(
+            updateSummaries: false,
+          );
+        } else {
+          showFlushBar(
+            title: 'Already Partner',
+            message: 'You are already partnering in that Stack !',
+            success: false,
+          );
+          return null;
+        }
         await FirebaseFirestore.instance
             .collection(NOTIFICATIONS_COLLECTION)
             .doc(notification.id)
             .update({
           NOTIFICATION_STATUS_KEY: -1,
+          ACCEPTED_KEY: true,
         });
       } else if (type == 'TASK_PARTNER_INVITATION') {
         final taskRaw = await FirebaseFirestore.instance
@@ -180,15 +289,25 @@ class NotificationRepository {
           taskRaw.data(),
           id: taskRaw.id,
         );
-        task.partnersIDs.add(getCurrentUser().uid);
-        await task.save(
-          updateSummaries: false,
-        );
+        if (!task.partnersIDs.contains(getCurrentUser().uid)) {
+          task.partnersIDs.add(getCurrentUser().uid);
+          await task.save(
+            updateSummaries: false,
+          );
+        } else {
+          showFlushBar(
+            title: 'Already Partner',
+            message: 'You are already partnering in that Task !',
+            success: false,
+          );
+          return null;
+        }
         await FirebaseFirestore.instance
             .collection(NOTIFICATIONS_COLLECTION)
             .doc(notification.id)
             .update({
           NOTIFICATION_STATUS_KEY: -1,
+          ACCEPTED_KEY: true,
         });
       }
       return true;
@@ -204,6 +323,7 @@ class NotificationRepository {
           .doc(notificationID)
           .update({
         NOTIFICATION_STATUS_KEY: -1,
+        ACCEPTED_KEY: false,
       });
       return true;
     } catch (e) {

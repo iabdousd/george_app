@@ -94,12 +94,12 @@ class _ProfilePageState extends State<ProfilePage>
                                     width: 64,
                                     height: 64,
                                   )
-                                : FirebaseAuth.instance.currentUser.photoURL !=
+                                : FirebaseAuth.instance.currentUser?.photoURL !=
                                         null
                                     ? Image(
                                         image: CachedImageProvider(
                                           FirebaseAuth
-                                              .instance.currentUser.photoURL,
+                                              .instance.currentUser?.photoURL,
                                         ),
                                         fit: BoxFit.cover,
                                         width: 64,

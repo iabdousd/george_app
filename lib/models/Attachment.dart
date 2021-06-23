@@ -18,14 +18,15 @@ class Attachment {
     this.ext = jsonObject[note_constants.ATTACHMENT_EXT];
     this.creationDate =
         (jsonObject[note_constants.ATTACHMENT_CREATION_DATE_KEY] as Timestamp)
-            .toDate();
+            ?.toDate()
+            ?.toLocal();
   }
 
   Map<String, dynamic> toJson() {
     return {
       note_constants.ATTACHMENT_PATH: path,
       note_constants.ATTACHMENT_EXT: ext,
-      note_constants.ATTACHMENT_CREATION_DATE_KEY: creationDate,
+      note_constants.ATTACHMENT_CREATION_DATE_KEY: creationDate.toUtc(),
     };
   }
 }

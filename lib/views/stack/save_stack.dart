@@ -11,11 +11,13 @@ class SaveStackPage extends StatefulWidget {
   final String goalRef;
   final String goalColor;
   final stack_model.TasksStack stack;
+  final List<String> goalPartnerIDs;
   SaveStackPage({
     Key key,
     @required this.goalRef,
     this.stack,
     @required this.goalColor,
+    this.goalPartnerIDs,
   }) : super(key: key);
 
   @override
@@ -63,7 +65,7 @@ class _SaveStackPageState extends State<SaveStackPage> {
         id: widget.stack?.id,
         goalRef: widget.goalRef,
         userID: getCurrentUser().uid,
-        partnersIDs: [],
+        partnersIDs: widget.stack?.partnersIDs ?? widget.goalPartnerIDs ?? [],
         title: _titleController.text,
         color: widget.goalColor,
         creationDate: DateTime.now(),

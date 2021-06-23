@@ -27,7 +27,11 @@ class _SaveTaskFeedArticleState extends State<SaveTaskFeedArticle> {
     if (!_formKey.currentState.validate()) return;
     toggleLoading(state: true);
     final allPartners = await widget.task.getAllPartners();
-    await (widget.task..status = 2).saveAsFeed(
+    await (widget.task
+          ..status = 2
+          ..title = _titleController.text
+          ..description = _descriptionController.text)
+        .saveAsFeed(
       (publicPost ? ['*'] : <String>[]) + allPartners,
     );
     toggleLoading(state: false);
@@ -42,7 +46,7 @@ class _SaveTaskFeedArticleState extends State<SaveTaskFeedArticle> {
   void initState() {
     super.initState();
     if (widget.task != null) {
-      publicPost = widget.task.to.contains('*');
+      publicPost = widget.task.to?.contains('*') ?? false;
       _titleController.text = widget.task.title ?? '';
       _descriptionController.text = widget.task.description ?? '';
     }
@@ -81,17 +85,17 @@ class _SaveTaskFeedArticleState extends State<SaveTaskFeedArticle> {
                 child: TextFormField(
                   controller: _titleController,
                   decoration: InputDecoration(
-                      labelText: 'Article title',
-                      hintText: 'The title of the article',
-                      contentPadding: const EdgeInsets.symmetric(
-                        vertical: 20.0,
-                        horizontal: 20.0,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                        borderSide: BorderSide(width: 1),
-                      ),
-                      enabled: false),
+                    labelText: 'Article title',
+                    hintText: 'The title of the article',
+                    contentPadding: const EdgeInsets.symmetric(
+                      vertical: 20.0,
+                      horizontal: 20.0,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                      borderSide: BorderSide(width: 1),
+                    ),
+                  ),
                   validator: (t) {
                     if (t.isEmpty) return 'The article title is required';
                     return null;
@@ -119,23 +123,22 @@ class _SaveTaskFeedArticleState extends State<SaveTaskFeedArticle> {
                       borderRadius: BorderRadius.circular(8.0),
                       borderSide: BorderSide(width: 1),
                     ),
-                    enabled: false,
                   ),
                   minLines: 5,
                   maxLines: 7,
                 ),
               ),
-              Row(
-                children: [
-                  Switch(
-                    value: publicPost,
-                    onChanged: (val) => setState(() => publicPost = val),
-                  ),
-                  Text(
-                    'Share To Public',
-                  ),
-                ],
-              ),
+              // Row(
+              //   children: [
+              //     Switch(
+              //       value: publicPost,
+              //       onChanged: (val) => setState(() => publicPost = val),
+              //     ),
+              //     Text(
+              //       'Share To Public',
+              //     ),
+              //   ],
+              // ),
             ],
           ),
         ),

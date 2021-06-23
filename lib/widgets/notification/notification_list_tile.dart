@@ -77,6 +77,7 @@ class NotificationListTile extends StatelessWidget {
                                   .declineInviteNotification(
                                 notification.id,
                               ).then((value) {
+                                if (value == null) return;
                                 if (!value) {
                                   setState(
                                     () => loading = false,

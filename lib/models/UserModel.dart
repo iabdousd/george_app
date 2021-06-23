@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:stackedtasks/constants/user.dart';
+import 'package:stackedtasks/services/user/user_service.dart';
 
 class UserModel {
   String uid;
@@ -15,6 +16,13 @@ class UserModel {
     this.phoneNumber,
     this.email,
   });
+
+  UserModel.fromCurrentUser()
+      : this.uid = getCurrentUser().uid,
+        this.fullName = getCurrentUser().displayName,
+        this.photoURL = getCurrentUser().photoURL,
+        this.phoneNumber = getCurrentUser().phoneNumber,
+        this.email = getCurrentUser().email;
 
   Map<String, dynamic> toMap() {
     return {

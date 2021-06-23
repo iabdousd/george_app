@@ -10,7 +10,6 @@ import 'package:stackedtasks/services/feed-back/loader.dart';
 import 'package:stackedtasks/services/user/user_service.dart';
 import 'package:stackedtasks/widgets/activity_feed/cards/onetime_task_article.dart';
 import 'package:stackedtasks/widgets/activity_feed/cards/recurring_task_article.dart';
-import 'package:stackedtasks/widgets/shared/app_action_button.dart';
 import 'package:stackedtasks/widgets/shared/app_error_widget.dart';
 import 'package:stackedtasks/widgets/shared/photo_view.dart';
 
@@ -56,7 +55,7 @@ class _UserProfileViewState extends State<UserProfileView> {
                                 Get.to(
                                   () => AppPhotoView(
                                     imageProvider: CachedImageProvider(
-                                      getCurrentUser().photoURL,
+                                      widget.user.photoURL,
                                     ),
                                   ),
                                 );

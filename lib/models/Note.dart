@@ -9,12 +9,19 @@ import 'Attachment.dart';
 
 class Note {
   String id;
+  /*
+   * 0 - default
+   * 1 - private notes
+   * -1 - maybe for deleted in future ?
+   */
+  int status;
   String userID;
   List<String> partnersIDs;
   String goalRef;
   String stackRef;
   String taskRef;
   String taskTitle;
+  String feedArticleID;
   DateTime creationDate;
   String content;
   List<Attachment> attachments;
@@ -24,12 +31,14 @@ class Note {
 
   Note({
     this.id,
+    this.status: 0,
     this.userID,
     this.partnersIDs: const [],
     this.goalRef,
     this.stackRef,
     this.taskRef,
     this.taskTitle,
+    this.feedArticleID,
     this.creationDate,
     this.content,
     this.attachments,
@@ -39,6 +48,7 @@ class Note {
 
   Note.fromJson(jsonObject, {String id}) {
     this.id = id ?? jsonObject[note_constants.NOTE_ID_KEY];
+    this.status = jsonObject[note_constants.STATUS_KEY] ?? 0;
     this.userID = jsonObject[note_constants.USER_ID_KEY];
     this.partnersIDs =
         List<String>.from(jsonObject[note_constants.PARTNERS_IDS_KEY]);
@@ -46,8 +56,11 @@ class Note {
     this.stackRef = jsonObject[note_constants.STACK_REF_KEY];
     this.taskRef = jsonObject[note_constants.TASK_REF_KEY];
     this.taskTitle = jsonObject[note_constants.TASK_TITLE_KEY];
+    this.feedArticleID = jsonObject[note_constants.FEED_ARTICLE_ID_KEY];
     this.creationDate =
-        (jsonObject[note_constants.CREATION_DATE_KEY] as Timestamp).toDate();
+        (jsonObject[note_constants.CREATION_DATE_KEY] as Timestamp)
+            .toDate()
+            .toLocal();
     this.content = jsonObject[note_constants.CONTENT_KEY];
     this.attachments = (jsonObject[note_constants.ATTACHMENTS_KEY] as List)
         ?.map((e) => Attachment.fromJson(e))
@@ -58,16 +71,19 @@ class Note {
   Map<String, dynamic> toJson() {
     return {
       note_constants.NOTE_ID_KEY: this.id,
+      note_constants.STATUS_KEY: this.status,
       note_constants.USER_ID_KEY: this.userID,
       note_constants.PARTNERS_IDS_KEY: this.partnersIDs,
       note_constants.GOAL_REF_KEY: this.goalRef,
       note_constants.STACK_REF_KEY: this.stackRef,
       note_constants.TASK_REF_KEY: this.taskRef,
       note_constants.TASK_TITLE_KEY: this.taskTitle,
+      note_constants.FEED_ARTICLE_ID_KEY: this.feedArticleID,
       note_constants.CONTENT_KEY: this.content,
-      note_constants.CREATION_DATE_KEY: this.creationDate,
+      note_constants.CREATION_DATE_KEY: this.creationDate.toUtc(),
       note_constants.ATTACHMENTS_COUNT_KEY: this.attachmentsCount,
-      note_constants.ATTACHMENTS_KEY: this.attachments,
+      note_constants.ATTACHMENTS_KEY:
+          this.attachments?.map((e) => e.toJson())?.toList(),
     };
   }
 

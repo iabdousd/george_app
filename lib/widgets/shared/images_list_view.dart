@@ -14,6 +14,7 @@ class ImagesListView extends StatelessWidget {
   final List<String> customPathList;
   final List<PickedFile> images;
   final bool readOnly;
+  final double imageHeight;
   final List<Attachment> networkImages;
   final Function(dynamic) deleteEvent;
   const ImagesListView({
@@ -23,6 +24,7 @@ class ImagesListView extends StatelessWidget {
     this.readOnly = false,
     this.networkImages = const [],
     this.customPathList = const [],
+    this.imageHeight,
   }) : super(key: key);
 
   _zooImage(file, {PickedFile asset}) async {
@@ -60,13 +62,16 @@ class ImagesListView extends StatelessWidget {
                   .headline6
                   .copyWith(fontWeight: FontWeight.bold),
             ),
-          GridView.count(
-            crossAxisCount: 2,
+          GridView(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 1.0,
+              mainAxisSpacing: 12.0,
+              crossAxisSpacing: 12.0,
+              mainAxisExtent: imageHeight,
+            ),
             shrinkWrap: true,
             physics: NeverScrollableScrollPhysics(),
-            childAspectRatio: 1.0,
-            mainAxisSpacing: 12.0,
-            crossAxisSpacing: 12.0,
             padding: EdgeInsets.all(12.0),
             children: networkImages
                     .map((e) => Container(
@@ -97,7 +102,7 @@ class ImagesListView extends StatelessWidget {
                                     loadingBuilder: (ctx, _, chunk) =>
                                         chunk == null ? _ : LoadingWidget(),
                                   ),
-                                  if (!readOnly)
+                                  if (!readOnly && deleteEvent != null)
                                     Positioned(
                                       top: 4,
                                       right: 4,
@@ -144,18 +149,19 @@ class ImagesListView extends StatelessWidget {
                                   fit: BoxFit.cover,
                                   gaplessPlayback: true,
                                 ),
-                                Positioned(
-                                  top: 4,
-                                  right: 4,
-                                  child: GestureDetector(
-                                    onTap: () => deleteEvent(file),
-                                    child: Icon(
-                                      Icons.delete,
-                                      color: Colors.red,
-                                      size: 32.0,
+                                if (!readOnly && deleteEvent != null)
+                                  Positioned(
+                                    top: 4,
+                                    right: 4,
+                                    child: GestureDetector(
+                                      onTap: () => deleteEvent(file),
+                                      child: Icon(
+                                        Icons.delete,
+                                        color: Colors.red,
+                                        size: 32.0,
+                                      ),
                                     ),
                                   ),
-                                ),
                               ],
                             ),
                           ),

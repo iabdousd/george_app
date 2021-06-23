@@ -1,11 +1,19 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:animate_do/animate_do.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:stackedtasks/models/Task.dart';
+import 'package:stackedtasks/models/UserModel.dart';
+import 'package:stackedtasks/models/notification/NotificationChat.dart';
 import 'package:stackedtasks/repositories/contact/contact_repository.dart';
 import 'package:stackedtasks/services/user/user_service.dart';
+import 'package:stackedtasks/views/chat/chat_messages_view.dart';
+import 'package:stackedtasks/views/feed/post_details.dart';
 import 'package:stackedtasks/views/goal/save_goal.dart';
+import 'package:stackedtasks/views/user/user_profile.dart';
 import 'package:stackedtasks/widgets/home/app_bottom_navigation_bar.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -15,7 +23,7 @@ import '../stack/save_stack.dart';
 import '../task/save_task.dart';
 import 'activity_feed_view.dart';
 import 'home_view.dart';
-import 'notification-views/notifications-view.dart';
+import 'notification-views/notifications_view.dart';
 import 'time_tracking_views.dart';
 
 class MainView extends StatefulWidget {
@@ -31,6 +39,8 @@ class _MainViewState extends State<MainView>
   TabController _tabController;
 
   void _init() async {
+    initFCM();
+
     SharedPreferences preferences = await SharedPreferences.getInstance();
     bool hasEnteredBefore = preferences.getBool('hasEnteredBefore') ?? false;
     if (!hasEnteredBefore) {
@@ -40,6 +50,117 @@ class _MainViewState extends State<MainView>
       });
     }
     if (getCurrentUser()?.uid != null) ContactRepository.syncContacts();
+  }
+
+  initFCM() async {
+    FirebaseMessaging.onMessageOpenedApp.listen((event) {
+      print("OPENED A NOTIFICATION !");
+      print(event.data);
+      final String action = event.data['action'];
+      switch (action) {
+        case 'INVITATION_TO_TASK':
+          {
+            _changePage(2);
+            break;
+          }
+        case 'MESSAGE_RECIEVED':
+          {
+            final chatRaw = event.data['chat'] is String
+                ? json.decode(event.data['chat'])
+                : event.data['chat'];
+
+            NotificationChat chat = NotificationChat.fromMap(
+              chatRaw,
+            );
+
+            _changePage(2);
+            Get.to(
+              () => ChatMessagesView(
+                chat: chat,
+              ),
+            );
+            break;
+          }
+        case 'TASK_STARTING':
+          {
+            _changePage(1);
+            break;
+          }
+        case 'PARTNER_TASK_STARTING':
+          {
+            _changePage(1);
+            break;
+          }
+        case 'PARTNER_TASK_ENDED':
+          {
+            _changePage(1);
+            break;
+          }
+        case 'COMMENT_RECIEVED':
+          {
+            final taskRaw = event.data['task'] is String
+                ? json.decode(event.data['task'])
+                : event.data['task'];
+
+            Task task = Task.fromJson(
+              taskRaw,
+              id: taskRaw['id'],
+            );
+
+            final now = DateTime.now().toUtc();
+
+            if (task.endTime.isBefore(
+                  DateTime(1970, 1, 1, now.hour, now.minute),
+                ) ||
+                task.startTime.isAfter(
+                  DateTime(1970, 1, 1, now.hour, now.minute),
+                )) {
+              _changePage(3);
+              Get.to(
+                () => PostDetails(
+                  task: task,
+                ),
+              );
+            } else
+              _changePage(1);
+
+            break;
+          }
+        case 'NEW_LIKE':
+          {
+            final taskRaw = event.data['task'] is String
+                ? json.decode(event.data['task'])
+                : event.data['task'];
+
+            Task task = Task.fromJson(
+              taskRaw,
+              id: taskRaw['id'],
+            );
+
+            _changePage(3);
+
+            Get.to(
+              () => PostDetails(
+                task: task,
+              ),
+            );
+            break;
+          }
+        case 'NEW_FOLLOW':
+          {
+            Get.to(
+              () => UserProfileView(
+                user: UserModel.fromMap(
+                  event.data['user'] is String
+                      ? json.decode(event.data['user'])
+                      : event.data['user'],
+                ),
+              ),
+            );
+            break;
+          }
+      }
+    });
   }
 
   showTutorial() {

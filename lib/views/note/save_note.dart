@@ -57,9 +57,14 @@ class _SaveNotePageState extends State<SaveNotePage> {
       id: widget.note?.id,
       taskRef: widget.taskRef,
       taskTitle: widget.taskTitle,
+      feedArticleID: widget.note?.feedArticleID,
       content: _contentController.text,
       creationDate: DateTime.now(),
       attachmentsCount: widget.note?.attachmentsCount ?? 0,
+      attachments: widget.note?.attachments,
+      creator: widget.note?.creator,
+      status: widget.note?.status,
+      partnersIDs: widget.note?.partnersIDs,
     );
     await note.save();
 
@@ -107,41 +112,44 @@ class _SaveNotePageState extends State<SaveNotePage> {
       context: context,
       backgroundColor: Colors.transparent,
       expand: false,
-      builder: (context) => Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).scaffoldBackgroundColor,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(12.0),
-            topRight: Radius.circular(12.0),
+      builder: (context) => SafeArea(
+        top: false,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(12.0),
+              topRight: Radius.circular(12.0),
+            ),
           ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            AppActionButton(
-              onPressed: () => _pickImage(ImageSource.gallery),
-              icon: Icons.image_outlined,
-              label: 'Photos',
-              backgroundColor: Theme.of(context).backgroundColor,
-              textStyle: Theme.of(context).textTheme.headline6,
-              iconColor: Theme.of(context).primaryColor,
-              shadows: [],
-              margin: EdgeInsets.only(bottom: 0, top: 4),
-              iconSize: 28,
-            ),
-            AppActionButton(
-              onPressed: () => _pickImage(ImageSource.camera),
-              icon: Icons.camera_alt_outlined,
-              label: 'Camera',
-              backgroundColor: Theme.of(context).backgroundColor,
-              textStyle: Theme.of(context).textTheme.headline6,
-              iconColor: Theme.of(context).primaryColor,
-              shadows: [],
-              margin: EdgeInsets.only(bottom: 4, top: 0),
-              iconSize: 28,
-            ),
-          ],
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AppActionButton(
+                onPressed: () => _pickImage(ImageSource.gallery),
+                icon: Icons.image_outlined,
+                label: 'Photos',
+                backgroundColor: Theme.of(context).backgroundColor,
+                textStyle: Theme.of(context).textTheme.headline6,
+                iconColor: Theme.of(context).primaryColor,
+                shadows: [],
+                margin: EdgeInsets.only(bottom: 0, top: 4),
+                iconSize: 28,
+              ),
+              AppActionButton(
+                onPressed: () => _pickImage(ImageSource.camera),
+                icon: Icons.camera_alt_outlined,
+                label: 'Camera',
+                backgroundColor: Theme.of(context).backgroundColor,
+                textStyle: Theme.of(context).textTheme.headline6,
+                iconColor: Theme.of(context).primaryColor,
+                shadows: [],
+                margin: EdgeInsets.only(bottom: 4, top: 0),
+                iconSize: 28,
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -1,9 +1,11 @@
 const String USER_ID_KEY = 'userID';
 const String NOTE_ID_KEY = 'id';
+const String STATUS_KEY = 'status';
 const String PARTNERS_IDS_KEY = 'partnersIDs';
 const String CREATION_DATE_KEY = 'creationDate';
 const String CONTENT_KEY = 'content';
 const String TASK_REF_KEY = 'taskRef';
+const String FEED_ARTICLE_ID_KEY = 'feedArticleID';
 const String GOAL_REF_KEY = 'goalRef';
 const String STACK_REF_KEY = 'stackRef';
 const String TASK_TITLE_KEY = 'taskTitle';

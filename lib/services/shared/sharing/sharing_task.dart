@@ -1,19 +1,29 @@
 import 'dart:io';
+import 'dart:ui' as ui;
 
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:stackedtasks/models/Task.dart';
 import 'package:stackedtasks/models/goal_summary.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:share/share.dart';
 
-shareTask(Task task, ScreenshotController screenshotController) async {
+shareTask(Task task, GlobalKey screenshotKey) async {
   Directory tempDir = await getTemporaryDirectory();
   String tempPath = tempDir.path;
   File screenshot = File(tempPath + '/${task.id}.jpg');
   if (!screenshot.existsSync()) screenshot.createSync();
 
-  final capture = await screenshotController.capture();
-  
+  RenderRepaintBoundary boundary =
+      screenshotKey.currentContext.findRenderObject();
+  final boundaryImage = await boundary.toImage(
+    pixelRatio: 2.0,
+  );
+  var capture = await boundaryImage.toByteData(
+    format: ui.ImageByteFormat.png,
+  );
+
   screenshot.writeAsBytesSync(capture.buffer.asUint8List());
 
   await Share.shareFiles(

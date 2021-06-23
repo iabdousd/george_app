@@ -4,23 +4,25 @@ import 'package:animated_rotation/animated_rotation.dart';
 import 'package:flutter/material.dart';
 import 'package:stackedtasks/models/Note.dart';
 import 'package:stackedtasks/models/Task.dart';
-import 'package:stackedtasks/repositories/stack/note_repository.dart';
+import 'package:stackedtasks/repositories/note/note_repository.dart';
 import 'package:stackedtasks/services/feed-back/loader.dart';
+import 'package:stackedtasks/widgets/shared/app_error_widget.dart';
 
 import 'note_thread_tile.dart';
 
 class TaskNotesThread extends StatelessWidget {
   final Task task;
-  final bool allTaskNotes;
+  final bool allTaskNotes, initialShowAll;
   const TaskNotesThread({
     Key key,
     this.task,
     this.allTaskNotes: false,
+    this.initialShowAll: false,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    bool showAll = false;
+    bool showAll = (initialShowAll ?? false) == true;
 
     return StreamBuilder<List<Note>>(
       stream: NoteRepository.streamTaskNotes(
@@ -28,6 +30,13 @@ class TaskNotesThread extends StatelessWidget {
         allTaskNotes: allTaskNotes,
       ),
       builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          print(snapshot.error);
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: AppErrorWidget(),
+          );
+        }
         if (!snapshot.hasData) {
           return Container(
             padding: const EdgeInsets.all(8.0),

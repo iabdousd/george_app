@@ -36,8 +36,6 @@ class CalendarDayView extends StatelessWidget {
           ? tasksPositions[-1]
           : tasksPositions[task.startTime.hour];
       for (int i = task.startTime.hour; i <= task.endTime.hour; i++) {
-        print(i);
-        print(tasksPositions[i]);
         if (tasksPositions[i] != null && tasksPositions[i] > position)
           position = tasksPositions[i];
       }

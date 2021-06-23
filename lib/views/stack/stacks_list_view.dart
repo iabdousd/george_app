@@ -41,6 +41,7 @@ class StacksListView extends StatelessWidget {
                   () => SaveStackPage(
                     goalRef: goal.id,
                     goalColor: goal.color,
+                    goalPartnerIDs: goal.partnersIDs,
                   ),
                 ),
                 child: Icon(

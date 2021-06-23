@@ -1,12 +1,12 @@
-import 'package:stackedtasks/models/Stack.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:stackedtasks/models/goal_summary.dart';
-import 'package:stackedtasks/constants/models/task.dart' as task_constants;
-import 'package:stackedtasks/constants/models/stack.dart' as stack_constants;
-import 'package:stackedtasks/constants/models/goal.dart' as goal_constants;
 
+import 'package:stackedtasks/constants/models/goal.dart' as goal_constants;
 import 'package:stackedtasks/constants/models/goal_summary.dart'
     as goal_summary_constants;
+import 'package:stackedtasks/constants/models/stack.dart' as stack_constants;
+import 'package:stackedtasks/constants/models/task.dart' as task_constants;
+import 'package:stackedtasks/models/Stack.dart';
+import 'package:stackedtasks/models/goal_summary.dart';
 import 'package:stackedtasks/services/user/user_service.dart';
 
 class Goal {
@@ -47,11 +47,15 @@ class Goal {
     this.color = jsonObject[goal_constants.COLOR_KEY];
     this.status = jsonObject[goal_constants.STATUS_KEY];
     this.creationDate =
-        (jsonObject[goal_constants.CREATION_DATE_KEY] as Timestamp).toDate();
-    this.startDate =
-        (jsonObject[goal_constants.START_DATE_KEY] as Timestamp).toDate();
-    this.endDate =
-        (jsonObject[goal_constants.END_DATE_KEY] as Timestamp).toDate();
+        (jsonObject[goal_constants.CREATION_DATE_KEY] as Timestamp)
+            .toDate()
+            .toLocal();
+    this.startDate = (jsonObject[goal_constants.START_DATE_KEY] as Timestamp)
+        .toDate()
+        .toLocal();
+    this.endDate = (jsonObject[goal_constants.END_DATE_KEY] as Timestamp)
+        .toDate()
+        .toLocal();
     this.stacks = [];
   }
 
@@ -62,9 +66,25 @@ class Goal {
       goal_constants.TITLE_KEY: title,
       goal_constants.COLOR_KEY: color,
       goal_constants.STATUS_KEY: status,
-      goal_constants.CREATION_DATE_KEY: creationDate,
-      goal_constants.START_DATE_KEY: startDate,
-      goal_constants.END_DATE_KEY: endDate,
+      goal_constants.CREATION_DATE_KEY: creationDate.toUtc(),
+      goal_constants.START_DATE_KEY: startDate != null
+          ? DateTime(
+              startDate.year,
+              startDate.month,
+              startDate.day,
+              startDate.hour,
+              startDate.minute,
+            ).toUtc()
+          : null,
+      goal_constants.END_DATE_KEY: endDate != null
+          ? DateTime(
+              endDate.year,
+              endDate.month,
+              endDate.day,
+              endDate.hour,
+              endDate.minute,
+            ).toUtc()
+          : null,
       goal_constants.STACKS_KEY: stacks.map((e) => e.toJson()).toList(),
     };
   }
@@ -181,5 +201,31 @@ class Goal {
     await GoalSummary(
       id: id,
     ).delete();
+  }
+
+  Goal copyWith({
+    String id,
+    String userID,
+    List<String> partnersIDs,
+    String title,
+    String color,
+    int status,
+    DateTime creationDate,
+    DateTime startDate,
+    DateTime endDate,
+    List<TasksStack> stacks,
+  }) {
+    return Goal(
+      id: id ?? this.id,
+      userID: userID ?? this.userID,
+      partnersIDs: partnersIDs ?? this.partnersIDs,
+      title: title ?? this.title,
+      color: color ?? this.color,
+      status: status ?? this.status,
+      creationDate: creationDate ?? this.creationDate,
+      startDate: startDate ?? this.startDate,
+      endDate: endDate ?? this.endDate,
+      stacks: stacks ?? this.stacks,
+    );
   }
 }

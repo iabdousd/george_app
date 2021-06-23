@@ -29,6 +29,7 @@ class ContactRepository {
     ));
 
     Map<String, Contact> contactList = {};
+    Map<String, Contact> contactListByEmail = {};
     await Permission.contacts.request();
     final status = await Permission.contacts.isGranted;
 
@@ -45,11 +46,33 @@ class ContactRepository {
             () => contact,
           );
         }
+        for (final email in contact.emails) {
+          contactListByEmail.putIfAbsent(
+            email.value.toLowerCase(),
+            () => contact,
+          );
+        }
       }
       // FETCH USERS BASED ON THE CONTACT
-      Map<String, UserModel> syncedUsers = await UserService.syncUserPhones(
+      Map<String, UserModel> syncedUsersByPhone =
+          await UserService.syncUserPhones(
         contactList.keys.toList(),
       );
+      List<String> emails = [];
+
+      contactList.values.forEach(
+        (e) => e.emails.forEach(
+          (e) => emails.add(e.value),
+        ),
+      );
+      Map<String, UserModel> syncedUsersByEmail =
+          await UserService.syncUserEmails(emails, details.dialCode);
+
+      Map<String, UserModel> syncedUsers = {
+        ...syncedUsersByPhone,
+        ...syncedUsersByEmail,
+      };
+
       for (MapEntry<String, UserModel> syncedUser in syncedUsers.entries) {
         if (alreadySyncedPhoneContacts.contains(
           syncedUser.key,
@@ -62,7 +85,8 @@ class ContactRepository {
           syncedUser.key,
           ContactUser.fromUserAndContact(
             syncedUser.value,
-            contactList[syncedUser.key],
+            contactList[syncedUser.key] ??
+                contactListByEmail[syncedUser.key.toLowerCase()],
           ),
         );
       }

@@ -34,16 +34,19 @@ class SaveTaskPage extends StatefulWidget {
   final String stackColor;
   final Task task;
   final bool addingPartner;
-  SaveTaskPage(
-      {Key key,
-      @required this.goalRef,
-      @required this.stackRef,
-      @required this.goalTitle,
-      @required this.stackTitle,
-      @required this.stackColor,
-      this.addingPartner: false,
-      this.task})
-      : super(key: key);
+  final List<String> stackPartners;
+
+  SaveTaskPage({
+    Key key,
+    @required this.goalRef,
+    @required this.stackRef,
+    @required this.goalTitle,
+    @required this.stackTitle,
+    @required this.stackColor,
+    this.addingPartner: false,
+    this.task,
+    this.stackPartners,
+  }) : super(key: key);
 
   @override
   _SaveTaskPageState createState() => _SaveTaskPageState();
@@ -131,7 +134,10 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
     Task task = Task(
       id: widget.task?.id,
       userID: getCurrentUser().uid,
-      partnersIDs: partners.map((e) => e.uid).toList(),
+      partnersIDs: [
+        ...(widget.stackPartners ?? []),
+        ...partners.map((e) => e.uid).toList()
+      ],
       goalRef: widget.goalRef,
       stackRef: widget.stackRef,
       goalTitle: widget.goalTitle,
@@ -150,11 +156,10 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
       endDate: DateTime(endDate.year, endDate.month, endDate.day),
       startTime: startTime,
       endTime: endTime,
-      status: 0,
+      status: widget.task?.status ?? 0,
       anyTime: anyTime,
       stackColor: widget.stackColor,
       donesHistory: widget.task?.donesHistory ?? [],
-      taskNotes: widget.task?.taskNotes ?? [],
       oldDueDatesCount: widget.task?.dueDates?.length ?? 0,
       oldDuration: widget.task != null
           ? widget.task.endTime.difference(widget.task.startTime)
@@ -316,170 +321,178 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             children: [
               // PARTNERS
-              Container(
-                decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(
-                      color: Colors.black12,
+              if (widget.task?.id != null)
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: Colors.black12,
+                      ),
                     ),
                   ),
-                ),
-                padding: EdgeInsets.only(
-                  left: 16,
-                  right: 16,
-                  bottom: 12,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 16,
-                          child: Divider(
-                            color: Colors.black26,
+                  padding: EdgeInsets.only(
+                    left: 16,
+                    right: 16,
+                    bottom: 12,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 16,
+                            child: Divider(
+                              color: Colors.black26,
+                            ),
                           ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                            ),
+                            height: 24,
+                            child: Center(
+                              child: Text('Partners'),
+                            ),
                           ),
-                          height: 24,
-                          child: Center(
-                            child: Text('Partners'),
+                          Expanded(
+                            child: Divider(
+                              color: Colors.black26,
+                            ),
                           ),
-                        ),
-                        Expanded(
-                          child: Divider(
-                            color: Colors.black26,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Stack(
-                      children: [
-                        SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.max,
-                            children: [
-                              Container(
-                                width: 32,
-                                height: 32,
-                              ),
-                              if (loadingPartners)
+                        ],
+                      ),
+                      Stack(
+                        children: [
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.max,
+                              children: [
                                 Container(
-                                  decoration: BoxDecoration(
-                                    color: Color(0xFFEEEEEE),
-                                    shape: BoxShape.circle,
-                                  ),
                                   width: 32,
                                   height: 32,
-                                  padding: EdgeInsets.all(4),
-                                  child: Center(
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 1.5,
-                                      valueColor: AlwaysStoppedAnimation(
-                                        HexColor.fromHex(
-                                          widget.task.stackColor,
+                                ),
+                                if (loadingPartners)
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: Color(0xFFEEEEEE),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    width: 32,
+                                    height: 32,
+                                    padding: EdgeInsets.all(4),
+                                    child: Center(
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 1.5,
+                                        valueColor: AlwaysStoppedAnimation(
+                                          HexColor.fromHex(
+                                            widget.task.stackColor,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                else
+                                  ...partners.map(
+                                    (e) => InkWell(
+                                      onTap: () => openPartner(e),
+                                      child: Container(
+                                        margin: EdgeInsets.symmetric(
+                                          horizontal: 2,
+                                        ),
+                                        child: ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(32),
+                                          child: e.photoURL == null
+                                              ? Container(
+                                                  width: 32,
+                                                  height: 32,
+                                                  decoration: BoxDecoration(
+                                                    color: Theme.of(context)
+                                                        .textTheme
+                                                        .headline6
+                                                        .color
+                                                        .withOpacity(.25),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            32),
+                                                  ),
+                                                  child: Center(
+                                                    child: Text(
+                                                      e.fullName[0]
+                                                          .toUpperCase(),
+                                                      style: TextStyle(
+                                                        color: Theme.of(context)
+                                                            .backgroundColor,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 18,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                )
+                                              : Image(
+                                                  image: CachedImageProvider(
+                                                    e.photoURL,
+                                                  ),
+                                                  width: 32,
+                                                  height: 32,
+                                                  fit: BoxFit.cover,
+                                                ),
                                         ),
                                       ),
                                     ),
                                   ),
-                                )
-                              else
-                                ...partners.map(
-                                  (e) => Container(
-                                    margin: EdgeInsets.symmetric(
-                                      horizontal: 2,
-                                    ),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(32),
-                                      child: e.photoURL == null
-                                          ? Container(
-                                              width: 32,
-                                              height: 32,
-                                              decoration: BoxDecoration(
-                                                color: Theme.of(context)
-                                                    .textTheme
-                                                    .headline6
-                                                    .color
-                                                    .withOpacity(.25),
-                                                borderRadius:
-                                                    BorderRadius.circular(32),
-                                              ),
-                                              child: Center(
-                                                child: Text(
-                                                  e.fullName[0].toUpperCase(),
-                                                  style: TextStyle(
-                                                    color: Theme.of(context)
-                                                        .backgroundColor,
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 18,
-                                                  ),
-                                                ),
-                                              ),
-                                            )
-                                          : Image(
-                                              image: CachedImageProvider(
-                                                e.photoURL,
-                                              ),
-                                              width: 32,
-                                              height: 32,
-                                              fit: BoxFit.cover,
-                                            ),
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                        Positioned(
-                          left: 0,
-                          top: 0,
-                          bottom: 0,
-                          child: Container(
-                            padding: EdgeInsets.only(right: 12),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  Theme.of(context).backgroundColor,
-                                  Theme.of(context)
-                                      .backgroundColor
-                                      .withOpacity(.9),
-                                  Theme.of(context)
-                                      .backgroundColor
-                                      .withOpacity(.75),
-                                  Theme.of(context)
-                                      .backgroundColor
-                                      .withOpacity(0),
-                                ],
-                              ),
+                              ],
                             ),
-                            child: GestureDetector(
-                              onTap: addPartner,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: Color(0xFFEEEEEE),
-                                  shape: BoxShape.circle,
+                          ),
+                          Positioned(
+                            left: 0,
+                            top: 0,
+                            bottom: 0,
+                            child: Container(
+                              padding: EdgeInsets.only(right: 12),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Theme.of(context).backgroundColor,
+                                    Theme.of(context)
+                                        .backgroundColor
+                                        .withOpacity(.9),
+                                    Theme.of(context)
+                                        .backgroundColor
+                                        .withOpacity(.75),
+                                    Theme.of(context)
+                                        .backgroundColor
+                                        .withOpacity(0),
+                                  ],
                                 ),
-                                width: 28,
-                                height: 28,
-                                child: Center(
-                                  child: Icon(
-                                    Icons.add,
-                                    size: 18,
+                              ),
+                              child: GestureDetector(
+                                onTap: addPartner,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Color(0xFFEEEEEE),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  width: 28,
+                                  height: 28,
+                                  child: Center(
+                                    child: Icon(
+                                      Icons.add,
+                                      size: 18,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
 
               SizedBox(height: 20),
 
@@ -1157,16 +1170,19 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
                     onPressed: (foundUsers != null && foundUsers.isNotEmpty)
                         ? () async {
                             Navigator.pop(context);
-                            for (final foundUser in foundUsers)
-                              await NotificationRepository.addTaskNotification(
+                            for (final foundUser in foundUsers) {
+                              bool status = await NotificationRepository
+                                  .addTaskNotification(
                                 widget.task,
                                 foundUser.uid,
                               );
-                            showFlushBar(
-                              title: 'Invitation Sent',
-                              message:
-                                  'Your partner has been invited to partner up in this task with you!',
-                            );
+                              if (status)
+                                showFlushBar(
+                                  title: 'Invitation Sent',
+                                  message:
+                                      '${foundUser.fullName[0].toUpperCase() + foundUser.fullName.substring(1)} has been invited to partner up in this goal with you!',
+                                );
+                            }
                           }
                         : addType == 'email'
                             ? () => searchByEmail(smallSetState)
@@ -1186,6 +1202,32 @@ class _SaveTaskPageState extends State<SaveTaskPage> {
           ),
         );
       },
+    );
+  }
+
+  openPartner(UserModel user) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        child: UserCard(
+          user: user,
+          onDelete: () async {
+            setState(
+              () => partners.remove(user),
+            );
+            Navigator.pop(context);
+            await widget.task
+                .copyWith(
+                  partnersIDs: partners
+                      .map(
+                        (e) => e.uid,
+                      )
+                      .toList(),
+                )
+                .save();
+          },
+        ),
+      ),
     );
   }
 }

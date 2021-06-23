@@ -4,6 +4,7 @@ const String FEED_COMMENTS_COLLECTION = 'feed-commentss';
 const String USER_ID_KEY = 'userID';
 const String TO_KEY = 'to';
 const String LIKES_COUNT_KEY = 'likesCount';
+const String TASK_PHOTO_KEY = 'taskPhoto';
 const String COMMENTS_COUNT_KEY = 'commentsCount';
 
 const String GOALS_SUMMARIES_KEY = 'goalsSummaries';

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:stackedtasks/models/UserModel.dart';
 import 'package:stackedtasks/providers/cache/cached_image_provider.dart';
+import 'package:stackedtasks/widgets/shared/app_action_button.dart';
 
 class UserCard extends StatelessWidget {
   final UserModel user;
@@ -14,7 +15,9 @@ class UserCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Container(
           decoration: BoxDecoration(
@@ -35,10 +38,12 @@ class UserCard extends StatelessWidget {
             vertical: 8,
           ),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
                 width: 44,
                 height: 44,
+                margin: const EdgeInsets.symmetric(vertical: 16.0),
                 decoration: BoxDecoration(
                   image: DecorationImage(
                     image: CachedImageProvider(
@@ -52,27 +57,40 @@ class UserCard extends StatelessWidget {
               Expanded(
                 child: Container(
                   padding: const EdgeInsets.all(12.0),
-                  child: Text(
-                    user.fullName,
-                    style: Theme.of(context)
-                        .textTheme
-                        .headline6
-                        .copyWith(fontSize: 18),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        user.fullName,
+                        style: Theme.of(context)
+                            .textTheme
+                            .headline6
+                            .copyWith(fontSize: 18),
+                      ),
+                      Text(
+                        user.email,
+                        style: Theme.of(context)
+                            .textTheme
+                            .subtitle1
+                            .copyWith(fontSize: 13),
+                      ),
+                    ],
                   ),
                 ),
               ),
             ],
           ),
         ),
-        Positioned(
-          top: 8,
-          right: 18,
-          child: GestureDetector(
-            onTap: onDelete,
-            child: Icon(
-              Icons.close,
-              color: Colors.red[700],
-            ),
+        AppActionButton(
+          onPressed: onDelete,
+          icon: Icons.close,
+          label: 'Remove Partner',
+          backgroundColor: Colors.red,
+          margin: EdgeInsets.only(
+            bottom: 8.0,
+            left: 16.0,
+            right: 16.0,
           ),
         ),
       ],

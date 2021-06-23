@@ -219,45 +219,48 @@ class _GoalDetailsPageState extends State<GoalDetailsPage> {
                               )
                             else
                               ...partners.map(
-                                (e) => Container(
-                                  margin: EdgeInsets.symmetric(
-                                    horizontal: 2,
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(32),
-                                    child: e.photoURL == null
-                                        ? Container(
-                                            width: 32,
-                                            height: 32,
-                                            decoration: BoxDecoration(
-                                              color: Theme.of(context)
-                                                  .textTheme
-                                                  .headline6
-                                                  .color
-                                                  .withOpacity(.25),
-                                              borderRadius:
-                                                  BorderRadius.circular(32),
-                                            ),
-                                            child: Center(
-                                              child: Text(
-                                                e.fullName[0].toUpperCase(),
-                                                style: TextStyle(
-                                                  color: Theme.of(context)
-                                                      .backgroundColor,
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 18,
+                                (e) => InkWell(
+                                  onTap: () => openPartner(e),
+                                  child: Container(
+                                    margin: EdgeInsets.symmetric(
+                                      horizontal: 2,
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(32),
+                                      child: e.photoURL == null
+                                          ? Container(
+                                              width: 32,
+                                              height: 32,
+                                              decoration: BoxDecoration(
+                                                color: Theme.of(context)
+                                                    .textTheme
+                                                    .headline6
+                                                    .color
+                                                    .withOpacity(.25),
+                                                borderRadius:
+                                                    BorderRadius.circular(32),
+                                              ),
+                                              child: Center(
+                                                child: Text(
+                                                  e.fullName[0].toUpperCase(),
+                                                  style: TextStyle(
+                                                    color: Theme.of(context)
+                                                        .backgroundColor,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 18,
+                                                  ),
                                                 ),
                                               ),
+                                            )
+                                          : Image(
+                                              image: CachedImageProvider(
+                                                e.photoURL,
+                                              ),
+                                              width: 32,
+                                              height: 32,
+                                              fit: BoxFit.cover,
                                             ),
-                                          )
-                                        : Image(
-                                            image: CachedImageProvider(
-                                              e.photoURL,
-                                            ),
-                                            width: 32,
-                                            height: 32,
-                                            fit: BoxFit.cover,
-                                          ),
+                                    ),
                                   ),
                                 ),
                               ),
@@ -674,16 +677,19 @@ class _GoalDetailsPageState extends State<GoalDetailsPage> {
                     onPressed: (foundUsers != null && foundUsers.isNotEmpty)
                         ? () async {
                             Navigator.pop(context);
-                            for (final foundUser in foundUsers)
-                              await NotificationRepository.addGoalNotification(
+                            for (final foundUser in foundUsers) {
+                              bool status = await NotificationRepository
+                                  .addGoalNotification(
                                 widget.goal,
                                 foundUser.uid,
                               );
-                            showFlushBar(
-                              title: 'Invitation Sent',
-                              message:
-                                  'Your partner has been invited to partner up in this task with you!',
-                            );
+                              if (status)
+                                showFlushBar(
+                                  title: 'Invitation Sent',
+                                  message:
+                                      '${foundUser.fullName[0].toUpperCase() + foundUser.fullName.substring(1)} has been invited to partner up in this goal with you!',
+                                );
+                            }
                           }
                         : addType == 'email'
                             ? () => searchByEmail(smallSetState)
@@ -703,6 +709,32 @@ class _GoalDetailsPageState extends State<GoalDetailsPage> {
           ),
         );
       },
+    );
+  }
+
+  openPartner(UserModel user) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        child: UserCard(
+          user: user,
+          onDelete: () async {
+            setState(
+              () => partners.remove(user),
+            );
+            Navigator.pop(context);
+            await widget.goal
+                .copyWith(
+                  partnersIDs: partners
+                      .map(
+                        (e) => e.uid,
+                      )
+                      .toList(),
+                )
+                .save();
+          },
+        ),
+      ),
     );
   }
 }

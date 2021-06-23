@@ -27,8 +27,9 @@ class ContactPickerView extends StatefulWidget {
 class _ContactPickerViewState extends State<ContactPickerView> {
   List<Contact> foundContactList = [];
   List<Contact> contactList = [];
-  List<UserModel> selectedUsers = [];
+  Map<String, UserModel> selectedUsers = {};
   Map<String, UserModel> users = {};
+  Set<String> alreadyShownUsers = {};
   bool loading = true;
   CountryDetails details;
 
@@ -48,17 +49,26 @@ class _ContactPickerViewState extends State<ContactPickerView> {
         // FETCH USERS BASED ON THE CONTACT
         bool contactAdded = false;
         for (final phone in contact.phones) {
-          // if (contact?.displayName == null) continue;
           final tPhone = ContactRepository.trimPhoneNumber(phone.value);
           final user = await UserService.getContactUserByPhone(
             tPhone.startsWith('+') ? tPhone : details.dialCode + tPhone,
           );
           if (user != null) {
-            print(user);
             contactAdded = true;
             foundContactList.add(contact);
             users.putIfAbsent(
               user.phoneNumber,
+              () => user,
+            );
+          }
+        }
+        for (final email in contact.emails) {
+          final user = await UserService.getContactUserByEmail(email.value);
+          if (user != null) {
+            contactAdded = true;
+            foundContactList.add(contact);
+            users.putIfAbsent(
+              user.email,
               () => user,
             );
           }
@@ -88,6 +98,7 @@ class _ContactPickerViewState extends State<ContactPickerView> {
 
   @override
   Widget build(BuildContext context) {
+    alreadyShownUsers = {};
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -118,7 +129,7 @@ class _ContactPickerViewState extends State<ContactPickerView> {
                         'Nothing is selected',
                       )
                     else
-                      for (final user in selectedUsers)
+                      for (final user in selectedUsers.values)
                         FadeIn(
                           duration: Duration(milliseconds: 350),
                           child: Container(
@@ -186,7 +197,8 @@ class _ContactPickerViewState extends State<ContactPickerView> {
                                   padding: const EdgeInsets.only(left: 6.0),
                                   child: InkWell(
                                       onTap: () => setState(
-                                            () => selectedUsers.remove(user),
+                                            () =>
+                                                selectedUsers.remove(user.uid),
                                           ),
                                       child: Icon(
                                         Icons.close,
@@ -222,29 +234,44 @@ class _ContactPickerViewState extends State<ContactPickerView> {
                         contact.displayName ?? contact.givenName;
 
                     if (displayname == null) {
-                      print(contact.phones.map((e) => e.value));
                       return Container();
                     }
 
                     UserModel userModel;
                     if (!notUser) {
-                      final phone =
-                          ContactRepository.trimPhoneNumber(contact.phones
-                              .where((element) {
-                                final tPhone =
-                                    ContactRepository.trimPhoneNumber(
-                                        element.value);
-                                return users.containsKey(
-                                  tPhone.startsWith('+')
-                                      ? tPhone
-                                      : details.dialCode + tPhone,
-                                );
-                              })
-                              .first
-                              .value);
-                      userModel = users[phone.startsWith('+')
-                          ? phone
-                          : details.dialCode + phone];
+                      final foundPhones = contact.phones.where((element) {
+                        final tPhone =
+                            ContactRepository.trimPhoneNumber(element.value);
+                        return users.containsKey(
+                          tPhone.startsWith('+')
+                              ? tPhone
+                              : details.dialCode + tPhone,
+                        );
+                      });
+                      if (foundPhones.isNotEmpty &&
+                          !alreadyShownUsers.contains(
+                            ContactRepository.trimPhoneNumber(
+                                foundPhones.first.value),
+                          )) {
+                        final phone = ContactRepository.trimPhoneNumber(
+                          foundPhones.first.value,
+                        );
+                        userModel = users[phone.startsWith('+')
+                            ? phone
+                            : details.dialCode + phone];
+                        alreadyShownUsers.add(phone);
+                      } else {
+                        final email = contact.emails
+                            .where((element) {
+                              return users.containsKey(
+                                element.value.toLowerCase(),
+                              );
+                            })
+                            .first
+                            .value;
+
+                        userModel = users[email.toLowerCase()];
+                      }
                     }
 
                     return Column(
@@ -273,10 +300,14 @@ class _ContactPickerViewState extends State<ContactPickerView> {
                           onTap: () {
                             if (!notUser)
                               setState(() {
-                                if (selectedUsers.contains(userModel))
-                                  selectedUsers.remove(userModel);
-                                else
-                                  selectedUsers.add(userModel);
+                                if (selectedUsers.containsKey(userModel.uid)) {
+                                  selectedUsers.remove(userModel.uid);
+                                } else {
+                                  selectedUsers.putIfAbsent(
+                                    userModel.uid,
+                                    () => userModel,
+                                  );
+                                }
                               });
                           },
                           child: Row(
@@ -347,7 +378,7 @@ class _ContactPickerViewState extends State<ContactPickerView> {
                                       .primaryColor
                                       .withOpacity(.5),
                                 )
-                              else if (selectedUsers.contains(userModel))
+                              else if (selectedUsers.containsKey(userModel.uid))
                                 Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: Icon(
@@ -364,7 +395,8 @@ class _ContactPickerViewState extends State<ContactPickerView> {
                 ),
               ),
             AppActionButton(
-              onPressed: () => Navigator.of(context).pop(selectedUsers),
+              onPressed: () =>
+                  Navigator.of(context).pop(selectedUsers.values.toList()),
               label: widget.actionButtonText,
               textStyle: TextStyle(
                 fontWeight: FontWeight.w600,

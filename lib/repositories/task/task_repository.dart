@@ -1,6 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:share/share.dart';
+import 'package:stackedtasks/constants/feed.dart';
+import 'package:stackedtasks/constants/models/stack.dart';
 import 'package:stackedtasks/models/Task.dart';
 import 'package:stackedtasks/models/UserModel.dart';
 import 'package:stackedtasks/services/user/user_service.dart';
@@ -46,5 +49,20 @@ class TaskRepository {
       );
     }
     return null;
+  }
+
+  static Future<bool> addTaskPostPhoto(task, photoURL) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection(FEED_KEY)
+          .doc(task.id)
+          .update({
+        TASK_PHOTO_KEY: photoURL,
+      });
+
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 }

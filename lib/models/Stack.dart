@@ -53,7 +53,9 @@ class TasksStack extends InboxItem {
     this.color = jsonObject[stack_constants.COLOR_KEY];
     this.status = jsonObject[stack_constants.STATUS_KEY];
     this.creationDate =
-        (jsonObject[stack_constants.CREATION_DATE_KEY] as Timestamp).toDate();
+        (jsonObject[stack_constants.CREATION_DATE_KEY] as Timestamp)
+            .toDate()
+            .toLocal();
   }
 
   Map<String, dynamic> toJson() {
@@ -64,7 +66,7 @@ class TasksStack extends InboxItem {
       stack_constants.GOAL_REF_KEY: goalRef,
       stack_constants.COLOR_KEY: color,
       stack_constants.STATUS_KEY: status,
-      stack_constants.CREATION_DATE_KEY: creationDate,
+      stack_constants.CREATION_DATE_KEY: creationDate.toUtc(),
     };
   }
 
@@ -139,6 +141,7 @@ class TasksStack extends InboxItem {
     int status,
     DateTime creationDate,
     List<Task> tasks,
+    List<String> partnersIDs,
   }) {
     return TasksStack(
       id: id ?? this.id,
@@ -149,6 +152,7 @@ class TasksStack extends InboxItem {
       status: status ?? this.status,
       creationDate: creationDate ?? this.creationDate,
       tasks: tasks ?? this.tasks,
+      partnersIDs: partnersIDs ?? this.partnersIDs,
     );
   }
 }

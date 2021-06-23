@@ -1,7 +1,9 @@
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:hive/hive.dart';
 import 'package:stackedtasks/constants/user.dart';
 import 'package:stackedtasks/models/UserModel.dart';
@@ -10,17 +12,62 @@ import 'package:stackedtasks/services/feed-back/flush_bar.dart';
 
 Future<bool> checkAuthorization() async {
   User user = FirebaseAuth.instance.currentUser;
-  if (user != null)
-    await FirebaseFirestore.instance
-        .collection(USERS_KEY)
-        .doc(user.uid)
-        .update({
-      USER_UID_KEY: user.uid,
-      USER_FULL_NAME_KEY: user.displayName,
-      USER_PHONE_NUMBER_KEY: user.phoneNumber,
-      USER_EMAIL_KEY: user.email.trim().toLowerCase(),
-      USER_PROFILE_PICTURE_KEY: user.photoURL,
-    });
+  if (user != null) {
+    final messaging = FirebaseMessaging.instance;
+
+    NotificationSettings settings = await messaging.requestPermission(
+      alert: true,
+      announcement: false,
+      badge: true,
+      carPlay: false,
+      criticalAlert: false,
+      provisional: false,
+      sound: true,
+    );
+
+    if (settings.authorizationStatus != AuthorizationStatus.denied) {
+      final token = await messaging.getToken();
+      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+        print('Got a message whilst in the foreground!');
+        print('Message data: ${message.data}');
+
+        if (message.notification != null) {
+          print(
+              'Message also contained a notification: ${message.notification}');
+        }
+      });
+
+      final userSnapshot = await FirebaseFirestore.instance
+          .collection(USERS_KEY)
+          .doc(user.uid)
+          .get();
+
+      List<String> newTokens =
+          List<String>.from((userSnapshot.data()[USER_FCM_TOKENS_KEY] ?? []));
+
+      if (!newTokens.contains(token)) newTokens.add(token);
+
+      await userSnapshot.reference.update({
+        USER_UID_KEY: user.uid,
+        USER_FULL_NAME_KEY: user.displayName,
+        USER_PHONE_NUMBER_KEY: user.phoneNumber,
+        USER_EMAIL_KEY: user.email.trim().toLowerCase(),
+        USER_PROFILE_PICTURE_KEY: user.photoURL,
+        USER_FCM_TOKENS_KEY: newTokens,
+      });
+    } else {
+      await FirebaseFirestore.instance
+          .collection(USERS_KEY)
+          .doc(user.uid)
+          .update({
+        USER_UID_KEY: user.uid,
+        USER_FULL_NAME_KEY: user.displayName,
+        USER_PHONE_NUMBER_KEY: user.phoneNumber,
+        USER_EMAIL_KEY: user.email.trim().toLowerCase(),
+        USER_PROFILE_PICTURE_KEY: user.photoURL,
+      });
+    }
+  }
 
   return user != null && !user.isAnonymous;
 }
@@ -52,7 +99,6 @@ class UserService {
         )
         .get();
     if (userRaw.size > 0) {
-      print(userRaw.docs);
       return UserModel.fromMap(
         userRaw.docs.first.data(),
       );
@@ -61,7 +107,9 @@ class UserService {
   }
 
   static Future<UserModel> getUser(String uid) async {
-    if (users.containsKey(uid)) {
+    if (uid == getCurrentUser().uid) {
+      return UserModel.fromCurrentUser();
+    } else if (users.containsKey(uid)) {
       return users[uid];
     } else {
       final user = await fetchUser(uid);
@@ -104,6 +152,21 @@ class UserService {
     return null;
   }
 
+  static Future<UserModel> getContactUserByEmail(String email) async {
+    final user =
+        await Hive.lazyBox<ContactUser>(CONTACT_USER_BOX_NAME).get(email);
+    if (user != null) {
+      return UserModel(
+        uid: user.userId,
+        email: user.userEmail,
+        fullName: user.userName,
+        phoneNumber: user.userPhone,
+        photoURL: user.userPhotoURL,
+      );
+    }
+    return null;
+  }
+
   static Future<Map<String, UserModel>> syncUserPhones(
       List<String> phones) async {
     Map<String, UserModel> syncedMap = {};
@@ -126,20 +189,69 @@ class UserService {
     );
 
     for (final subPhonesList in subDivisions) {
-      final query = await FirebaseFirestore.instance
-          .collection(USERS_KEY)
-          .where(USER_PHONE_NUMBER_KEY, whereIn: subPhonesList)
-          .get();
-      if (query.size > 0) {
-        for (final user in query.docs.map(
-          (e) => UserModel.fromMap(
-            e.data(),
-          ),
-        )) {
-          syncedMap.putIfAbsent(
-            user.phoneNumber,
-            () => user,
-          );
+      if (subPhonesList.isNotEmpty) {
+        final query = await FirebaseFirestore.instance
+            .collection(USERS_KEY)
+            .where(USER_PHONE_NUMBER_KEY, whereIn: subPhonesList)
+            .get();
+        if (query.size > 0) {
+          for (final user in query.docs.map(
+            (e) => UserModel.fromMap(
+              e.data(),
+            ),
+          )) {
+            syncedMap.putIfAbsent(
+              user.phoneNumber,
+              () => user,
+            );
+          }
+        }
+      }
+    }
+    return syncedMap;
+  }
+
+  static Future<Map<String, UserModel>> syncUserEmails(
+      List<String> emails, String dialCode) async {
+    List<String> restEmails = [...emails];
+    Map<String, UserModel> syncedMap = {};
+    for (final email in emails) {
+      final sameUsers = users.values.where((element) => element.email == email);
+      if (sameUsers.isNotEmpty) {
+        syncedMap.putIfAbsent(
+          sameUsers.first.email.toLowerCase(),
+          () => sameUsers.first,
+        );
+        restEmails.removeWhere((element) => element.toLowerCase() == email);
+      }
+    }
+
+    final subDivisions = List.generate(
+      restEmails.length ~/ 10 + 1,
+      (index) => restEmails.sublist(
+        index * 10,
+        min(restEmails.length, (index + 1) * 10),
+      ),
+    );
+
+    for (final subEmailsList in subDivisions) {
+      if (subEmailsList.isNotEmpty) {
+        final query = await FirebaseFirestore.instance
+            .collection(USERS_KEY)
+            .where(USER_EMAIL_KEY, whereIn: subEmailsList)
+            .get();
+
+        if (query.size > 0) {
+          for (final user in query.docs.map(
+            (e) => UserModel.fromMap(
+              e.data(),
+            ),
+          )) {
+            syncedMap.putIfAbsent(
+              user.email.toLowerCase(),
+              () => user,
+            );
+          }
         }
       }
     }
@@ -211,5 +323,22 @@ class UserService {
         .map(
           (event) => event.exists && event.data() != null,
         );
+  }
+
+  static Stream<List<UserModel>> getUserFollowing() {
+    return FirebaseFirestore.instance
+        .collection(USER_FOLLOWERS_COLLECTION)
+        .where(USER_FOLLOWER_KEY, isEqualTo: getCurrentUser().uid)
+        .snapshots()
+        .asyncMap(
+      (event) async {
+        List<UserModel> users = [];
+        for (final uid in event.docs.map((e) => e.data()[USER_FOLLOWED_KEY])) {
+          final user = await getUser(uid);
+          users.add(user);
+        }
+        return users;
+      },
+    );
   }
 }

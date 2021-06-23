@@ -7,7 +7,6 @@ import 'package:stackedtasks/views/main-views/inbox-views/inbox_main_view.dart';
 
 import 'package:stackedtasks/widgets/goal/GoalTile.dart';
 import 'package:stackedtasks/constants/models/goal.dart' as goal_constants;
-import 'package:stackedtasks/constants/user.dart' as user_constants;
 import 'package:stackedtasks/models/Goal.dart';
 import 'package:stackedtasks/services/user/user_service.dart';
 import 'package:stackedtasks/widgets/shared/app_error_widget.dart';

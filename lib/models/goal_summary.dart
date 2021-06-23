@@ -50,7 +50,7 @@ class GoalSummary {
     this.tasksAccomlished =
         jsonObject[goal_summary_constants.TASKS_ACCOMPLISHED_KEY];
     this.creationDate =
-        jsonObject[goal_summary_constants.CREATION_DATE_KEY].toDate();
+        jsonObject[goal_summary_constants.CREATION_DATE_KEY].toDate().toLocal();
     this.allocatedTime = Duration(
         milliseconds: jsonObject[goal_summary_constants.ALLOCATED_TIME_KEY]);
 
@@ -74,7 +74,7 @@ class GoalSummary {
       goal_summary_constants.STATUS_KEY: status,
       goal_summary_constants.TASKS_TOTAL_KEY: tasksTotal,
       goal_summary_constants.TASKS_ACCOMPLISHED_KEY: tasksAccomlished,
-      goal_summary_constants.CREATION_DATE_KEY: creationDate,
+      goal_summary_constants.CREATION_DATE_KEY: creationDate.toUtc(),
       goal_summary_constants.ALLOCATED_TIME_KEY: allocatedTime.inMilliseconds,
       goal_summary_constants.STACKS_SUMMARIES_KEY:
           stacksSummaries.map((e) => e.toJson()).toList()
@@ -102,7 +102,7 @@ class GoalSummary {
     this.tasksAccomlished =
         jsonObject[goal_summary_constants.TASKS_ACCOMPLISHED_KEY];
     this.creationDate =
-        jsonObject[goal_summary_constants.CREATION_DATE_KEY].toDate();
+        jsonObject[goal_summary_constants.CREATION_DATE_KEY].toDate().toLocal();
     this.allocatedTime = Duration(
         milliseconds: jsonObject[goal_summary_constants.ALLOCATED_TIME_KEY]);
 

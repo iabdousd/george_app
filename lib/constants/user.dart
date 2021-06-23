@@ -4,6 +4,7 @@ const String USER_FULL_NAME_KEY = 'fullName';
 const String USER_EMAIL_KEY = 'email';
 const String USER_PHONE_NUMBER_KEY = 'phoneNumber';
 const String USER_PROFILE_PICTURE_KEY = 'profilePicture';
+const String USER_FCM_TOKENS_KEY = 'fcmTokens';
 
 const String USER_FOLLOWERS_COLLECTION = 'followers';
 const String USER_FOLLOW_DATE_KEY = 'followDate';

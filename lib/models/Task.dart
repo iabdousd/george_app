@@ -27,7 +27,6 @@ class Task extends InboxItem {
   String goalTitle;
   String stackTitle;
   TaskRepetition repetition;
-  List<String> taskNotes;
   String title;
   String description;
   int status;
@@ -51,8 +50,12 @@ class Task extends InboxItem {
   String userName;
   String userPhoto;
   int likesCount;
-  int commentsCount;
+  Stream<int> commentsCount;
   Stream<bool> isLiked;
+
+  String taskPhoto;
+
+  get taskID => id.contains('_') ? id.substring(0, id.length - 10) : id;
 
   Task({
     this.id,
@@ -65,7 +68,6 @@ class Task extends InboxItem {
     this.stackColor,
     this.title,
     this.description,
-    this.taskNotes,
     this.status,
     this.oldDueDatesCount,
     this.oldDuration,
@@ -79,6 +81,7 @@ class Task extends InboxItem {
     this.startTime,
     this.endTime,
     this.lastNote,
+    this.taskPhoto,
   }) {
     if (task_constants.REPETITION_OPTIONS
         .contains(repetition?.type?.toLowerCase())) {
@@ -145,11 +148,6 @@ class Task extends InboxItem {
     this.title = jsonObject[task_constants.TITLE_KEY];
     this.description = jsonObject[task_constants.DESCRIPTION_KEY];
 
-    if (jsonObject[task_constants.TASK_NOTES_KEY] != null &&
-        jsonObject[task_constants.TASK_NOTES_KEY].length > 0)
-      this.taskNotes =
-          List<String>.from(jsonObject[task_constants.TASK_NOTES_KEY]);
-
     this.status = jsonObject[task_constants.STATUS_KEY];
     this.anyTime = jsonObject[task_constants.ANY_TIME_KEY];
     if (jsonObject[task_constants.REPETITION_KEY] != null &&
@@ -160,41 +158,71 @@ class Task extends InboxItem {
           TaskRepetition.fromJson(jsonObject[task_constants.REPETITION_KEY]);
 
     this.creationDate =
-        (jsonObject[task_constants.CREATION_DATE_KEY] as Timestamp).toDate();
+        jsonObject[task_constants.CREATION_DATE_KEY] is Timestamp
+            ? (jsonObject[task_constants.CREATION_DATE_KEY] as Timestamp)
+                .toDate()
+                .toLocal()
+            : DateTime.fromMillisecondsSinceEpoch(
+                jsonObject[task_constants.CREATION_DATE_KEY]);
 
     if (jsonObject[task_constants.DONES_HISTORY_KEY] != null &&
         jsonObject[task_constants.DONES_HISTORY_KEY] is List)
-      this.donesHistory = List<DateTime>.from(
-          jsonObject[task_constants.DONES_HISTORY_KEY]
-              .map((e) => (e as Timestamp).toDate())
+      this.donesHistory =
+          List<DateTime>.from(jsonObject[task_constants.DONES_HISTORY_KEY]
+              .map(
+                (e) => e is Timestamp
+                    ? e.toDate().toLocal()
+                    : DateTime.fromMillisecondsSinceEpoch(e),
+              )
               .toList());
     else
       this.donesHistory = [];
 
     if (jsonObject[task_constants.DUE_DATES_KEY] != null &&
         jsonObject[task_constants.DUE_DATES_KEY] is List)
-      this.dueDates = List<DateTime>.from(
-          jsonObject[task_constants.DUE_DATES_KEY]
-              .map((e) => (e as Timestamp).toDate())
+      this.dueDates =
+          List<DateTime>.from(jsonObject[task_constants.DUE_DATES_KEY]
+              .map(
+                (e) => e is Timestamp
+                    ? e.toDate().toLocal()
+                    : DateTime.fromMillisecondsSinceEpoch(e),
+              )
               .toList());
     else
       this.dueDates = [];
 
-    this.startDate =
-        (jsonObject[task_constants.START_DATE_KEY] as Timestamp).toDate();
-    this.endDate =
-        (jsonObject[task_constants.END_DATE_KEY] as Timestamp).toDate();
-    this.startTime =
-        (jsonObject[task_constants.START_TIME_KEY] as Timestamp).toDate();
-    this.endTime =
-        (jsonObject[task_constants.END_TIME_KEY] as Timestamp).toDate();
+    this.startDate = jsonObject[task_constants.START_DATE_KEY] is Timestamp
+        ? (jsonObject[task_constants.START_DATE_KEY] as Timestamp)
+            .toDate()
+            .toLocal()
+        : DateTime.fromMillisecondsSinceEpoch(
+            jsonObject[task_constants.START_DATE_KEY]);
+    this.endDate = jsonObject[task_constants.END_DATE_KEY] is Timestamp
+        ? (jsonObject[task_constants.END_DATE_KEY] as Timestamp)
+            .toDate()
+            .toLocal()
+        : DateTime.fromMillisecondsSinceEpoch(
+            jsonObject[task_constants.END_DATE_KEY]);
+    this.startTime = jsonObject[task_constants.START_TIME_KEY] is Timestamp
+        ? (jsonObject[task_constants.START_TIME_KEY] as Timestamp)
+            .toDate()
+            .toLocal()
+        : DateTime.fromMillisecondsSinceEpoch(
+            jsonObject[task_constants.START_TIME_KEY]);
+
+    this.endTime = jsonObject[task_constants.END_TIME_KEY] is Timestamp
+        ? (jsonObject[task_constants.END_TIME_KEY] as Timestamp)
+            .toDate()
+            .toLocal()
+        : DateTime.fromMillisecondsSinceEpoch(
+            jsonObject[task_constants.END_TIME_KEY]);
 
     this.lastNote = jsonObject[task_constants.LAST_NOTE_KEY] != null
         ? Note.fromJson(jsonObject[task_constants.LAST_NOTE_KEY])
         : null;
 
     this.likesCount = jsonObject[feed_constants.LIKES_COUNT_KEY] ?? 0;
-    this.commentsCount = jsonObject[feed_constants.COMMENTS_COUNT_KEY] ?? 0;
+    this.taskPhoto = jsonObject[feed_constants.TASK_PHOTO_KEY];
   }
 
   Map<String, dynamic> toJson() {
@@ -214,32 +242,16 @@ class Task extends InboxItem {
           task_constants.REPETITION_OPTIONS.contains(repetition?.type)
               ? repetition.toJson()
               : null,
-      task_constants.TASK_NOTES_KEY: taskNotes,
-      task_constants.CREATION_DATE_KEY: creationDate,
-      task_constants.DUE_DATES_KEY: dueDates,
+      task_constants.CREATION_DATE_KEY: creationDate.toUtc(),
+      task_constants.DUE_DATES_KEY: dueDates?.map((e) => e.toUtc())?.toList(),
       task_constants.DONES_HISTORY_KEY: donesHistory,
-      task_constants.START_DATE_KEY: startDate,
-      task_constants.END_DATE_KEY: endDate,
+      task_constants.START_DATE_KEY: startDate.toUtc(),
+      task_constants.END_DATE_KEY: endDate.toUtc(),
       task_constants.START_TIME_KEY: startTime,
       task_constants.END_TIME_KEY: endTime,
       task_constants.LAST_NOTE_KEY: lastNote?.toJson(),
+      feed_constants.TASK_PHOTO_KEY: taskPhoto,
     };
-  }
-
-  Future<String> fetchNotes({bool forced: false}) async {
-    if ((!notesFetched || forced) && (taskNotes ?? []).length != 0) {
-      detailedTaskNotes = [];
-      for (String noteKey in taskNotes) {
-        var data = await FirebaseFirestore.instance
-            .collection(stack_constants.NOTES_KEY)
-            .doc(noteKey)
-            .get();
-        detailedTaskNotes.add(
-          Note.fromJson(data.data()),
-        );
-      }
-    }
-    return notesText;
   }
 
   double timeToDouble(TimeOfDay myTime) => myTime.hour + myTime.minute / 60.0;
@@ -262,16 +274,6 @@ class Task extends InboxItem {
     }
 
     return streak;
-  }
-
-  String get notesText {
-    String text = '';
-    if ((taskNotes?.length ?? 0) > 0) {
-      for (Note note in detailedTaskNotes) {
-        text += note.content + (note == detailedTaskNotes.last ? '' : '\n');
-      }
-    }
-    return text;
   }
 
   double get completionPercent => this.dueDates.length > 0
@@ -324,17 +326,19 @@ class Task extends InboxItem {
   }
 
   Future<List> getAllPartners() async {
-    List<String> allPartners = [...partnersIDs];
+    List<String> allPartners = [...(partnersIDs ?? [])];
     if (stackRef != null && stackRef != 'inbox') {
       final stackRaw = await FirebaseFirestore.instance
           .collection(STACKS_KEY)
           .doc(stackRef)
           .get();
-      final stack = TasksStack.fromJson(
-        stackRaw.data(),
-        id: stackRaw.id,
-      );
-      allPartners.addAll(stack.partnersIDs);
+      if (stackRaw.exists && stackRaw.data() != null) {
+        final stack = TasksStack.fromJson(
+          stackRaw.data(),
+          id: stackRaw.id,
+        );
+        allPartners.addAll(stack.partnersIDs);
+      }
       if (goalRef != null && goalRef != 'inbox') {
         final goalRaw = await FirebaseFirestore.instance
             .collection(GOALS_KEY)
@@ -379,19 +383,12 @@ class Task extends InboxItem {
           updateSummaries: false,
         );
         List<String> allPartners = await getAllPartners();
-        await FirebaseFirestore.instance
-            .collection(feed_constants.FEED_KEY)
-            .doc(
-              id + DateFormat('yyyy_MM_dd').format(startDate),
-            )
-            .set(
-          {
-            feed_constants.TO_KEY: [getCurrentUser().uid, ...allPartners],
-            ...toJson(),
-            task_constants.CREATION_DATE_KEY: DateTime.now(),
-          },
+
+        await saveAsFeed(
+          [getCurrentUser().uid, ...allPartners],
+          tryUpdate: false,
+          customID: this.id + DateFormat('yyyy_MM_dd').format(startDate),
         );
-        // TODO: !
         if (stackRef != 'inbox' && goalRef != 'inbox') {
           await addTaskAccomplishment(this);
           await GoalSummary(id: goalRef).accomplishTask(
@@ -441,20 +438,12 @@ class Task extends InboxItem {
         updateSummaries: false,
       );
       List<String> allPartners = await getAllPartners();
-      await FirebaseFirestore.instance
-          .collection(feed_constants.FEED_KEY)
-          .doc(
-            id + DateFormat('yyyy_MM_dd').format(accompishedDate),
-          )
-          .set(
-        {
-          ...toJson(),
-          // TODO: PARTNER RELATED
-          feed_constants.TO_KEY: [getCurrentUser().uid, ...allPartners],
-          task_constants.CREATION_DATE_KEY: DateTime.now(),
-        },
+      await saveAsFeed(
+        [getCurrentUser().uid, ...allPartners],
+        tryUpdate: false,
+        customID: this.id + DateFormat('yyyy_MM_dd').format(accompishedDate),
       );
-      // TODO: !
+
       if (stackRef != 'inbox' && goalRef != 'inbox') {
         await addTaskAccomplishment(this);
         await GoalSummary(id: goalRef)
@@ -583,15 +572,6 @@ class Task extends InboxItem {
     return null;
   }
 
-  addNote(Note note) async {
-    if (this.taskNotes == null) this.taskNotes = [];
-    this.taskNotes.add(note.id);
-    this.lastNote = note;
-    await save(
-      updateSummaries: false,
-    );
-  }
-
   Future<void> updateSummary() async {
     if (goalRef == 'inbox') {
       // TODO:
@@ -632,7 +612,7 @@ class Task extends InboxItem {
           .instance
           .collection(stack_constants.TASKS_KEY)
           .doc(id);
-      await docRef.set(toJson());
+      await docRef.update(toJson());
 
       if (updateSummaries) await updateSummary();
     }
@@ -663,17 +643,38 @@ class Task extends InboxItem {
       );
   }
 
-  Future saveAsFeed(List<String> to) async {
+  Future saveAsFeed(
+    List<String> to, {
+    bool tryUpdate: true,
+    String customID,
+  }) async {
     try {
-      await FirebaseFirestore.instance
-          .collection(feed_constants.FEED_KEY)
-          .doc(
-            id,
-          )
-          .update({
-        feed_constants.TO_KEY: [getCurrentUser().uid, ...to],
-        task_constants.STATUS_KEY: status,
-      });
+      if (tryUpdate)
+        await FirebaseFirestore.instance
+            .collection(feed_constants.FEED_KEY)
+            .doc(
+              customID ?? id,
+            )
+            .update({
+          task_constants.TITLE_KEY: title,
+          task_constants.DESCRIPTION_KEY: description,
+          feed_constants.TO_KEY: [getCurrentUser().uid, ...to],
+          task_constants.STATUS_KEY: status,
+        });
+      else {
+        await FirebaseFirestore.instance
+            .collection(feed_constants.FEED_KEY)
+            .doc(
+              customID ?? id,
+            )
+            .set({
+          task_constants.TITLE_KEY: title,
+          task_constants.DESCRIPTION_KEY: description,
+          feed_constants.TO_KEY: [getCurrentUser().uid, ...to],
+          task_constants.CREATION_DATE_KEY: DateTime.now(),
+          ...toJson(),
+        });
+      }
     } catch (e) {
       await FirebaseFirestore.instance
           .collection(feed_constants.FEED_KEY)
@@ -681,7 +682,10 @@ class Task extends InboxItem {
             id,
           )
           .set({
+        task_constants.TITLE_KEY: title,
+        task_constants.DESCRIPTION_KEY: description,
         feed_constants.TO_KEY: [getCurrentUser().uid, ...to],
+        task_constants.CREATION_DATE_KEY: DateTime.now(),
         ...toJson(),
       });
     }
@@ -724,6 +728,7 @@ class Task extends InboxItem {
     Note lastNote,
     String userName,
     String userPhoto,
+    String taskPhoto,
   }) {
     return Task(
       id: id ?? this.id,
@@ -733,7 +738,6 @@ class Task extends InboxItem {
       stackRef: stackRef ?? this.stackRef,
       goalTitle: goalTitle ?? this.goalTitle,
       stackTitle: stackTitle ?? this.stackTitle,
-      taskNotes: taskNotes ?? this.taskNotes,
       title: title ?? this.title,
       description: description ?? this.description,
       status: status ?? this.status,
@@ -749,6 +753,7 @@ class Task extends InboxItem {
       endTime: endTime ?? this.endTime,
       stackColor: stackColor ?? this.stackColor,
       lastNote: lastNote ?? this.lastNote,
+      taskPhoto: taskPhoto ?? this.taskPhoto,
     );
   }
 }

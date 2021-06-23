@@ -28,7 +28,9 @@ class _HomeViewState extends State<HomeView>
     return LayoutBuilder(
       builder: (context, constraints) {
         if (constraints.maxWidth >= 900) {
-          return HomeViewLG();
+          return HomeViewLG(
+            pageIndexStreamController: widget.pageIndexStreamController,
+          );
         }
         return HomeViewSM(
           pageIndexStreamController: widget.pageIndexStreamController,

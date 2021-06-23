@@ -63,6 +63,7 @@ class _TaskListViewState extends State<TaskListView>
                       goalTitle: widget.stack.goalTitle,
                       stackTitle: widget.stack.title,
                       stackColor: widget.stack.color,
+                      stackPartners: widget.stack.partnersIDs ?? [],
                     ),
                   ),
                   icon: Icons.add,
