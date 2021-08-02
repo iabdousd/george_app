@@ -47,8 +47,8 @@ class WeekProgressState extends State<WeekProgress> {
   @override
   Widget build(BuildContext context) {
     List<Color> gradientColors = [
-      Theme.of(context).primaryColor,
-      Theme.of(context).primaryColor,
+      Theme.of(context).accentColor,
+      Theme.of(context).accentColor,
     ];
 
     final size = MediaQuery.of(context).size;
@@ -80,83 +80,82 @@ class WeekProgressState extends State<WeekProgress> {
               }
             }
           }
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                margin: const EdgeInsets.only(top: 16.0),
-                child: Text(
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
                   "Last 12 weeks",
-                  style: Theme.of(context).textTheme.headline6.copyWith(
-                        fontWeight: FontWeight.w500,
-                        fontSize: 18,
-                      ),
+                  style: TextStyle(
+                    color: Color(0xFFB2B5C3),
+                    fontWeight: FontWeight.w500,
+                    fontSize: 14,
+                  ),
                 ),
-              ),
-              Container(
-                width: size.width,
-                height: kIsWeb ? null : size.width / 1.7,
-                child: Stack(
-                  children: [
-                    AspectRatio(
-                      aspectRatio: 1.70,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(18),
-                          ),
-                          color: Theme.of(context).backgroundColor,
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.only(
-                            right: 18.0,
-                            left: 12.0,
-                            top: 4,
-                            bottom: 12,
+                Container(
+                  margin: EdgeInsets.only(top: 16),
+                  width: size.width,
+                  height: kIsWeb ? null : size.width / 2,
+                  child: Stack(
+                    children: [
+                      AspectRatio(
+                        aspectRatio: 1.70,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(18),
+                            ),
+                            color: Theme.of(context).backgroundColor,
                           ),
                           child: LineChart(
                             LineChartData(
+                              extraLinesData: ExtraLinesData(
+                                horizontalLines: [
+                                  if (weeksValues
+                                      .where((element) => element > 0)
+                                      .isEmpty)
+                                    HorizontalLine(
+                                      y: 1,
+                                      color: const Color.fromRGBO(
+                                        178,
+                                        181,
+                                        195,
+                                        0.2,
+                                      ),
+                                      strokeWidth: 2,
+                                    ),
+                                ],
+                              ),
                               gridData: FlGridData(
                                 show: true,
-                                drawHorizontalLine: false,
-                                drawVerticalLine: true,
-                                getDrawingVerticalLine: (value) {
-                                  if (value.toInt() == selectedWeek)
-                                    return FlLine(
-                                      color: Theme.of(context).primaryColor,
-                                      strokeWidth: 2,
-                                    );
+                                drawHorizontalLine: true,
+                                drawVerticalLine: false,
+                                checkToShowHorizontalLine: (_) => true,
+                                getDrawingHorizontalLine: (value) {
                                   return FlLine(
-                                    color: const Color(0x30000000),
-                                    strokeWidth: 1,
+                                    color: const Color.fromRGBO(
+                                      178,
+                                      181,
+                                      195,
+                                      0.2,
+                                    ),
+                                    strokeWidth: 2,
                                   );
                                 },
                               ),
                               titlesData: FlTitlesData(
                                 show: true,
-                                topTitles: SideTitles(
-                                  showTitles: true,
-                                  reservedSize: 22,
-                                  getTextStyles: (value) => const TextStyle(
-                                    color: Color(0xff68737d),
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 14,
-                                  ),
-                                  getTitles: (value) {
-                                    if (value.toInt() == selectedWeek) {
-                                      return '${weeksValues[value.toInt()].toStringAsFixed(0)} tasks';
-                                    }
-                                    return '';
-                                  },
-                                  margin: 8,
-                                ),
                                 bottomTitles: SideTitles(
                                   showTitles: true,
                                   reservedSize: 22,
                                   getTextStyles: (value) => const TextStyle(
-                                    color: Color(0xff68737d),
-                                    fontWeight: FontWeight.w500,
+                                    color: Color.fromRGBO(
+                                      0,
+                                      21,
+                                      51,
+                                      0.5,
+                                    ),
                                     fontSize: 14,
                                   ),
                                   getTitles: (value) {
@@ -167,28 +166,28 @@ class WeekProgressState extends State<WeekProgress> {
                                     }
                                     return '';
                                   },
-                                  margin: 8,
+                                  margin: 12,
                                 ),
                                 leftTitles: SideTitles(
-                                  showTitles: false,
+                                  showTitles: true,
                                   getTextStyles: (value) => const TextStyle(
-                                    color: Color(0xff67727d),
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15,
+                                    color: Color.fromRGBO(
+                                      0,
+                                      21,
+                                      51,
+                                      0.5,
+                                    ),
+                                    fontSize: 14,
                                   ),
                                   getTitles: (value) {
                                     return value.toStringAsFixed(0);
                                   },
-                                  reservedSize: 28,
+                                  reservedSize: 20,
                                   margin: 12,
                                 ),
                               ),
                               borderData: FlBorderData(
-                                show: true,
-                                border: Border.all(
-                                  color: const Color(0x30000000),
-                                  width: 1,
-                                ),
+                                show: false,
                               ),
                               minX: 0,
                               maxX: 11,
@@ -206,28 +205,24 @@ class WeekProgressState extends State<WeekProgress> {
                                       .toList(),
                                   isCurved: true,
                                   colors: gradientColors,
-                                  barWidth: 3,
+                                  barWidth: 2,
                                   isStrokeCapRound: true,
                                   dotData: FlDotData(
                                     show: true,
                                     getDotPainter: (spot, value, data, index) {
                                       return FlDotCirclePainter(
-                                        radius: 4,
-                                        color: index == selectedWeek
-                                            ? Theme.of(context).primaryColor
-                                            : Theme.of(context).backgroundColor,
-                                        strokeColor: index == selectedWeek
-                                            ? Theme.of(context)
-                                                .primaryColor
-                                                .withOpacity(.5)
-                                            : Theme.of(context).primaryColor,
-                                        strokeWidth:
-                                            index == selectedWeek ? 5 : 3,
+                                        radius: 5,
+                                        color: Color.lerp(
+                                          Theme.of(context).primaryColor,
+                                          Theme.of(context).accentColor,
+                                          index.toDouble() / 11,
+                                        ),
+                                        strokeWidth: 0,
                                       );
                                     },
                                   ),
                                   belowBarData: BarAreaData(
-                                    show: true,
+                                    show: false,
                                     colors: gradientColors
                                         .map((color) => color.withOpacity(0.3))
                                         .toList(),
@@ -261,11 +256,11 @@ class WeekProgressState extends State<WeekProgress> {
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           );
         }
         return Container();

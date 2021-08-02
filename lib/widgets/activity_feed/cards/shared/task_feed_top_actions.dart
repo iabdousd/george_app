@@ -50,8 +50,11 @@ class TaskFeedTopActions extends StatelessWidget {
         ),
       );
     } else if (action == 'edit') {
-      Get.to(
-        () => SaveTaskFeedArticle(
+      showModalBottomSheet(
+        context: Get.context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (_) => SaveTaskFeedArticle(
           task: task,
         ),
       );
@@ -65,8 +68,10 @@ class TaskFeedTopActions extends StatelessWidget {
         onSelected: handleClick,
         icon: Icon(
           Icons.more_vert_rounded,
-          size: 18,
+          size: 24,
+          color: Color(0xFFB2B5C3),
         ),
+        padding: EdgeInsets.zero,
         itemBuilder: (BuildContext context) {
           return [
             PopupMenuItem<String>(

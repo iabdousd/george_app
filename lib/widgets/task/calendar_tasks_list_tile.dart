@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:stackedtasks/config/extensions/hex_color.dart';
 import 'package:stackedtasks/models/Task.dart';
 import 'package:stackedtasks/views/task/save_task.dart';
-import 'package:get/get.dart';
 
 class CalendarTaskListTileWidget extends StatefulWidget {
   final Task task;
@@ -37,8 +36,11 @@ class _CalendarTaskListTileWidgetState
   }
 
   _editTask(context) {
-    Get.to(
-      () => SaveTaskPage(
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => SaveTaskPage(
         task: widget.task,
         goalRef: widget.task.goalRef,
         stackRef: widget.task.stackRef,
@@ -46,8 +48,6 @@ class _CalendarTaskListTileWidgetState
         stackTitle: widget.task.stackTitle,
         stackColor: widget.task.stackColor,
       ),
-      popGesture: true,
-      transition: Transition.rightToLeftWithFade,
     );
   }
 

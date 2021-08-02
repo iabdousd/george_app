@@ -13,13 +13,10 @@ class AppErrorWidget extends StatelessWidget {
         child: Text(
           customMessage,
           textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodyText1.copyWith(
-                color: Theme.of(context)
-                    .textTheme
-                    .bodyText1
-                    .color
-                    .withOpacity(.75),
-              ),
+          style: TextStyle(
+            color: Color(0xFF3B404A),
+            fontSize: 14,
+          ),
         ),
       );
 

@@ -3,8 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:share/share.dart';
 import 'package:stackedtasks/constants/feed.dart';
-import 'package:stackedtasks/constants/models/stack.dart';
+import 'package:stackedtasks/constants/models/inbox_item.dart';
+import 'package:stackedtasks/constants/models/stack.dart' as stack_constants;
+import 'package:stackedtasks/constants/models/task.dart';
 import 'package:stackedtasks/models/Task.dart';
+import 'package:stackedtasks/models/TaskLog.dart';
 import 'package:stackedtasks/models/UserModel.dart';
 import 'package:stackedtasks/services/user/user_service.dart';
 
@@ -64,5 +67,80 @@ class TaskRepository {
     } catch (e) {
       return false;
     }
+  }
+
+  static Future<void> changeTaskOrder(Task task, int newIndex) async {
+    if (task.stackRef == 'inbox') {
+      await FirebaseFirestore.instance
+          .collection(INBOX_COLLECTION)
+          .doc(task.id)
+          .update({
+        INDEX_KEY: newIndex,
+      });
+    } else {
+      await FirebaseFirestore.instance
+          .collection(stack_constants.TASKS_KEY)
+          .doc(task.id)
+          .update({
+        INDEX_KEY: newIndex,
+      });
+    }
+  }
+
+  static List<TaskLog> getTaskLogs(Task task) {
+    List<TaskLog> taskLogs = [];
+    taskLogs.add(
+      TaskLog(
+        uid: 'creation_log',
+        creationDateTime: task.creationDate,
+        log: '"${task.title}" created',
+        status: 1,
+        taskID: task.id,
+      ),
+    );
+    if (task.repetition != null) {
+      taskLogs.add(
+        TaskLog(
+          uid: 'frequency_log',
+          creationDateTime: task.creationDate,
+          log: 'Frequency - ${task.frequency}',
+          status: 1,
+          taskID: task.id,
+        ),
+      );
+    }
+    if (task.donesHistory != null && task.donesHistory.isNotEmpty) {
+      taskLogs.add(
+        TaskLog(
+          uid: 'recent_instance_log',
+          creationDateTime: task.donesHistory.last,
+          log: 'Most recent instance',
+          status: 2,
+          taskID: task.id,
+        ),
+      );
+    } else {
+      taskLogs.add(
+        TaskLog(
+          uid: 'recent_instance_log',
+          creationDateTime: task.nextDueDate() ?? task.dueDates.last,
+          log: 'Most recent instance',
+          status: 1,
+          taskID: task.id,
+        ),
+      );
+    }
+    if (task.nextDueDate() != null) {
+      taskLogs.add(
+        TaskLog(
+          uid: 'upcoming_instance_log',
+          creationDateTime: task.nextDueDate(),
+          log: 'Upcoming instance',
+          status: 1,
+          taskID: task.id,
+        ),
+      );
+    }
+    return taskLogs;
   }
 }

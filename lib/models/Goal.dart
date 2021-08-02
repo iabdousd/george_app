@@ -46,21 +46,28 @@ class Goal {
     this.title = jsonObject[goal_constants.TITLE_KEY];
     this.color = jsonObject[goal_constants.COLOR_KEY];
     this.status = jsonObject[goal_constants.STATUS_KEY];
-    this.creationDate =
-        (jsonObject[goal_constants.CREATION_DATE_KEY] as Timestamp)
+    this.creationDate = jsonObject[goal_constants.CREATION_DATE_KEY] is DateTime
+        ? jsonObject[goal_constants.CREATION_DATE_KEY]
+        : (jsonObject[goal_constants.CREATION_DATE_KEY] as Timestamp)
             .toDate()
             .toLocal();
-    this.startDate = (jsonObject[goal_constants.START_DATE_KEY] as Timestamp)
-        .toDate()
-        .toLocal();
-    this.endDate = (jsonObject[goal_constants.END_DATE_KEY] as Timestamp)
-        .toDate()
-        .toLocal();
+    this.startDate = jsonObject[goal_constants.START_DATE_KEY] is DateTime
+        ? jsonObject[goal_constants.START_DATE_KEY]
+        : (jsonObject[goal_constants.START_DATE_KEY] as Timestamp)
+            .toDate()
+            .toLocal();
+    this.endDate = jsonObject[goal_constants.END_DATE_KEY] is DateTime
+        ? jsonObject[goal_constants.END_DATE_KEY]
+        : (jsonObject[goal_constants.END_DATE_KEY] as Timestamp)
+            .toDate()
+            .toLocal();
     this.stacks = [];
   }
 
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> toJson({String id}) {
     return {
+      if (this.id == null) goal_constants.INDEX_KEY: 0,
+      if (id != null || this.id != null) stack_constants.ID_KEY: id ?? this.id,
       goal_constants.USER_ID_KEY: userID,
       goal_constants.PARTNERS_IDS_KEY: partnersIDs,
       goal_constants.TITLE_KEY: title,

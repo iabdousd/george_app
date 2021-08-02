@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_rounded_date_picker/flutter_rounded_date_picker.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:stackedtasks/config/extensions/hex_color.dart';
 import 'package:intl/intl.dart';
 
@@ -22,7 +23,11 @@ class TimePickerWidget extends StatefulWidget {
     this.active: true,
     this.timeFormat = 'hh:mm a',
     this.crossAxisAlignment = CrossAxisAlignment.center,
-    this.margin = const EdgeInsets.only(top: 8.0),
+    this.margin = const EdgeInsets.only(
+      top: 8.0,
+      left: 8.0,
+      right: 8.0,
+    ),
   }) : super(key: key);
 
   @override
@@ -84,80 +89,63 @@ class _TimePickerWidgetState extends State<TimePickerWidget> {
   @override
   Widget build(BuildContext context) {
     if (widget.active) hideTime = false;
-    return AnimatedOpacity(
-      duration: Duration(milliseconds: 250),
-      opacity: widget.active ? 1 : 0,
-      onEnd: () => setState(() => hideTime = !widget.active),
-      child: hideTime
-          ? Container()
-          : Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  margin: widget.margin,
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          height: 1,
-                          color: Theme.of(context).primaryColor.withOpacity(.2),
+    return Container(
+      margin: widget.margin,
+      child: AnimatedOpacity(
+        duration: Duration(milliseconds: 250),
+        opacity: widget.active ? 1 : 0,
+        onEnd: () => setState(() => hideTime = !widget.active),
+        child: hideTime
+            ? Container()
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.title,
+                    style: Theme.of(context).textTheme.bodyText1.copyWith(
+                          color: Color(0xFFB2B6C3),
                         ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: Text(
-                          widget.title,
-                          style: Theme.of(context).textTheme.bodyText1,
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                      Expanded(
-                        child: Container(
-                          height: 1,
-                          color: Theme.of(context).primaryColor.withOpacity(.2),
-                        ),
-                      ),
-                    ],
+                    textAlign: TextAlign.center,
                   ),
-                ),
-                Container(
-                  padding: EdgeInsets.only(top: 4, bottom: 4.0),
-                  decoration: BoxDecoration(
-                    color: Color(0x07000000),
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                  child: InkWell(
-                    onTap: _selectTime,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.max,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Icon(
-                            Icons.timer_rounded,
-                            color: HexColor.fromHex(widget.color),
-                            size: 24,
+                  Container(
+                    padding: EdgeInsets.only(top: 4, bottom: 4.0),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: Color(0x88B2B5C3),
+                        ),
+                      ),
+                    ),
+                    child: InkWell(
+                      onTap: _selectTime,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              DateFormat(widget.timeFormat)
+                                  .format(selectedTime),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headline6
+                                  .copyWith(fontSize: 16),
+                            ),
                           ),
-                        ),
-                        SizedBox(
-                          width: 4,
-                        ),
-                        Text(
-                          DateFormat(widget.timeFormat).format(selectedTime),
-                          style: Theme.of(context)
-                              .textTheme
-                              .headline6
-                              .copyWith(fontSize: 16),
-                        ),
-                        SizedBox(
-                          width: 8,
-                        ),
-                      ],
+                          Container(
+                            padding: const EdgeInsets.all(8.0),
+                            child: SvgPicture.asset(
+                              'assets/images/icons/time.svg',
+                              color: HexColor.fromHex(widget.color),
+                              width: 24,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
+      ),
     );
   }
 }

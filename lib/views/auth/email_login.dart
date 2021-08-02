@@ -11,6 +11,9 @@ import 'package:stackedtasks/services/feed-back/flush_bar.dart';
 import 'package:stackedtasks/services/feed-back/loader.dart';
 import 'package:stackedtasks/services/user/user_service.dart';
 import 'package:stackedtasks/views/main-views/main.dart';
+import 'package:stackedtasks/widgets/shared/app_text_field.dart';
+import 'package:stackedtasks/widgets/shared/buttons/circular_action_button.dart';
+import 'package:stackedtasks/widgets/shared/foundation/app_app_bar.dart';
 
 import 'email_register.dart';
 
@@ -30,21 +33,24 @@ class EmailLoginViewState extends State<EmailLoginView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).backgroundColor,
+      appBar: AppAppBar(
+        context: context,
+        autoImplifyLeading: true,
+        customTitle: Container(),
+        decoration: BoxDecoration(),
+      ),
       body: SafeArea(
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Row(
-                children: [
-                  GestureDetector(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16.0),
-                      child: Icon(Icons.arrow_back),
+              Text(
+                'Log In',
+                style: Theme.of(context).textTheme.headline5.copyWith(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 36,
                     ),
-                    onTap: () => Navigator.of(context).pop(),
-                  ),
-                ],
               ),
               Expanded(
                 child: Container(
@@ -56,117 +62,61 @@ class EmailLoginViewState extends State<EmailLoginView> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Text(
-                              'Log in',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .headline5
-                                  .copyWith(
-                                    fontWeight: FontWeight.w800,
-                                  ),
+                            AppTextField(
+                              controller: _emailController,
+                              label: 'Email',
+                              hint: 'Enter your email',
+                              backgroundColor: Colors.transparent,
+                              border: UnderlineInputBorder(),
+                              isRequired: true,
+                              ifRequiredMessage:
+                                  'Please insert your email first',
+                              maxLines: 1,
+                              keyboardType: TextInputType.emailAddress,
+                              textInputAction: TextInputAction.next,
+                              margin: const EdgeInsets.symmetric(vertical: 6.0),
                             ),
-                            Container(
-                              margin: EdgeInsets.only(top: 8.0, bottom: 44.0),
-                              child: RichText(
-                                text: new TextSpan(
-                                  text: 'If you are new / ',
-                                  style: Theme.of(context).textTheme.bodyText2,
-                                  children: [
-                                    new TextSpan(
-                                      text: 'Create an account',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .subtitle1
-                                          .copyWith(
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                      recognizer: new TapGestureRecognizer()
-                                        ..onTap = () => Get.to(
-                                              () => EmailRegisterView(),
-                                              popGesture: true,
-                                              transition:
-                                                  Transition.rightToLeft,
-                                            ),
-                                    )
-                                  ],
-                                ),
-                              ),
-                            ),
-                            Container(
-                              decoration: BoxDecoration(
-                                color: Color(0x10000000),
-                                borderRadius: BorderRadius.circular(8.0),
-                              ),
-                              margin: EdgeInsets.symmetric(vertical: 8.0),
-                              child: TextFormField(
-                                controller: _emailController,
-                                decoration: InputDecoration(
-                                  labelText: 'Email',
-                                  hintText: 'Your email here',
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    vertical: 12.0,
-                                    horizontal: 20.0,
-                                  ),
-                                  border: InputBorder.none,
-                                ),
-                                validator: (t) {
-                                  if (t.isEmpty)
-                                    return 'Please insert your email first';
-                                  return null;
-                                },
-                                keyboardType: TextInputType.emailAddress,
-                                textInputAction: TextInputAction.next,
-                              ),
-                            ),
-                            Container(
-                              decoration: BoxDecoration(
-                                color: Color(0x10000000),
-                                borderRadius: BorderRadius.circular(8.0),
-                              ),
-                              margin: EdgeInsets.symmetric(vertical: 8.0),
-                              child: TextFormField(
-                                controller: _passwordController,
-                                decoration: InputDecoration(
-                                  labelText: 'Password',
-                                  hintText: 'Your secure password here',
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    vertical: 12.0,
-                                    horizontal: 20.0,
-                                  ),
-                                  border: InputBorder.none,
-                                ),
-                                obscureText: true,
-                                validator: (t) {
-                                  if (t.isEmpty)
-                                    return 'Please insert your password first';
-                                  return null;
-                                },
-                              ),
+                            AppTextField(
+                              controller: _passwordController,
+                              label: 'Password',
+                              hint: 'Enter your password',
+                              backgroundColor: Colors.transparent,
+                              border: UnderlineInputBorder(),
+                              isRequired: true,
+                              ifRequiredMessage:
+                                  'Please insert your password first',
+                              keyboardType: TextInputType.text,
+                              obscureText: true,
+                              maxLines: 1,
+                              textInputAction: TextInputAction.done,
+                              margin: const EdgeInsets.symmetric(vertical: 6.0),
                             ),
                             Container(
                               margin: EdgeInsets.only(
-                                top: 8.0,
+                                top: 12.0,
                               ),
-                              child: RichText(
-                                text: new TextSpan(
-                                  text: 'Forgot password? / ',
-                                  style: Theme.of(context).textTheme.bodyText2,
-                                  children: [
-                                    new TextSpan(
-                                      text: 'Reset Password',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .subtitle1
-                                          .copyWith(
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                      recognizer: new TapGestureRecognizer()
-                                        ..onTap =
-                                            () => print('FORGOT PASSWORD'),
-                                    )
-                                  ],
-                                ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  InkWell(
+                                    onTap: () {},
+                                    child: Text(
+                                      'Forgot password',
+                                      style: TextStyle(
+                                        color: Color(0xFF767C8D),
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
+                            ),
+                            CircularActionButton(
+                              onClick: _login,
+                              title: 'LOGIN',
+                              margin: EdgeInsets.only(top: 16),
+                              backgroundColor: Theme.of(context).accentColor,
+                              padding: const EdgeInsets.all(14),
                             ),
                           ],
                         ),
@@ -176,29 +126,33 @@ class EmailLoginViewState extends State<EmailLoginView> {
                 ),
               ),
               Container(
-                width: kIsWeb ? 512 : double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 12.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(12.0),
-                      child: ElevatedButton(
-                        onPressed: _login,
-                        style: ButtonStyle(
-                          padding: MaterialStateProperty.all(
-                            EdgeInsets.all(14.0),
-                          ),
-                        ),
-                        child: Text(
-                          'Login',
-                          style: TextStyle(
-                            fontSize: 16,
-                          ),
-                        ),
+                padding: EdgeInsets.only(top: 48.0, bottom: 8.0),
+                child: Center(
+                  child: RichText(
+                    text: new TextSpan(
+                      text: 'If you are new  ',
+                      style: TextStyle(
+                        color: Color(0xFFB2B5C3),
+                        fontSize: 14,
                       ),
+                      children: [
+                        new TextSpan(
+                          text: 'Create an account',
+                          style: TextStyle(
+                            color: Theme.of(context).accentColor,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          recognizer: new TapGestureRecognizer()
+                            ..onTap = () => Get.to(
+                                  () => EmailRegisterView(),
+                                  popGesture: true,
+                                  transition: Transition.rightToLeft,
+                                ),
+                        )
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             ],

@@ -32,7 +32,7 @@ class HomeLGGoalList extends StatelessWidget {
           child: Row(
             children: [
               Text(
-                'Goals:',
+                'Projects:',
                 style: Theme.of(context).textTheme.headline5.copyWith(
                       fontWeight: FontWeight.w600,
                     ),

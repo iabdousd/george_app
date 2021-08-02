@@ -10,25 +10,31 @@ import 'package:stackedtasks/models/Goal.dart';
 import 'package:stackedtasks/models/InboxItem.dart';
 import 'package:stackedtasks/models/Task.dart';
 import 'package:stackedtasks/repositories/inbox/inbox_repository.dart';
+import 'package:stackedtasks/repositories/stack/stack_repository.dart';
+import 'package:stackedtasks/repositories/task/task_repository.dart';
 import 'package:stackedtasks/services/user/user_service.dart';
-import 'package:stackedtasks/views/goal/save_goal.dart';
+import 'package:stackedtasks/views/goal/save_goal/save_goal.dart';
 import 'package:stackedtasks/views/main-views/home/lg_views/goal_list.dart';
 import 'package:stackedtasks/views/stack/save_stack.dart';
+import 'package:stackedtasks/views/task/save_task.dart';
 import 'package:stackedtasks/widgets/home/tiles/lg_goal_tile.dart';
 import 'package:stackedtasks/widgets/home/tiles/lg_stack_tile.dart';
 import 'package:stackedtasks/widgets/shared/app_action_button.dart';
+import 'package:stackedtasks/widgets/shared/errors-widgets/not_found.dart';
 
 import '../../../models/Stack.dart';
 import '../../../services/feed-back/loader.dart';
 import '../../../widgets/shared/app_error_widget.dart';
 import '../../../widgets/stack/StackTile.dart';
-import '../../../widgets/task/task_list_tile_widget.dart';
+import '../../../widgets/task/task_tile_widget/task_list_tile_widget.dart';
 
 class InboxMainView extends StatefulWidget {
   final StreamController<int> pageIndexStreamController;
+  final String type;
   InboxMainView({
     Key key,
     this.pageIndexStreamController,
+    this.type,
   }) : super(key: key);
 
   @override
@@ -37,6 +43,7 @@ class InboxMainView extends StatefulWidget {
 
 class _InboxMainViewState extends State<InboxMainView>
     with AutomaticKeepAliveClientMixin {
+  List<dynamic> inboxItems = [];
   int elementsCount = 0;
   List<InboxItem> selectedInboxItems = [];
 
@@ -60,246 +67,371 @@ class _InboxMainViewState extends State<InboxMainView>
     });
   }
 
+  switchSelectionMode() {
+    setState(
+      () {
+        if (selectionStatus == 0) {
+          widget.pageIndexStreamController.add(-1);
+          selectionStatus = widget.type == 'stack' ? 1 : 2;
+        } else {
+          widget.pageIndexStreamController.add(0);
+          selectionStatus = 0;
+          selectedInboxItems.clear();
+        }
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 16.0,
-      ),
-      margin: const EdgeInsets.only(bottom: 8.0),
-      child: StreamBuilder<List<InboxItem>>(
-        stream: InboxRepository.getInboxItems(),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            final items = selectionStatus == 1
-                ? snapshot.data
-                    .where((element) => element is TasksStack)
-                    .toList()
-                : selectionStatus == 2
-                    ? snapshot.data.where((element) => element is Task).toList()
-                    : snapshot.data;
-            elementsCount = items.length;
-            if (items.length > 0)
-              return Stack(
-                children: [
-                  Positioned.fill(
-                    child: ListView.builder(
-                      itemCount: items.length,
-                      itemBuilder: (context, index) {
-                        if (items[index] is TasksStack)
-                          return StackListTileWidget(
-                            stack: items[index],
-                            selected: selectedInboxItems
-                                .where(
-                                  (e) =>
-                                      (e as TasksStack).id ==
-                                      (items[index] as TasksStack).id,
-                                )
-                                .isNotEmpty,
-                            onLongPress: () => setState(
-                              () {
-                                if (selectionStatus == 0) {
-                                  widget.pageIndexStreamController.add(-1);
-                                  selectionStatus = 1;
-                                  selectedInboxItems.add(items[index]);
-                                } else {
-                                  selectedInboxItems
+    return Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Container(
+          margin: const EdgeInsets.only(bottom: 8.0),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    if (widget.type == 'stack')
+                      Padding(
+                        padding: const EdgeInsets.only(left: 16.0),
+                        child: Text(
+                          'Current Stacks',
+                          style: TextStyle(
+                            color: Color(0xFFB2B5C3),
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                          ),
+                        ),
+                      )
+                    else
+                      Container(),
+                    AppActionButton(
+                      onPressed: switchSelectionMode,
+                      label: selectionStatus == 2 || selectionStatus == 1
+                          ? 'DESELECT ALL'
+                          : widget.type == 'stack'
+                              ? 'SELECT STACKS'
+                              : 'SELECT TASKS',
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      margin: EdgeInsets.only(
+                        right: 8,
+                      ),
+                      textStyle: TextStyle(
+                        color: Theme.of(context).accentColor,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
+                      ),
+                      shadows: [],
+                      backgroundColor: Colors.transparent,
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: StreamBuilder<List<InboxItem>>(
+                  stream: InboxRepository.getInboxItems(widget.type),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      inboxItems = snapshot.data;
+                      final items = selectionStatus == 1
+                          ? snapshot.data
+                              .where((element) => element is TasksStack)
+                              .toList()
+                          : selectionStatus == 2
+                              ? snapshot.data
+                                  .where((element) => element is Task)
+                                  .toList()
+                              : snapshot.data;
+                      elementsCount = items.length;
+                      if (items.length > 0) {
+                        return Stack(
+                          children: [
+                            Positioned.fill(
+                              child: ReorderableListView.builder(
+                                onReorder: (oldIndex, newIndex) async {
+                                  List<Future> futures = [];
+
+                                  var old = inboxItems[oldIndex];
+                                  if (oldIndex > newIndex) {
+                                    for (int i = oldIndex; i > newIndex; i--) {
+                                      futures.add(
+                                        old is TasksStack
+                                            ? StackRepository.changeStackOrder(
+                                                inboxItems[i - 1],
+                                                i,
+                                              )
+                                            : TaskRepository.changeTaskOrder(
+                                                inboxItems[i - 1],
+                                                i,
+                                              ),
+                                      );
+                                      inboxItems[i] = inboxItems[i - 1];
+                                    }
+                                    futures.add(
+                                      old is TasksStack
+                                          ? StackRepository.changeStackOrder(
+                                              old,
+                                              newIndex,
+                                            )
+                                          : TaskRepository.changeTaskOrder(
+                                              old,
+                                              newIndex,
+                                            ),
+                                    );
+                                    inboxItems[newIndex] = old;
+                                  } else {
+                                    for (int i = oldIndex;
+                                        i < newIndex - 1;
+                                        i++) {
+                                      futures.add(
+                                        old is TasksStack
+                                            ? StackRepository.changeStackOrder(
+                                                inboxItems[i + 1],
+                                                i,
+                                              )
+                                            : TaskRepository.changeTaskOrder(
+                                                inboxItems[i + 1],
+                                                i,
+                                              ),
+                                      );
+                                      inboxItems[i] = inboxItems[i + 1];
+                                    }
+                                    futures.add(
+                                      old is TasksStack
+                                          ? StackRepository.changeStackOrder(
+                                              old,
+                                              newIndex - 1,
+                                            )
+                                          : TaskRepository.changeTaskOrder(
+                                              old,
+                                              newIndex - 1,
+                                            ),
+                                    );
+                                    inboxItems[newIndex - 1] = old;
+                                  }
+                                  setState(() {});
+                                  await Future.wait(futures);
+                                },
+                                proxyDecorator: (widget, extent, animation) =>
+                                    Material(
+                                  child: widget,
+                                  shadowColor: Colors.transparent,
+                                  color: Colors.transparent,
+                                  elevation: animation.value,
+                                ),
+                                itemCount: items.length,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16.0,
+                                ),
+                                itemBuilder: (context, index) {
+                                  if (items[index] is TasksStack)
+                                    return StackListTileWidget(
+                                      key: Key((items[index] as TasksStack).id),
+                                      stack: items[index],
+                                      selected: selectedInboxItems
                                           .where(
                                             (e) =>
                                                 (e as TasksStack).id ==
                                                 (items[index] as TasksStack).id,
                                           )
-                                          .isEmpty
-                                      ? setState(() {
-                                          selectedInboxItems.add(items[index]);
-                                        })
-                                      : setState(() {
-                                          selectedInboxItems.removeWhere(
-                                            (e) =>
-                                                (e as TasksStack).id ==
-                                                (items[index] as TasksStack).id,
-                                          );
-                                          if (selectedInboxItems.isEmpty) {
-                                            selectionStatus = 0;
-                                            widget.pageIndexStreamController
-                                                .add(0);
-                                          }
-                                        });
-                                }
-                              },
-                            ),
-                            onClickEvent: selectionStatus == 1
-                                ? () => selectedInboxItems
-                                        .where(
-                                          (e) =>
-                                              (e as TasksStack).id ==
-                                              (items[index] as TasksStack).id,
-                                        )
-                                        .isEmpty
-                                    ? setState(() {
-                                        selectedInboxItems.add(items[index]);
-                                      })
-                                    : setState(() {
-                                        selectedInboxItems.removeWhere(
-                                          (e) =>
-                                              (e as TasksStack).id ==
-                                              (items[index] as TasksStack).id,
-                                        );
-                                        if (selectedInboxItems.isEmpty) {
-                                          selectionStatus = 0;
-                                          widget.pageIndexStreamController
-                                              .add(0);
-                                        }
-                                      })
-                                : null,
-                          );
-                        return TaskListTileWidget(
-                          task: items[index],
-                          stackColor: Theme.of(context)
-                              .primaryColor
-                              .value
-                              .toRadixString(16),
-                          selected: selectedInboxItems
-                              .where(
-                                (e) =>
-                                    (e as Task).id == (items[index] as Task).id,
-                              )
-                              .isNotEmpty,
-                          onClickEvent: selectionStatus == 2
-                              ? () => selectedInboxItems
-                                      .where(
-                                        (e) =>
-                                            (e as Task).id ==
-                                            (items[index] as Task).id,
-                                      )
-                                      .isEmpty
-                                  ? setState(() {
-                                      selectedInboxItems.add(items[index]);
-                                    })
-                                  : setState(() {
-                                      selectedInboxItems.removeWhere(
-                                        (e) =>
-                                            (e as Task).id ==
-                                            (items[index] as Task).id,
-                                      );
-                                      if (selectedInboxItems.isEmpty) {
-                                        selectionStatus = 0;
-                                        widget.pageIndexStreamController.add(0);
-                                      }
-                                    })
-                              : null,
-                          onLongPress: () => setState(
-                            () {
-                              if (selectionStatus == 0) {
-                                widget.pageIndexStreamController.add(-1);
-                                selectionStatus = 2;
-                                selectedInboxItems.add(items[index]);
-                              } else {
-                                selectedInboxItems
+                                          .isNotEmpty,
+                                      onClickEvent: selectionStatus == 1
+                                          ? () => selectedInboxItems
+                                                  .where(
+                                                    (e) =>
+                                                        (e as TasksStack).id ==
+                                                        (items[index]
+                                                                as TasksStack)
+                                                            .id,
+                                                  )
+                                                  .isEmpty
+                                              ? setState(() {
+                                                  selectedInboxItems
+                                                      .add(items[index]);
+                                                })
+                                              : setState(() {
+                                                  selectedInboxItems
+                                                      .removeWhere(
+                                                    (e) =>
+                                                        (e as TasksStack).id ==
+                                                        (items[index]
+                                                                as TasksStack)
+                                                            .id,
+                                                  );
+                                                })
+                                          : null,
+                                    );
+                                  return TaskListTileWidget(
+                                    key: Key((items[index] as Task).id),
+                                    task: items[index],
+                                    stackColor: Theme.of(context)
+                                        .primaryColor
+                                        .value
+                                        .toRadixString(16),
+                                    selected: selectedInboxItems
                                         .where(
                                           (e) =>
                                               (e as Task).id ==
                                               (items[index] as Task).id,
                                         )
-                                        .isEmpty
-                                    ? setState(() {
-                                        selectedInboxItems.add(items[index]);
-                                      })
-                                    : setState(() {
-                                        selectedInboxItems.removeWhere(
-                                          (e) =>
-                                              (e as Task).id ==
-                                              (items[index] as Task).id,
-                                        );
-                                        if (selectedInboxItems.isEmpty) {
+                                        .isNotEmpty,
+                                    onClickEvent: selectionStatus == 2
+                                        ? () => selectedInboxItems
+                                                .where(
+                                                  (e) =>
+                                                      (e as Task).id ==
+                                                      (items[index] as Task).id,
+                                                )
+                                                .isEmpty
+                                            ? setState(() {
+                                                selectedInboxItems
+                                                    .add(items[index]);
+                                              })
+                                            : setState(() {
+                                                selectedInboxItems.removeWhere(
+                                                  (e) =>
+                                                      (e as Task).id ==
+                                                      (items[index] as Task).id,
+                                                );
+                                              })
+                                        : null,
+                                    onAccomplishmentEvent: () =>
+                                        setState(() {}),
+                                  );
+                                },
+                              ),
+                            ),
+                            if (selectionStatus != 0)
+                              Positioned(
+                                bottom: 12,
+                                left: 16.0,
+                                right: 16.0,
+                                child: FadeInUp(
+                                  duration: Duration(milliseconds: 300),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      FloatingActionButton(
+                                        onPressed: () => setState(() {
+                                          selectionStatus = 0;
+                                          selectedInboxItems.clear();
                                           widget.pageIndexStreamController
                                               .add(0);
-                                          selectionStatus = 0;
-                                        }
-                                      });
-                              }
-                            },
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  if (selectionStatus != 0)
-                    Positioned(
-                      bottom: 12,
-                      left: 0,
-                      right: 0,
-                      child: FadeInUp(
-                        duration: Duration(milliseconds: 300),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            FloatingActionButton(
-                              onPressed: () => setState(() {
-                                selectionStatus = 0;
-                                selectedInboxItems.clear();
-                                widget.pageIndexStreamController.add(0);
-                              }),
-                              backgroundColor: Theme.of(context).primaryColor,
-                              foregroundColor:
-                                  Theme.of(context).backgroundColor,
-                              child: Icon(
-                                Icons.close,
+                                        }),
+                                        backgroundColor:
+                                            Theme.of(context).primaryColor,
+                                        foregroundColor:
+                                            Theme.of(context).backgroundColor,
+                                        child: Icon(
+                                          Icons.close,
+                                        ),
+                                      ),
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          color: Theme.of(context).primaryColor,
+                                          borderRadius:
+                                              BorderRadius.circular(32),
+                                        ),
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 4,
+                                        ),
+                                        child: Text(
+                                          '${selectedInboxItems.length} Selected',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .subtitle1
+                                              .copyWith(
+                                                color: Theme.of(context)
+                                                    .backgroundColor,
+                                              ),
+                                        ),
+                                      ),
+                                      FloatingActionButton(
+                                        onPressed: submitSelection,
+                                        backgroundColor:
+                                            Theme.of(context).primaryColor,
+                                        foregroundColor:
+                                            Theme.of(context).backgroundColor,
+                                        child: Icon(
+                                          Icons.list_alt_sharp,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
-                            ),
-                            Container(
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).primaryColor,
-                                borderRadius: BorderRadius.circular(32),
-                              ),
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 4,
-                              ),
-                              child: Text(
-                                '${selectedInboxItems.length} Selected',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .subtitle1
-                                    .copyWith(
-                                      color: Theme.of(context).backgroundColor,
-                                    ),
-                              ),
-                            ),
-                            FloatingActionButton(
-                              onPressed: submitSelection,
-                              backgroundColor: Theme.of(context).primaryColor,
-                              foregroundColor:
-                                  Theme.of(context).backgroundColor,
-                              child: Icon(
-                                Icons.list_alt_sharp,
-                              ),
-                            ),
                           ],
-                        ),
-                      ),
-                    ),
-                ],
-              );
-            else
-              return Center(
-                child: AppErrorWidget(
-                  status: 404,
-                  customMessage:
-                      'Nothing here. Create a Task or Stack by pressing + to get started',
+                        );
+                      } else {
+                        return NotFoundErrorWidget(
+                          title: widget.type == 'stack'
+                              ? 'There are no stacks'
+                              : 'There are no tasks',
+                          message: widget.type == 'stack'
+                              ? 'Create a Stack by pressing + to get started'
+                              : 'Create a Task by pressing + to get started',
+                        );
+                      }
+                    }
+                    if (snapshot.hasError) {
+                      print(snapshot.error);
+                      return AppErrorWidget();
+                    }
+                    return LoadingWidget();
+                  },
                 ),
-              );
-          }
-          if (snapshot.hasError) {
-            print(snapshot.error);
-            return AppErrorWidget();
-          }
-          return LoadingWidget();
-        },
-      ),
-    );
+              ),
+            ],
+          ),
+        ),
+        floatingActionButton: selectionStatus != 0
+            ? null
+            : FadeInUp(
+                duration: Duration(milliseconds: 300),
+                child: FloatingActionButton(
+                  child: Icon(
+                    Icons.add,
+                    color: Theme.of(context).backgroundColor,
+                  ),
+                  backgroundColor: Theme.of(context).accentColor,
+                  onPressed: widget.type == 'stack'
+                      ? () => showModalBottomSheet(
+                            context: Get.context,
+                            backgroundColor: Colors.transparent,
+                            isScrollControlled: true,
+                            builder: (_) => SaveStackPage(
+                              goalRef: 'inbox',
+                              goalColor: Theme.of(context)
+                                  .primaryColor
+                                  .value
+                                  .toRadixString(16),
+                            ),
+                          )
+                      : () => showModalBottomSheet(
+                            context: Get.context,
+                            backgroundColor: Colors.transparent,
+                            isScrollControlled: true,
+                            builder: (_) => SaveTaskPage(
+                              goalRef: 'inbox',
+                              stackRef: 'inbox',
+                              goalTitle: 'Inbox',
+                              stackTitle: 'Inbox',
+                              stackColor: Theme.of(context)
+                                  .primaryColor
+                                  .value
+                                  .toRadixString(16),
+                            ),
+                          ),
+                ),
+              ));
   }
 
   submitSelection() async {
@@ -333,10 +465,13 @@ class _InboxMainViewState extends State<InboxMainView>
                           ),
                         ),
                         AppActionButton(
-                          onPressed: () => Get.to(
-                            () => SaveGoalPage(),
+                          onPressed: () => showModalBottomSheet(
+                            isScrollControlled: true,
+                            context: context,
+                            backgroundColor: Colors.transparent,
+                            builder: (context) => SaveGoalPage(),
                           ),
-                          label: 'Create new Goal',
+                          label: 'Add a new Project',
                           backgroundColor: Theme.of(context).backgroundColor,
                           textStyle: TextStyle(
                             color: Theme.of(context).primaryColor,
@@ -438,12 +573,16 @@ class _InboxMainViewState extends State<InboxMainView>
                                         .textTheme
                                         .subtitle1
                                         .color,
+                                    labelStyle: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 16,
+                                    ),
                                     tabs: [
                                       Tab(
-                                        text: 'Inbox',
+                                        text: 'Stacks',
                                       ),
                                       Tab(
-                                        text: 'Goals',
+                                        text: 'Projects',
                                       ),
                                     ],
                                   ),
@@ -500,8 +639,12 @@ class _InboxMainViewState extends State<InboxMainView>
                                                 ),
                                               ),
                                             AppActionButton(
-                                              onPressed: () => Get.to(
-                                                () => SaveStackPage(
+                                              onPressed: () =>
+                                                  showModalBottomSheet(
+                                                context: context,
+                                                backgroundColor:
+                                                    Colors.transparent,
+                                                builder: (_) => SaveStackPage(
                                                   goalRef: 'inbox',
                                                   goalColor: Theme.of(context)
                                                       .primaryColor
@@ -509,16 +652,14 @@ class _InboxMainViewState extends State<InboxMainView>
                                                       .toRadixString(16),
                                                 ),
                                               ),
-                                              label: 'Create new Stack',
+                                              label: 'Add a new Stack',
                                               backgroundColor: Theme.of(context)
-                                                  .backgroundColor,
-                                              textStyle: TextStyle(
-                                                color: Theme.of(context)
-                                                    .primaryColor,
-                                              ),
-                                              margin: EdgeInsets.symmetric(
-                                                horizontal: 16,
-                                                vertical: 16,
+                                                  .primaryColor,
+                                              margin: EdgeInsets.only(
+                                                top: 16,
+                                                bottom: 8.0,
+                                                left: 16,
+                                                right: 16,
                                               ),
                                             ),
                                           ],
@@ -715,17 +856,20 @@ class _InboxMainViewState extends State<InboxMainView>
                             backgroundColor: Colors.red,
                             label: 'Cancel',
                             padding: EdgeInsets.symmetric(horizontal: 16),
-                            margin: EdgeInsets.zero,
+                            margin: EdgeInsets.only(right: 8.0),
                           ),
-                          AppActionButton(
-                            onPressed: () {
-                              if (selectedStack != null) {
-                                Navigator.of(context).pop(true);
-                              }
-                            },
-                            label: 'Add To Selected',
-                            padding: EdgeInsets.symmetric(horizontal: 16),
-                            margin: EdgeInsets.zero,
+                          Expanded(
+                            child: AppActionButton(
+                              onPressed: () {
+                                if (selectedStack != null) {
+                                  Navigator.of(context).pop(true);
+                                }
+                              },
+                              label: 'Add To Selected',
+                              backgroundColor: Theme.of(context).accentColor,
+                              padding: EdgeInsets.symmetric(horizontal: 16),
+                              margin: EdgeInsets.zero,
+                            ),
                           ),
                         ],
                       ),

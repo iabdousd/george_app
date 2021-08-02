@@ -6,6 +6,7 @@ const String TITLE_KEY = 'title';
 const String COLOR_KEY = 'color';
 const String STATUS_KEY = 'status';
 const String CREATION_DATE_KEY = 'creationDate';
+const String INDEX_KEY = 'index';
 const String START_DATE_KEY = 'startDate';
 const String END_DATE_KEY = 'endDate';
 const String STACKS_KEY = 'stacks';

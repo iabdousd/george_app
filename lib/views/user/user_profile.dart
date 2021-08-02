@@ -182,117 +182,73 @@ class _UserProfileViewState extends State<UserProfileView> {
                   return AppErrorWidget();
                 }
                 if (snapshot.hasData)
-                  return ListView.builder(
-                    itemCount: snapshot.data.length,
-                    padding: EdgeInsets.symmetric(vertical: 16),
-                    itemBuilder: (context, index) {
-                      final task = snapshot.data[index];
+                  return ListView(
+                    addAutomaticKeepAlives: true,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    children: snapshot.data.map(
+                      (task) {
+                        bool showDate = false;
+                        if (lastDate == null) {
+                          showDate = true;
+                        } else
+                          showDate = !(lastDate.day == task.creationDate.day &&
+                              lastDate.month == task.creationDate.month &&
+                              lastDate.year == task.creationDate.year);
 
-                      bool showDate = false;
-                      if (lastDate == null) {
-                        showDate = true;
-                      } else
-                        showDate = !(lastDate.day == task.creationDate.day &&
-                            lastDate.month == task.creationDate.month &&
-                            lastDate.year == task.creationDate.year);
-
-                      lastDate = task.creationDate;
-                      return Row(
-                        key: Key(task.id),
-                        crossAxisAlignment: showDate
-                            ? CrossAxisAlignment.start
-                            : CrossAxisAlignment.center,
-                        children: [
-                          Container(
-                            margin: EdgeInsets.only(
-                              left: 8.0,
-                              right: 8.0,
-                              top: 8.0,
-                            ),
-                            width: 80,
-                            child: showDate
-                                ? Column(
-                                    children: [
-                                      Text(
-                                        DateFormat('EEEE\nMMMM d')
-                                            .format(task.creationDate)
-                                            .toUpperCase(),
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .headline6
-                                            .copyWith(
-                                              fontWeight: FontWeight.w600,
-                                              fontSize: 14,
-                                              color: Theme.of(context)
-                                                  .textTheme
-                                                  .headline6
-                                                  .color
-                                                  .withOpacity(.6),
-                                            ),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                      Padding(
-                                        padding:
-                                            const EdgeInsets.only(top: 12.0),
-                                        child: Text(
-                                          DateFormat('hh:mm a')
-                                              .format(task.startTime),
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodyText1
-                                              .copyWith(
-                                                fontWeight: FontWeight.w500,
-                                                fontSize: 12,
-                                                color: Theme.of(context)
-                                                    .textTheme
-                                                    .headline6
-                                                    .color
-                                                    .withOpacity(.5),
-                                              ),
-                                          textAlign: TextAlign.center,
+                        lastDate = task.creationDate;
+                        return Column(
+                          children: [
+                            if (showDate)
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                  top: 16.0,
+                                  bottom: 8.0,
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        DateFormat('EEEE, MMMM dd')
+                                            .format(lastDate),
+                                        style: TextStyle(
+                                          color: Color(0xFFB2B5C3),
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 14,
                                         ),
                                       ),
-                                    ],
-                                  )
-                                : Text(
-                                    DateFormat('hh:mm a')
-                                        .format(task.creationDate),
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyText1
-                                        .copyWith(
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 12,
-                                          color: Theme.of(context)
-                                              .textTheme
-                                              .headline6
-                                              .color
-                                              .withOpacity(.5),
-                                        ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                          ),
-                          if (task.repetition == null)
-                            Expanded(
-                              child: OnetimeTaskArticleWidget(
+                                    ),
+                                    Text(
+                                      DateFormat('hh:mm').format(lastDate),
+                                      style: TextStyle(
+                                        color: Color(0xFFB2B5C3),
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            if (task.repetition == null)
+                              OnetimeTaskArticleWidget(
                                 name: task.userName,
                                 profilePicture: task.userPhoto,
                                 task: task,
-                                showAuthorRow: showDate,
-                              ),
-                            )
-                          else
-                            Expanded(
-                              child: RecurringTaskArticleWidget(
+                                showAuthorRow: true,
+                              )
+                            else
+                              RecurringTaskArticleWidget(
                                 name: task.userName,
                                 profilePicture: task.userPhoto,
                                 task: task,
-                                showAuthorRow: showDate,
+                                showAuthorRow: true,
                               ),
-                            ),
-                        ],
-                      );
-                    },
+                          ],
+                        );
+                      },
+                    ).toList(),
                   );
                 return Center(child: LoadingWidget());
               }),

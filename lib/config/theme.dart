@@ -21,10 +21,12 @@ ThemeData lightThemeData(BuildContext context) {
     ),
     bottomNavigationBarTheme: BottomNavigationBarThemeData(
       backgroundColor: Colors.white,
-      selectedItemColor: kContentColorLightTheme.withOpacity(0.7),
+      selectedItemColor: kPrimaryColor,
       unselectedItemColor: kContentColorLightTheme.withOpacity(0.32),
       selectedIconTheme: IconThemeData(color: kPrimaryColor),
-      showUnselectedLabels: true,
+      showUnselectedLabels: false,
+      showSelectedLabels: true,
+      type: BottomNavigationBarType.shifting,
     ),
   );
 }

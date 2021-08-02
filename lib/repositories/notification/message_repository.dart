@@ -26,6 +26,10 @@ class MessageRepository {
           CHAT_USERS_IDS_KEY,
           arrayContains: getCurrentUser().uid,
         )
+        .where(
+          CHAT_STATUS_KEY,
+          isEqualTo: 1,
+        )
         .orderBy(CHAT_LAST_MESSAGE_DATE_KEY, descending: true)
         .snapshots()
         .asyncMap((event) async {
@@ -161,6 +165,27 @@ class MessageRepository {
     };
   }
 
+  static Future<NotificationChat> emitChatSeen(NotificationChat chat) async {
+    final realChat = await FirebaseFirestore.instance
+        .collection(CHAT_COLLECTION)
+        .doc(chat.chatUID)
+        .get();
+
+    await FirebaseFirestore.instance
+        .collection(CHAT_COLLECTION)
+        .doc(chat.chatUID)
+        .update({
+      CHAT_NEW_MESSAGES_KEY: {
+        ...(realChat.data()[CHAT_NEW_MESSAGES_KEY] ?? {}),
+        getCurrentUser().uid: 0,
+      },
+    });
+
+    return NotificationChat.fromMap(
+      realChat.data(),
+    );
+  }
+
   static Stream<Map> streamNewMessages(
       NotificationChat chat, DocumentSnapshot<Map> lastMessageDocument) {
     Query query = FirebaseFirestore.instance
@@ -180,25 +205,9 @@ class MessageRepository {
         ChatMessage message = ChatMessage.fromMap(
           doc.data(),
         );
+        message.uid = doc.id;
         message.sender = await UserService.getUser(message.senderID);
         newMessages.add(message);
-      }
-
-      if (newMessages.isNotEmpty) {
-        final realChat = await FirebaseFirestore.instance
-            .collection(CHAT_COLLECTION)
-            .doc(chat.chatUID)
-            .get();
-
-        FirebaseFirestore.instance
-            .collection(CHAT_COLLECTION)
-            .doc(chat.chatUID)
-            .update({
-          CHAT_NEW_MESSAGES_KEY: {
-            ...(realChat.data()[CHAT_NEW_MESSAGES_KEY] ?? {}),
-            getCurrentUser().uid: 0,
-          },
-        });
       }
 
       return {

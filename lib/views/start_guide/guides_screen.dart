@@ -49,13 +49,29 @@ class _GuidesScreenState extends State<GuidesScreen> {
           children: [
             Container(
               height: 54,
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: _currentIndex < 3
+                    ? TextButton(
+                        onPressed: () => Get.to(() => AuthViews()),
+                        child: Text(
+                          'SKIP',
+                          style: TextStyle(
+                            color: Color(0xFFB2B5C3),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      )
+                    : Container(),
+              ),
             ),
             Expanded(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
-                    height: 400,
+                    height: 512,
                     child: PageView.builder(
                       controller: _pageController,
                       itemCount: 4,
@@ -70,7 +86,7 @@ class _GuidesScreenState extends State<GuidesScreen> {
                           children: [
                             SvgPicture.asset(
                               _pagesContent[index]['image'],
-                              height: 200,
+                              height: 276,
                             ),
                             Container(
                               margin: EdgeInsets.only(top: 32.0, bottom: 8.0),
@@ -79,103 +95,97 @@ class _GuidesScreenState extends State<GuidesScreen> {
                                 style: Theme.of(context)
                                     .textTheme
                                     .headline5
-                                    .copyWith(fontWeight: FontWeight.w600),
+                                    .copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 24,
+                                      color: Color(0xFF3B404A),
+                                    ),
                               ),
                             ),
-                            Text(
-                              _pagesContent[index]['sub_title'],
-                              style: Theme.of(context).textTheme.bodyText1,
-                              textAlign: TextAlign.center,
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24.0,
+                              ),
+                              child: Text(
+                                _pagesContent[index]['sub_title'],
+                                style: TextStyle(
+                                  color: Color(0xFF767C8D),
+                                  fontSize: 16,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
                             ),
                           ],
                         ),
                       ),
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 12,
-                          height: 12,
-                          margin: EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 12.0),
-                          decoration: BoxDecoration(
-                            color: _currentIndex == 0
-                                ? Theme.of(context).primaryColor
-                                : Color(0x22000000),
-                            borderRadius: BorderRadius.circular(22),
-                          ),
-                        ),
-                        Container(
-                          width: 12,
-                          height: 12,
-                          margin: EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 12.0),
-                          decoration: BoxDecoration(
-                            color: _currentIndex == 1
-                                ? Theme.of(context).primaryColor
-                                : Color(0x22000000),
-                            borderRadius: BorderRadius.circular(22),
-                          ),
-                        ),
-                        Container(
-                          width: 12,
-                          height: 12,
-                          margin: EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 12.0),
-                          decoration: BoxDecoration(
-                            color: _currentIndex == 2
-                                ? Theme.of(context).primaryColor
-                                : Color(0x22000000),
-                            borderRadius: BorderRadius.circular(22),
-                          ),
-                        ),
-                        Container(
-                          width: 12,
-                          height: 12,
-                          margin: EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 12.0),
-                          decoration: BoxDecoration(
-                            color: _currentIndex == 3
-                                ? Theme.of(context).primaryColor
-                                : Color(0x22000000),
-                            borderRadius: BorderRadius.circular(22),
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
                 ],
               ),
             ),
             Container(
-              padding: EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              padding: EdgeInsets.symmetric(
+                vertical: 12,
+                horizontal: 12,
+              ),
+              child: Stack(
                 children: [
-                  if (_currentIndex < 3)
-                    TextButton(
-                      onPressed: () => Get.to(() => AuthViews()),
-                      child: Text(
-                        'Skip',
-                        style: Theme.of(context).textTheme.subtitle1,
-                      ),
-                    )
-                  else
-                    Container(),
-                  TextButton(
-                    onPressed: () => _currentIndex == 3
-                        ? Get.to(() => AuthViews())
-                        : _pageController.nextPage(
-                            duration: Duration(milliseconds: 250),
-                            curve: Curves.easeInOut,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () => _currentIndex == 3
+                            ? Get.to(() => AuthViews())
+                            : _pageController.nextPage(
+                                duration: Duration(milliseconds: 250),
+                                curve: Curves.easeInOut,
+                              ),
+                        child: Text(
+                          _currentIndex == 3 ? 'START' : 'NEXT',
+                          style: TextStyle(
+                            color: Theme.of(context).accentColor,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
                           ),
-                    child: Text(
-                      _currentIndex == 3 ? 'Start' : 'Next',
-                      style: Theme.of(context).textTheme.subtitle1,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Positioned(
+                    top: 0,
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        for (int i = 0; i < 4; i++)
+                          AnimatedContainer(
+                            duration: Duration(milliseconds: 200),
+                            width: _currentIndex == i ? 16 : 8,
+                            height: 8,
+                            margin: EdgeInsets.symmetric(
+                              horizontal: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: _currentIndex == i
+                                  ? Theme.of(context).accentColor
+                                  : Color(0xFFEEEEEE),
+                              gradient: _currentIndex == i
+                                  ? LinearGradient(
+                                      begin: Alignment.bottomRight,
+                                      end: Alignment.topLeft,
+                                      colors: [
+                                        Theme.of(context).accentColor,
+                                        Theme.of(context).primaryColor,
+                                      ],
+                                    )
+                                  : null,
+                              borderRadius: BorderRadius.circular(22),
+                            ),
+                          ),
+                      ],
                     ),
                   ),
                 ],

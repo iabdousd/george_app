@@ -1,4 +1,3 @@
-import 'package:animate_do/animate_do.dart';
 import 'package:country_codes/country_codes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_contact/contacts.dart';
@@ -11,13 +10,22 @@ import 'package:stackedtasks/repositories/contact/contact_repository.dart';
 import 'package:stackedtasks/services/feed-back/flush_bar.dart';
 import 'package:stackedtasks/services/feed-back/loader.dart';
 import 'package:stackedtasks/services/user/user_service.dart';
-import 'package:stackedtasks/widgets/shared/app_action_button.dart';
+import 'package:stackedtasks/widgets/shared/buttons/circular_action_button.dart';
 
 class ContactPickerView extends StatefulWidget {
-  final String actionButtonText;
+  final String title, actionButtonText;
+  final List<String> alreadyInvited;
+  final bool selectable;
+  final Function(UserModel) onContactClick;
+  final String contactActionBtnText;
   const ContactPickerView({
     Key key,
+    this.title: 'Add from contacts',
     @required this.actionButtonText,
+    this.alreadyInvited: const [],
+    this.selectable: true,
+    this.onContactClick,
+    this.contactActionBtnText: 'ADD',
   }) : super(key: key);
 
   @override
@@ -77,8 +85,6 @@ class _ContactPickerViewState extends State<ContactPickerView> {
           contactList.add(contact);
         }
       }
-      print(foundContactList.length);
-      print(contactList.length);
       setState(() {
         loading = false;
       });
@@ -99,313 +105,282 @@ class _ContactPickerViewState extends State<ContactPickerView> {
   @override
   Widget build(BuildContext context) {
     alreadyShownUsers = {};
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Add from contacts',
-        ),
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: Theme.of(context).backgroundColor,
       ),
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Container(
-              height: 65,
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(
-                    width: 1,
-                    color: Colors.black26,
+      padding: EdgeInsets.only(
+        left: 16.0,
+        right: 16.0,
+        bottom: MediaQuery.of(context).padding.bottom,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Center(
+            child: Container(
+              color: Color(0xFFB2B6C3),
+              width: 28,
+              height: 3,
+              margin: EdgeInsets.symmetric(vertical: 12),
+            ),
+          ),
+          Row(
+            children: [
+              TextButton(
+                onPressed: Navigator.of(context).pop,
+                child: Text(
+                  'CANCEL',
+                  style: TextStyle(
+                    color: Color(0xFFB2B6C3),
+                    fontSize: 14,
                   ),
                 ),
               ),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                padding: EdgeInsets.all(12),
-                child: Row(
-                  children: [
-                    if (selectedUsers.isEmpty)
-                      Text(
-                        'Nothing is selected',
-                      )
-                    else
-                      for (final user in selectedUsers.values)
-                        FadeIn(
-                          duration: Duration(milliseconds: 350),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).backgroundColor,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Color(0x22000000),
-                                  blurRadius: 4,
-                                ),
-                              ],
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            padding: EdgeInsets.symmetric(
-                              vertical: 4,
-                              horizontal: 8,
-                            ),
-                            margin: EdgeInsets.only(right: 8),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  margin: EdgeInsets.only(
-                                    right: 8,
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(32),
-                                    child: user.photoURL != null
-                                        ? Image(
-                                            image: CachedImageProvider(
-                                              user.photoURL,
-                                            ),
-                                            width: 32,
-                                            height: 32,
-                                            fit: BoxFit.cover,
-                                          )
-                                        : Container(
-                                            width: 32,
-                                            height: 32,
-                                            decoration: BoxDecoration(
-                                              color: Theme.of(context)
-                                                  .primaryColor
-                                                  .withOpacity(.75),
-                                              borderRadius:
-                                                  BorderRadius.circular(32),
-                                            ),
-                                            child: Center(
-                                              child: Text(
-                                                user.fullName[0].toUpperCase(),
-                                                style: TextStyle(
-                                                  color: Theme.of(context)
-                                                      .backgroundColor,
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 18,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                  ),
-                                ),
-                                Text(
-                                  user.fullName,
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 6.0),
-                                  child: InkWell(
-                                      onTap: () => setState(
-                                            () =>
-                                                selectedUsers.remove(user.uid),
-                                          ),
-                                      child: Icon(
-                                        Icons.close,
-                                        color: Colors.red,
-                                        size: 16,
-                                      )),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                  ],
+              Expanded(
+                child: Text(
+                  widget.title,
+                  style: TextStyle(
+                    color: Color(0xFF767C8D),
+                    fontWeight: FontWeight.w500,
+                    fontSize: 16,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
               ),
-            ),
-            if (loading)
-              Expanded(
-                child: Center(
-                  child: LoadingWidget(),
+              TextButton(
+                onPressed: () =>
+                    Navigator.of(context).pop(selectedUsers.values.toList()),
+                child: Text(
+                  widget.actionButtonText,
+                  style: TextStyle(
+                    color: Theme.of(context).accentColor,
+                    fontSize: 14,
+                  ),
                 ),
-              )
-            else
-              Expanded(
-                child: ListView.builder(
-                  itemCount: foundContactList.length + contactList.length,
-                  itemBuilder: (context, index) {
-                    final contact = index < foundContactList.length
-                        ? foundContactList[index]
-                        : contactList[index - foundContactList.length];
-                    final notUser = index >= foundContactList.length;
+              ),
+            ],
+          ),
+          if (loading)
+            Expanded(
+              child: Center(
+                child: LoadingWidget(),
+              ),
+            )
+          else
+            Expanded(
+              child: ListView.separated(
+                itemCount: foundContactList.length + contactList.length,
+                separatorBuilder: (context, index) => Divider(),
+                itemBuilder: (context, index) {
+                  final contact = index < foundContactList.length
+                      ? foundContactList[index]
+                      : contactList[index - foundContactList.length];
+                  bool notUser = index >= foundContactList.length;
 
-                    final displayname =
-                        contact.displayName ?? contact.givenName;
+                  final displayname = contact.displayName ?? contact.givenName;
 
-                    if (displayname == null) {
-                      return Container();
-                    }
+                  if (displayname == null) {
+                    return Container();
+                  }
 
-                    UserModel userModel;
-                    if (!notUser) {
-                      final foundPhones = contact.phones.where((element) {
-                        final tPhone =
-                            ContactRepository.trimPhoneNumber(element.value);
+                  UserModel userModel;
+                  if (!notUser) {
+                    final foundPhones = contact.phones.where((element) {
+                      final tPhone =
+                          ContactRepository.trimPhoneNumber(element.value);
+                      return users.containsKey(
+                        tPhone.startsWith('+')
+                            ? tPhone
+                            : details.dialCode + tPhone,
+                      );
+                    });
+                    if (foundPhones.isNotEmpty &&
+                        !alreadyShownUsers.contains(
+                          ContactRepository.trimPhoneNumber(
+                              foundPhones.first.value),
+                        )) {
+                      final phone = ContactRepository.trimPhoneNumber(
+                        foundPhones.first.value,
+                      );
+                      userModel = users[phone.startsWith('+')
+                          ? phone
+                          : details.dialCode + phone];
+                      alreadyShownUsers.add(phone);
+                    } else {
+                      final emails = contact.emails.where((element) {
                         return users.containsKey(
-                          tPhone.startsWith('+')
-                              ? tPhone
-                              : details.dialCode + tPhone,
+                          element.value.toLowerCase(),
                         );
                       });
-                      if (foundPhones.isNotEmpty &&
-                          !alreadyShownUsers.contains(
-                            ContactRepository.trimPhoneNumber(
-                                foundPhones.first.value),
-                          )) {
-                        final phone = ContactRepository.trimPhoneNumber(
-                          foundPhones.first.value,
-                        );
-                        userModel = users[phone.startsWith('+')
-                            ? phone
-                            : details.dialCode + phone];
-                        alreadyShownUsers.add(phone);
-                      } else {
-                        final email = contact.emails
-                            .where((element) {
-                              return users.containsKey(
-                                element.value.toLowerCase(),
-                              );
-                            })
-                            .first
-                            .value;
+                      if (emails.isNotEmpty) {
+                        final email = emails.first.value;
 
                         userModel = users[email.toLowerCase()];
+                      } else {
+                        notUser = true;
                       }
                     }
+                    if (userModel != null &&
+                        userModel.uid == getCurrentUser().uid)
+                      return Container();
+                  }
 
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (index == foundContactList.length)
-                          Padding(
-                            padding: const EdgeInsets.only(
-                              left: 8.0,
-                              right: 8.0,
-                              top: 12.0,
-                              bottom: 4.0,
-                            ),
-                            child: Text(
-                              'Friends that aren\'t on the Platform:',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .subtitle1
-                                  .copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 20,
-                                  ),
-                            ),
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (index == foundContactList.length || index == 0)
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            left: 8.0,
+                            right: 8.0,
+                            top: 32.0,
+                            bottom: 16.0,
                           ),
-                        InkWell(
-                          onTap: () {
-                            if (!notUser)
-                              setState(() {
-                                if (selectedUsers.containsKey(userModel.uid)) {
-                                  selectedUsers.remove(userModel.uid);
-                                } else {
-                                  selectedUsers.putIfAbsent(
-                                    userModel.uid,
-                                    () => userModel,
-                                  );
-                                }
-                              });
-                          },
-                          child: Row(
-                            children: [
-                              Container(
-                                margin: EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 8,
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(44),
-                                  child: userModel?.photoURL != null ||
-                                          contact.avatar != null
-                                      ? Image(
-                                          image: userModel?.photoURL != null
-                                              ? CachedImageProvider(
-                                                  userModel.photoURL,
-                                                )
-                                              : MemoryImage(contact.avatar),
-                                          width: 44,
-                                          height: 44,
-                                          fit: BoxFit.cover,
-                                        )
-                                      : Container(
-                                          width: 44,
-                                          height: 44,
-                                          decoration: BoxDecoration(
-                                            color: notUser
-                                                ? Theme.of(context)
-                                                    .textTheme
-                                                    .headline6
-                                                    .color
-                                                    .withOpacity(.25)
-                                                : Theme.of(context)
-                                                    .primaryColor
-                                                    .withOpacity(.75),
-                                            borderRadius:
-                                                BorderRadius.circular(32),
-                                          ),
-                                          child: Center(
-                                            child: Text(
-                                              displayname[0].toUpperCase(),
-                                              style: TextStyle(
-                                                color: Theme.of(context)
-                                                    .backgroundColor,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 18,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                ),
-                              ),
-                              Expanded(
-                                child: Text(
-                                  displayname,
-                                ),
-                              ),
-                              if (notUser)
-                                AppActionButton(
-                                  onPressed: () async {
-                                    await Share.share(
-                                      'Hey. I\'m using the Stacked Tasks app to get more done. Could you please help me out by being my accountability buddy? stackedtasks.com',
-                                    );
-                                  },
-                                  label: 'Invite',
-                                  backgroundColor: Theme.of(context)
-                                      .primaryColor
-                                      .withOpacity(.5),
-                                )
-                              else if (selectedUsers.containsKey(userModel.uid))
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Icon(
-                                    Icons.check_circle_outline_rounded,
-                                    color: Theme.of(context).primaryColor,
-                                  ),
-                                ),
-                            ],
+                          child: Text(
+                            index == foundContactList.length
+                                ? 'Friends that aren’t on the platform:'
+                                : 'Friends on the platform',
+                            style:
+                                Theme.of(context).textTheme.subtitle1.copyWith(
+                                      color: Color(0xFFB2B5C3),
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 14,
+                                    ),
                           ),
                         ),
-                      ],
-                    );
-                  },
-                ),
-              ),
-            AppActionButton(
-              onPressed: () =>
-                  Navigator.of(context).pop(selectedUsers.values.toList()),
-              label: widget.actionButtonText,
-              textStyle: TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 18,
-                color: Theme.of(context).backgroundColor,
+                      Row(
+                        children: [
+                          Container(
+                            margin: EdgeInsets.only(
+                              left: 8,
+                              right: 16,
+                              top: 4,
+                              bottom: 4,
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(44),
+                              child: userModel?.photoURL != null ||
+                                      contact.avatar != null
+                                  ? Image(
+                                      image: userModel?.photoURL != null
+                                          ? CachedImageProvider(
+                                              userModel.photoURL,
+                                            )
+                                          : MemoryImage(contact.avatar),
+                                      width: 32,
+                                      height: 32,
+                                      fit: BoxFit.cover,
+                                    )
+                                  : Container(
+                                      width: 32,
+                                      height: 32,
+                                      decoration: BoxDecoration(
+                                        color: notUser
+                                            ? Theme.of(context)
+                                                .textTheme
+                                                .headline6
+                                                .color
+                                                .withOpacity(.25)
+                                            : Theme.of(context)
+                                                .primaryColor
+                                                .withOpacity(.75),
+                                        borderRadius: BorderRadius.circular(32),
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          displayname[0].toUpperCase(),
+                                          style: TextStyle(
+                                            color: Theme.of(context)
+                                                .backgroundColor,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 18,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                            ),
+                          ),
+                          Expanded(
+                            child: Text(
+                              displayname,
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          if (notUser)
+                            CircularActionButton(
+                              onClick: () async {
+                                await Share.share(
+                                  'Hey. I\'m using the Stacked Tasks app to get more done. Could you please help me out by being my accountability buddy? stackedtasks.com',
+                                );
+                              },
+                              title: 'INVITE',
+                              backgroundColor: Theme.of(context).accentColor,
+                            )
+                          else if (widget.alreadyInvited
+                              .contains(userModel.uid))
+                            CircularActionButton(
+                              onClick: () {},
+                              title: 'ALREADY INVITED',
+                              titleStyle: TextStyle(
+                                color: Color(0xFFB2B5C3),
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              backgroundColor: Color(0x0CB2B5C3),
+                            )
+                          else if (!selectedUsers.containsKey(userModel.uid))
+                            CircularActionButton(
+                              onClick: widget.onContactClick != null
+                                  ? () => widget.onContactClick(userModel)
+                                  : () {
+                                      if (!notUser)
+                                        setState(() {
+                                          if (selectedUsers
+                                              .containsKey(userModel.uid)) {
+                                            selectedUsers.remove(userModel.uid);
+                                          } else {
+                                            selectedUsers.putIfAbsent(
+                                              userModel.uid,
+                                              () => userModel,
+                                            );
+                                          }
+                                        });
+                                    },
+                              title: widget.contactActionBtnText,
+                              backgroundColor: Theme.of(context).accentColor,
+                            )
+                          else
+                            CircularActionButton(
+                              onClick: () {
+                                if (!notUser)
+                                  setState(() {
+                                    if (selectedUsers
+                                        .containsKey(userModel.uid)) {
+                                      selectedUsers.remove(userModel.uid);
+                                    } else {
+                                      selectedUsers.putIfAbsent(
+                                        userModel.uid,
+                                        () => userModel,
+                                      );
+                                    }
+                                  });
+                              },
+                              title: 'REMOVE',
+                              backgroundColor: Colors.red,
+                            )
+                        ],
+                      ),
+                    ],
+                  );
+                },
               ),
             ),
-          ],
-        ),
+        ],
       ),
     );
   }

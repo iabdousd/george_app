@@ -3,49 +3,70 @@ import 'package:stackedtasks/constants/models/goal.dart';
 import 'package:stackedtasks/constants/models/notification.dart';
 import 'package:stackedtasks/constants/models/stack.dart';
 import 'package:stackedtasks/models/Goal.dart';
-import 'package:stackedtasks/models/Notification.dart';
+import 'package:stackedtasks/models/InvitationNotification.dart';
 import 'package:stackedtasks/models/Stack.dart';
 import 'package:stackedtasks/models/Task.dart';
+import 'package:stackedtasks/models/notification/notification.dart';
 import 'package:stackedtasks/services/feed-back/flush_bar.dart';
 import 'package:stackedtasks/services/user/user_service.dart';
 import "package:async/async.dart" show StreamZip;
 
 class NotificationRepository {
-  static Stream<List<Notification>> streamNotifications() {
+  static Stream<List<NotificationModel>> streamNotifications() {
     return FirebaseFirestore.instance
         .collection(NOTIFICATIONS_COLLECTION)
-        .where(NOTIFICATION_RECIEVER_KEY, isEqualTo: getCurrentUser().uid)
-        .where(NOTIFICATION_STATUS_KEY, isNotEqualTo: -1)
+        .where(
+          NOTIFICATION_RECIEVER_KEY,
+          isEqualTo: getCurrentUser().uid,
+        )
+        .where(
+          NOTIFICATION_STATUS_KEY,
+          isNotEqualTo: -1,
+        )
+        .orderBy(NOTIFICATION_STATUS_KEY)
+        .orderBy(
+          'creationDate',
+          descending: true,
+        )
         .snapshots()
         .asyncMap(
       (event) async {
-        List<Notification> notifications = [];
+        List<NotificationModel> notifications = [];
         for (final notificationRaw in event.docs) {
-          if (notificationRaw.data()['type'] == 'GOAL_PARTNER_INVITATION') {
+          if (notificationRaw.data()['action'] == 'GOAL_PARTNER_INVITATION') {
             GoalInvitationNotification notification =
                 GoalInvitationNotification.fromMap(
               notificationRaw.data(),
             );
-            notification.sender =
-                await UserService.getUser(notification.senderID);
+
+            await notification.fetchUserModels();
+
             notifications.add(notification);
-          } else if (notificationRaw.data()['type'] ==
+          } else if (notificationRaw.data()['action'] ==
               'TASK_PARTNER_INVITATION') {
             TaskInvitationNotification notification =
                 TaskInvitationNotification.fromMap(
               notificationRaw.data(),
             );
-            notification.sender =
-                await UserService.getUser(notification.senderID);
+
+            await notification.fetchUserModels();
+
             notifications.add(notification);
-          } else if (notificationRaw.data()['type'] ==
+          } else if (notificationRaw.data()['action'] ==
               'STACK_PARTNER_INVITATION') {
             TasksStackInvitationNotification notification =
                 TasksStackInvitationNotification.fromMap(
               notificationRaw.data(),
             );
-            notification.sender =
-                await UserService.getUser(notification.senderID);
+
+            await notification.fetchUserModels();
+
+            notifications.add(notification);
+          } else {
+            NotificationModel notification = NotificationModel.fromMap(
+              notificationRaw.data(),
+            );
+            await notification.fetchUserModels();
             notifications.add(notification);
           }
         }
@@ -59,22 +80,21 @@ class NotificationRepository {
       FirebaseFirestore.instance
           .collection(NOTIFICATIONS_COLLECTION)
           .where(NOTIFICATION_RECIEVER_KEY, isEqualTo: getCurrentUser().uid)
-          .where(NOTIFICATION_STATUS_KEY, isNotEqualTo: -1)
+          .where(NOTIFICATION_STATUS_KEY, isEqualTo: 0)
           .snapshots()
           .map(
             (event) => event.size,
           ),
-      // FirebaseFirestore.instance
-      //     .collection(NOTIFICATIONS_COLLECTION)
-      //     .where(NOTIFICATION_RECIEVER_KEY, isEqualTo: getCurrentUser().uid)
-      //     .where(NOTIFICATION_STATUS_KEY, isNotEqualTo: -1)
-      //     .snapshots()
-      //     .map(
-      //       (event) => event.size,
-      //     )
     ]).map(
       (counts) => counts[0],
     );
+  }
+
+  static Future<void> deleteNotification(NotificationModel notification) async {
+    await FirebaseFirestore.instance
+        .collection(NOTIFICATIONS_COLLECTION)
+        .doc(notification.uid)
+        .delete();
   }
 
   static Future<bool> addGoalNotification(Goal goal, String invitedID) async {
@@ -91,7 +111,7 @@ class NotificationRepository {
           .collection(NOTIFICATIONS_COLLECTION)
           .where('senderID', isEqualTo: goal.userID)
           .where(NOTIFICATION_RECIEVER_KEY, isEqualTo: invitedID)
-          .where('goalRef', isEqualTo: goal.id)
+          .where('data', isEqualTo: goal.id)
           .where(NOTIFICATION_STATUS_KEY, isEqualTo: 0)
           .get();
 
@@ -109,12 +129,16 @@ class NotificationRepository {
           .add(
             GoalInvitationNotification(
               senderID: goal.userID,
-              recieverID: invitedID,
+              userID: invitedID,
               status: 0,
-              goalRef: goal.id,
-              goalTitle: goal.title,
+              creationDate: DateTime.now(),
+              title: getCurrentUser().displayName,
+              body: 'Invited you to goal "${goal.title}"',
+              icon: getCurrentUser().photoURL,
+              data: goal.toJson(),
             ).toMap(),
           );
+
       res.update({
         NOTIFICATION_ID_KEY: res.id,
       });
@@ -139,7 +163,7 @@ class NotificationRepository {
           .collection(NOTIFICATIONS_COLLECTION)
           .where('senderID', isEqualTo: stack.userID)
           .where(NOTIFICATION_RECIEVER_KEY, isEqualTo: invitedID)
-          .where('stackRef', isEqualTo: stack.id)
+          .where('data', isEqualTo: stack.id)
           .where(NOTIFICATION_STATUS_KEY, isEqualTo: 0)
           .get();
 
@@ -157,10 +181,13 @@ class NotificationRepository {
           .add(
             TasksStackInvitationNotification(
               senderID: stack.userID,
-              recieverID: invitedID,
+              userID: invitedID,
               status: 0,
-              stackRef: stack.id,
-              stackTitle: stack.title,
+              creationDate: DateTime.now(),
+              title: getCurrentUser().displayName,
+              body: 'Invited you to stack "${stack.title}"',
+              icon: getCurrentUser().photoURL,
+              data: stack.toJson(),
             ).toMap(),
           );
       res.update({
@@ -186,7 +213,7 @@ class NotificationRepository {
           .collection(NOTIFICATIONS_COLLECTION)
           .where('senderID', isEqualTo: task.userID)
           .where(NOTIFICATION_RECIEVER_KEY, isEqualTo: invitedID)
-          .where('taskRef', isEqualTo: task.id)
+          .where('data', isEqualTo: task.id)
           .where(NOTIFICATION_STATUS_KEY, isEqualTo: 0)
           .get();
 
@@ -204,23 +231,27 @@ class NotificationRepository {
           .add(
             TaskInvitationNotification(
               senderID: task.userID,
-              recieverID: invitedID,
+              userID: invitedID,
               status: 0,
-              taskRef: task.id,
-              taskTitle: task.title,
-            ).toMap(),
+              creationDate: DateTime.now(),
+              title: getCurrentUser().displayName,
+              body: 'Invited you to task "${task.title}"',
+              icon: getCurrentUser().photoURL,
+              data: task.id,
+            ).toMap(taskID: task.id),
           );
       res.update({
         NOTIFICATION_ID_KEY: res.id,
       });
       return true;
     } catch (e) {
+      print(e);
       return false;
     }
   }
 
   static Future<bool> acceptInvitationNotification(
-    Notification notification,
+    NotificationModel notification,
     String type,
   ) async {
     try {
@@ -246,7 +277,7 @@ class NotificationRepository {
         }
         await FirebaseFirestore.instance
             .collection(NOTIFICATIONS_COLLECTION)
-            .doc(notification.id)
+            .doc(notification.uid)
             .update({
           NOTIFICATION_STATUS_KEY: -1,
           ACCEPTED_KEY: true,
@@ -275,7 +306,7 @@ class NotificationRepository {
         }
         await FirebaseFirestore.instance
             .collection(NOTIFICATIONS_COLLECTION)
-            .doc(notification.id)
+            .doc(notification.uid)
             .update({
           NOTIFICATION_STATUS_KEY: -1,
           ACCEPTED_KEY: true,
@@ -285,6 +316,7 @@ class NotificationRepository {
             .collection(TASKS_KEY)
             .doc((notification as TaskInvitationNotification).taskRef)
             .get();
+
         Task task = Task.fromJson(
           taskRaw.data(),
           id: taskRaw.id,
@@ -304,7 +336,7 @@ class NotificationRepository {
         }
         await FirebaseFirestore.instance
             .collection(NOTIFICATIONS_COLLECTION)
-            .doc(notification.id)
+            .doc(notification.uid)
             .update({
           NOTIFICATION_STATUS_KEY: -1,
           ACCEPTED_KEY: true,
@@ -312,6 +344,7 @@ class NotificationRepository {
       }
       return true;
     } catch (e) {
+      print(e);
       return false;
     }
   }

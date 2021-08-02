@@ -6,6 +6,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:stackedtasks/widgets/shared/buttons/circular_action_button.dart';
 
 import 'email_login.dart';
 
@@ -20,208 +21,197 @@ class _AuthViewsState extends State<AuthViews> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).backgroundColor,
       body: SafeArea(
         child: Center(
           child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 32),
             width: kIsWeb ? 512 : null,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: ListView(
+              padding: const EdgeInsets.symmetric(vertical: 38, horizontal: 24),
               children: [
-                Column(
-                  children: [
-                    Container(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      child: Text(
-                        'WELCOME TO',
-                        style: Theme.of(context).textTheme.headline6.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                        textAlign: TextAlign.center,
+                Container(
+                  margin: const EdgeInsets.only(bottom: 32),
+                  child: Column(
+                    children: [
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        child: Text(
+                          'Welcome to',
+                          style: Theme.of(context).textTheme.headline6.copyWith(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 18,
+                              ),
+                          textAlign: TextAlign.center,
+                        ),
                       ),
-                    ),
-                    Text(
-                      'Stackedtasks',
-                      style: Theme.of(context).textTheme.headline4.copyWith(
-                            fontFamily: 'logo',
-                            color: Theme.of(context).primaryColor,
-                          ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
+                      Image.asset(
+                        'assets/images/logo.png',
+                      ),
+                    ],
+                  ),
                 ),
                 SvgPicture.asset(
                   'assets/images/welcome.svg',
-                  width: 256,
+                  width: 230,
+                  height: 230,
                 ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Container(
-                      margin: EdgeInsets.symmetric(vertical: 6.0),
-                      child: ElevatedButton.icon(
-                        onPressed: _loginWithEmail,
-                        icon: Icon(Icons.email_rounded),
-                        label: Text(
-                          'Continue with Email',
-                          style: Theme.of(context).textTheme.subtitle1.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
+                Container(
+                  margin: const EdgeInsets.only(top: 51),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      CircularActionButton(
+                        onClick: _loginWithEmail,
+                        title: 'CONTINUE WITH EMAIL',
+                        titleStyle: TextStyle(
+                          fontSize: 14,
+                          color: Theme.of(context).backgroundColor,
+                          fontWeight: FontWeight.w600,
                         ),
-                        style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.all(
-                              Theme.of(context)
-                                  .primaryColor), //Color(0xFFBB001B)
-                          padding: MaterialStateProperty.all(
-                              EdgeInsets.symmetric(vertical: 10.0)),
+                        icon: Icon(
+                          Icons.email,
+                          color: Theme.of(context).backgroundColor,
                         ),
+                        backgroundColor: Theme.of(context).accentColor,
+                        margin: EdgeInsets.only(bottom: 16),
                       ),
-                    ),
-                    if (!kIsWeb && Platform.isIOS)
-                      Container(
-                        margin: EdgeInsets.symmetric(vertical: 6.0),
-                        child: ElevatedButton.icon(
-                          onPressed: _loginWitApple,
-                          icon: SvgPicture.asset(
-                            'assets/images/icons/apple.svg',
-                            width: 20,
-                            color: Colors.white,
-                          ),
-                          label: Text(
-                            'Continue with Apple',
-                            style:
-                                Theme.of(context).textTheme.subtitle1.copyWith(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                          ),
-                          style: ButtonStyle(
-                            backgroundColor:
-                                MaterialStateProperty.all(Color(0xFF000000)),
-                            padding: MaterialStateProperty.all(
-                                EdgeInsets.symmetric(vertical: 10.0)),
-                          ),
-                        ),
-                      ),
-                    Container(
-                      margin: EdgeInsets.symmetric(vertical: 6.0),
-                      child: Row(
+                      Row(
                         children: [
                           Expanded(
-                            child: InkWell(
-                              onTap: _loginWithGoogle,
-                              child: Container(
-                                padding: const EdgeInsets.all(8.0),
-                                margin: const EdgeInsets.only(right: 8.0),
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                    color: Color(0x22000000),
-                                    width: 1,
-                                  ),
-                                ),
-                                child: SvgPicture.asset(
-                                  'assets/images/icons/google.svg',
-                                  width: 24,
-                                ),
+                            child: Divider(
+                              color: Color(0xFFB2B5C3),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              'OR',
+                              style: TextStyle(
+                                color: Color(0xFFB2B5C3),
+                                fontSize: 14,
                               ),
                             ),
                           ),
                           Expanded(
-                            child: InkWell(
-                              onTap: _loginWithFacebook,
-                              child: Container(
-                                padding: const EdgeInsets.all(8.0),
-                                margin:
-                                    const EdgeInsets.symmetric(horizontal: 4.0),
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                    color: Color(0x22000000),
-                                    width: 1,
-                                  ),
-                                ),
-                                child: SvgPicture.asset(
-                                  'assets/images/icons/facebook.svg',
-                                  width: 24,
-                                ),
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            child: InkWell(
-                              onTap: _loginWithTwitter,
-                              child: Container(
-                                padding: const EdgeInsets.all(8.0),
-                                margin: const EdgeInsets.only(left: 8.0),
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                    color: Color(0x22000000),
-                                    width: 1,
-                                  ),
-                                ),
-                                child: SvgPicture.asset(
-                                  'assets/images/icons/twitter.svg',
-                                  width: 24,
-                                ),
-                              ),
+                            child: Divider(
+                              color: Color(0xFFB2B5C3),
                             ),
                           ),
                         ],
                       ),
-                    ),
-                    Container(
-                      margin: EdgeInsets.only(top: 12.0),
-                      child: RichText(
-                        text: TextSpan(
-                          text: 'By continuing you agree to Stackedtasks\'s ',
-                          style: Theme.of(context).textTheme.bodyText2.copyWith(
-                                fontSize: 12,
-                                letterSpacing: .5,
-                              ),
-                          children: [
-                            TextSpan(
-                              text: 'Terms of Service',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyText2
-                                  .copyWith(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
-                                    decoration: TextDecoration.underline,
-                                  ),
-                              recognizer: TapGestureRecognizer()
-                                ..onTap = () => print('FORGOT PASSWORD'),
-                            ),
-                            TextSpan(
-                              text: ' and ',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyText2
-                                  .copyWith(
-                                    fontSize: 12,
-                                  ),
-                            ),
-                            TextSpan(
-                              text: 'Privacy Policy',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyText2
-                                  .copyWith(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
-                                    decoration: TextDecoration.underline,
-                                  ),
-                              recognizer: TapGestureRecognizer()
-                                ..onTap = () => print('FORGOT PASSWORD'),
-                            ),
-                          ],
+                      if (!kIsWeb && Platform.isIOS)
+                        CircularActionButton(
+                          onClick: _loginWitApple,
+                          title: 'CONTINUE WITH APPLE',
+                          titleStyle: TextStyle(
+                            fontSize: 14,
+                            color: Theme.of(context).backgroundColor,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          icon: SvgPicture.asset(
+                            'assets/images/icons/apple.svg',
+                            width: 20,
+                            height: 20,
+                            color: Colors.white,
+                          ),
+                          backgroundColor: Colors.black,
+                          margin: EdgeInsets.only(top: 16),
                         ),
-                        textAlign: TextAlign.center,
+                      CircularActionButton(
+                        onClick: _loginWithGoogle,
+                        title: 'CONTINUE WITH GOOGLE',
+                        titleStyle: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        icon: SvgPicture.asset(
+                          'assets/images/icons/google.svg',
+                        ),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: Color(0xFFB2B5C3),
+                          ),
+                          borderRadius: BorderRadius.circular(64),
+                        ),
+                        margin: EdgeInsets.only(top: 8),
                       ),
-                    ),
-                  ],
+                      CircularActionButton(
+                        onClick: _loginWithFacebook,
+                        title: 'CONTINUE WITH FACEBOOK',
+                        titleStyle: TextStyle(
+                          fontSize: 14,
+                          color: Theme.of(context).backgroundColor,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        icon: SvgPicture.asset(
+                          'assets/images/icons/facebook.svg',
+                        ),
+                        backgroundColor: Color(0xFF3B5998),
+                        margin: EdgeInsets.only(top: 8),
+                      ),
+                      CircularActionButton(
+                        onClick: _loginWithTwitter,
+                        title: 'CONTINUE WITH TWITTER',
+                        titleStyle: TextStyle(
+                          fontSize: 14,
+                          color: Theme.of(context).backgroundColor,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        icon: SvgPicture.asset(
+                          'assets/images/icons/twitter.svg',
+                        ),
+                        backgroundColor: Color(0xFF03A9F4),
+                        margin: EdgeInsets.only(top: 8),
+                      ),
+                      Container(
+                        margin: EdgeInsets.only(top: 24.0),
+                        child: RichText(
+                          text: TextSpan(
+                            text: 'By continuing you agree to Stackedtasks\'s ',
+                            style:
+                                Theme.of(context).textTheme.bodyText2.copyWith(
+                                      fontSize: 12,
+                                      letterSpacing: .5,
+                                      color: Color(0xFFB2B5C3),
+                                    ),
+                            children: [
+                              TextSpan(
+                                text: 'Terms of Service',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyText2
+                                    .copyWith(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                      decoration: TextDecoration.underline,
+                                      color: Color(0xFFB2B5C3),
+                                    ),
+                                recognizer: TapGestureRecognizer()
+                                  ..onTap = () => print('FORGOT PASSWORD'),
+                              ),
+                              TextSpan(
+                                text: ' and ',
+                              ),
+                              TextSpan(
+                                text: 'Privacy Policy',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyText2
+                                    .copyWith(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                      decoration: TextDecoration.underline,
+                                      color: Color(0xFFB2B5C3),
+                                    ),
+                                recognizer: TapGestureRecognizer()
+                                  ..onTap = () => print('FORGOT PASSWORD'),
+                              ),
+                            ],
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),

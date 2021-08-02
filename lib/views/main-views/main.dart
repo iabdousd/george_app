@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:animate_do/animate_do.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:flutter/services.dart';
+import 'package:stackedtasks/config/fcm.dart';
 import 'package:stackedtasks/models/Task.dart';
 import 'package:stackedtasks/models/UserModel.dart';
 import 'package:stackedtasks/models/notification/NotificationChat.dart';
@@ -12,19 +12,16 @@ import 'package:stackedtasks/repositories/contact/contact_repository.dart';
 import 'package:stackedtasks/services/user/user_service.dart';
 import 'package:stackedtasks/views/chat/chat_messages_view.dart';
 import 'package:stackedtasks/views/feed/post_details.dart';
-import 'package:stackedtasks/views/goal/save_goal.dart';
 import 'package:stackedtasks/views/user/user_profile.dart';
 import 'package:stackedtasks/widgets/home/app_bottom_navigation_bar.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 
-import '../stack/save_stack.dart';
-import '../task/save_task.dart';
 import 'activity_feed_view.dart';
-import 'home_view.dart';
+import 'home/home_view.dart';
 import 'notification-views/notifications_view.dart';
-import 'time_tracking_views.dart';
+import 'time_tracking_views/time_tracking_views.dart';
 
 class MainView extends StatefulWidget {
   @override
@@ -53,10 +50,7 @@ class _MainViewState extends State<MainView>
   }
 
   initFCM() async {
-    FirebaseMessaging.onMessageOpenedApp.listen((event) {
-      print("OPENED A NOTIFICATION !");
-      print(event.data);
-      final String action = event.data['action'];
+    notificationClickEvent = (String action, dynamic data, bool remote) {
       switch (action) {
         case 'INVITATION_TO_TASK':
           {
@@ -65,9 +59,11 @@ class _MainViewState extends State<MainView>
           }
         case 'MESSAGE_RECIEVED':
           {
-            final chatRaw = event.data['chat'] is String
-                ? json.decode(event.data['chat'])
-                : event.data['chat'];
+            final chatRaw = remote
+                ? (data['data'] is String
+                    ? json.decode(data['data'])
+                    : data['data'])
+                : data;
 
             NotificationChat chat = NotificationChat.fromMap(
               chatRaw,
@@ -98,9 +94,11 @@ class _MainViewState extends State<MainView>
           }
         case 'COMMENT_RECIEVED':
           {
-            final taskRaw = event.data['task'] is String
-                ? json.decode(event.data['task'])
-                : event.data['task'];
+            final taskRaw = remote
+                ? (data['data'] is String
+                    ? json.decode(data['data'])
+                    : data['data'])
+                : data;
 
             Task task = Task.fromJson(
               taskRaw,
@@ -128,9 +126,11 @@ class _MainViewState extends State<MainView>
           }
         case 'NEW_LIKE':
           {
-            final taskRaw = event.data['task'] is String
-                ? json.decode(event.data['task'])
-                : event.data['task'];
+            final taskRaw = remote
+                ? (data['data'] is String
+                    ? json.decode(data['data'])
+                    : data['data'])
+                : data;
 
             Task task = Task.fromJson(
               taskRaw,
@@ -151,16 +151,26 @@ class _MainViewState extends State<MainView>
             Get.to(
               () => UserProfileView(
                 user: UserModel.fromMap(
-                  event.data['user'] is String
-                      ? json.decode(event.data['user'])
-                      : event.data['user'],
+                  remote
+                      ? (data['data'] is String
+                          ? json.decode(data['data'])
+                          : data['data'])
+                      : data,
                 ),
               ),
             );
             break;
           }
       }
-    });
+    };
+
+    FirebaseMessaging.onMessageOpenedApp.listen(
+      (event) => notificationClickEvent(
+        event.data['action'],
+        event.data,
+        true,
+      ),
+    );
   }
 
   showTutorial() {
@@ -289,6 +299,14 @@ A pro tip is to add maintaining your task management system itself as one of you
   @override
   void initState() {
     _init();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      SystemChrome.setSystemUIOverlayStyle(
+        SystemUiOverlayStyle(
+          statusBarBrightness: Brightness.dark,
+        ),
+      );
+    });
+
     pageIndexStreamController.add(0);
     _tabController = _tabController = TabController(length: 4, vsync: this);
     super.initState();
@@ -328,110 +346,17 @@ A pro tip is to add maintaining your task management system itself as one of you
                 ],
               )),
       child: Scaffold(
-        backgroundColor: Theme.of(context).backgroundColor,
-        body: SafeArea(
-          child: TabBarView(
-            controller: _tabController,
-            physics: NeverScrollableScrollPhysics(),
-            children: [
-              HomeView(
-                pageIndexStreamController: pageIndexStreamController,
-              ),
-              TimeTrackingViews(),
-              NotificationsView(),
-              ActivityFeedView(),
-            ],
-          ),
-        ),
-        floatingActionButton: StreamBuilder<int>(
-          stream: pageIndexStreamController.stream,
-          builder: (context, snapshot) {
-            int index = snapshot.data ?? 0;
-            if (index == 0)
-              return FadeInUp(
-                duration: Duration(milliseconds: 300),
-                child: SpeedDial(
-                  marginEnd: 18,
-                  marginBottom: 20,
-                  icon: Icons.add,
-                  activeIcon: Icons.close,
-                  buttonSize: 64.0,
-                  visible: true,
-                  closeManually: false,
-                  renderOverlay: false,
-                  curve: Curves.bounceIn,
-                  overlayColor: Colors.black,
-                  overlayOpacity: 0.5,
-                  tooltip: 'Create',
-                  backgroundColor: Theme.of(context).primaryColor,
-                  foregroundColor: Theme.of(context).backgroundColor,
-                  elevation: 8.0,
-                  shape: CircleBorder(),
-                  children: [
-                    SpeedDialChild(
-                      child: Center(
-                        child: Image.asset(
-                          'assets/images/icons/goal.png',
-                          width: 32.0,
-                          fit: BoxFit.cover,
-                          color: Theme.of(context).backgroundColor,
-                        ),
-                      ),
-                      backgroundColor: Theme.of(context).primaryColor,
-                      label: 'Create Goal',
-                      labelStyle: TextStyle(fontSize: 18.0),
-                      onTap: () => Get.to(() => SaveGoalPage()),
-                    ),
-                    SpeedDialChild(
-                      child: Center(
-                        child: Image.asset(
-                          'assets/images/icons/tasks_stack.png',
-                          width: 32.0,
-                          color: Theme.of(context).backgroundColor,
-                        ),
-                      ),
-                      backgroundColor: Theme.of(context).primaryColor,
-                      label: 'Create Inbox Stack',
-                      labelStyle: TextStyle(fontSize: 18.0),
-                      onTap: () => Get.to(
-                        () => SaveStackPage(
-                          goalRef: 'inbox',
-                          goalColor: Theme.of(context)
-                              .primaryColor
-                              .value
-                              .toRadixString(16),
-                        ),
-                      ),
-                    ),
-                    SpeedDialChild(
-                      child: Center(
-                        child: Image.asset(
-                          'assets/images/icons/task.png',
-                          width: 32.0,
-                          color: Theme.of(context).backgroundColor,
-                        ),
-                      ),
-                      backgroundColor: Theme.of(context).primaryColor,
-                      label: 'Create Inbox Task',
-                      labelStyle: TextStyle(fontSize: 18.0),
-                      onTap: () => Get.to(
-                        () => SaveTaskPage(
-                          goalRef: 'inbox',
-                          stackRef: 'inbox',
-                          goalTitle: 'Inbox',
-                          stackTitle: '',
-                          stackColor: Theme.of(context)
-                              .primaryColor
-                              .value
-                              .toRadixString(16),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            return SizedBox();
-          },
+        body: TabBarView(
+          controller: _tabController,
+          physics: NeverScrollableScrollPhysics(),
+          children: [
+            HomeView(
+              pageIndexStreamController: pageIndexStreamController,
+            ),
+            TimeTrackingViews(),
+            NotificationsView(),
+            ActivityFeedView(),
+          ],
         ),
         bottomNavigationBar: StreamBuilder<int>(
           stream: pageIndexStreamController.stream,

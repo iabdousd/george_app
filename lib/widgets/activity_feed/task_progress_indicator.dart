@@ -5,20 +5,23 @@ import 'package:flutter/material.dart';
 class TaskProgressIndicator extends StatelessWidget {
   final List<DateTime> dueDates;
   final List<DateTime> donesHistory;
-  const TaskProgressIndicator(
-      {Key key, @required this.dueDates, @required this.donesHistory})
-      : super(key: key);
+  final double toRemoveFromWidth;
+  const TaskProgressIndicator({
+    Key key,
+    @required this.dueDates,
+    @required this.donesHistory,
+    this.toRemoveFromWidth: 0,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     int currentDone = 0;
     return LayoutBuilder(
       builder: (context, constraints) {
-        double maxWidth = constraints.maxWidth;
+        double maxWidth = constraints.maxWidth - toRemoveFromWidth;
         double itemWidth = 0;
         double margin = min(4, maxWidth / (3 * 30));
         if (dueDates.length <= 30) {
-          // OLD CONDITION: (maxWidth - margin * (total - 1)) / total > maxWidth / 30 - maxWidth / (3 * 30)
           itemWidth =
               (maxWidth - margin * (dueDates.length - 1)) / dueDates.length;
         } else {
@@ -35,12 +38,20 @@ class TaskProgressIndicator extends StatelessWidget {
             decoration: BoxDecoration(
               color: currentDone < donesHistory.length &&
                       dueDates[i] == donesHistory[currentDone]
-                  ? Theme.of(context).primaryColor
+                  ? Color.lerp(
+                      Theme.of(context).primaryColor,
+                      Theme.of(context).accentColor,
+                      i / dueDates.length,
+                    )
                   : Color(0x01000000),
               borderRadius: BorderRadius.circular(2.0),
               border: Border.all(
-                color: Theme.of(context).primaryColor,
-                width: 1,
+                color: Color.lerp(
+                  Theme.of(context).primaryColor,
+                  Theme.of(context).accentColor,
+                  .5 + i / dueDates.length,
+                ),
+                width: 1.5,
               ),
             ),
           ));

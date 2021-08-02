@@ -48,10 +48,24 @@ class InboxRepository {
     return null;
   }
 
-  static Stream<List<InboxItem>> getInboxItems() {
-    return FirebaseFirestore.instance
+  static Stream<List<InboxItem>> getInboxItems(String type) {
+    Query<Map<String, dynamic>> query = FirebaseFirestore.instance
         .collection(INBOX_COLLECTION)
         .where(USER_ID_KEY, isEqualTo: getCurrentUser().uid)
+        .orderBy(INBOX_ITEM_INDEX, descending: false);
+
+    final types = {
+      'task': INBOX_TASK_ITEM_TYPE,
+      'stack': INBOX_STACK_ITEM_TYPE,
+    };
+
+    if (type != null && type != 'inbox')
+      query = query.where(
+        INBOX_ITEM_TYPE,
+        isEqualTo: types[type],
+      );
+
+    return query
         .orderBy(INBOX_ITEM_CREATION_DATE, descending: true)
         .snapshots()
         .asyncMap(
@@ -109,16 +123,30 @@ class InboxRepository {
             .collection(INBOX_COLLECTION)
             .doc(reference);
 
-        await res.set(
-          {
-            INBOX_ITEM_TYPE: type,
-            USER_ID_KEY: getCurrentUser().uid,
-            INBOX_ITEM_CREATION_DATE: Timestamp.fromDate(
-              DateTime.now(),
-            ),
-            ...data,
-          },
-        );
+        try {
+          await res.update(
+            {
+              INBOX_ITEM_TYPE: type,
+              USER_ID_KEY: getCurrentUser().uid,
+              INBOX_ITEM_CREATION_DATE: Timestamp.fromDate(
+                DateTime.now(),
+              ),
+              ...data,
+            },
+          );
+        } catch (e) {
+          await res.set(
+            {
+              INDEX_KEY: 0,
+              INBOX_ITEM_TYPE: type,
+              USER_ID_KEY: getCurrentUser().uid,
+              INBOX_ITEM_CREATION_DATE: Timestamp.fromDate(
+                DateTime.now(),
+              ),
+              ...data,
+            },
+          );
+        }
         return InboxRepositoryResult(
           status: true,
           result: res.id,
@@ -127,6 +155,7 @@ class InboxRepository {
         final res =
             await FirebaseFirestore.instance.collection(INBOX_COLLECTION).add(
           {
+            INDEX_KEY: 0,
             INBOX_ITEM_TYPE: type,
             USER_ID_KEY: getCurrentUser().uid,
             INBOX_ITEM_CREATION_DATE: Timestamp.fromDate(

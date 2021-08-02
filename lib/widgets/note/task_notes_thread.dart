@@ -101,9 +101,9 @@ class TaskNotesThread extends StatelessWidget {
                   return NoteThreadTile(
                     key: Key(note.id),
                     note: note,
-                    index: index,
-                    isLast: index != snapshot.data.length - 1,
-                    showAll: showAll,
+                    // index: index,
+                    // isLast: index != snapshot.data.length - 1,
+                    // showAll: showAll,
                   );
                 },
               ),

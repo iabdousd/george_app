@@ -4,6 +4,7 @@ class AppActionButton extends StatelessWidget {
   final VoidCallback onPressed;
   final bool loading;
   final icon;
+  final Widget trailing;
   final String label;
   final Color backgroundColor;
   final Alignment alignment;
@@ -38,6 +39,7 @@ class AppActionButton extends StatelessWidget {
     this.iconPadding =
         const EdgeInsets.symmetric(horizontal: 12.0, vertical: 14),
     this.radius: 4,
+    this.trailing,
   }) : super(key: key);
 
   @override
@@ -90,12 +92,25 @@ class AppActionButton extends StatelessWidget {
                           padding,
                         ),
                       ),
-                      label: Text(
-                        label,
-                        style: textStyle ??
-                            Theme.of(context).textTheme.subtitle1.copyWith(
-                                  color: Theme.of(context).backgroundColor,
-                                ),
+                      label: Expanded(
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                label,
+                                style: textStyle ??
+                                    Theme.of(context)
+                                        .textTheme
+                                        .subtitle1
+                                        .copyWith(
+                                          color:
+                                              Theme.of(context).backgroundColor,
+                                        ),
+                              ),
+                            ),
+                            if (trailing != null) trailing
+                          ],
+                        ),
                       ),
                     )
                   : Center(

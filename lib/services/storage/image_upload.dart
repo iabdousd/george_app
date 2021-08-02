@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -9,18 +10,20 @@ Future deleteFile(String url) async {
   } catch (e) {}
 }
 
-Future<String> uploadFile(PickedFile _image) async {
-  Reference storageReference = FirebaseStorage.instance
-      .ref()
-      .child('images/${_image.path.split("/").last}');
+Future<String> uploadFile(dynamic _image) async {
+  final fileName = _image is PickedFile
+      ? _image.path.split("/").last
+      : (_image as PlatformFile).name;
+  final filePath =
+      _image is PickedFile ? _image.path : (_image as PlatformFile).path;
 
-  File file = File(_image.path);
+  Reference storageReference =
+      FirebaseStorage.instance.ref().child('images/$fileName');
+
+  File file = File(filePath);
   UploadTask uploadTask = storageReference.putFile(file);
   await uploadTask;
 
-  String returnURL;
-  await storageReference.getDownloadURL().then((fileURL) {
-    returnURL = fileURL;
-  });
+  String returnURL = await storageReference.getDownloadURL();
   return returnURL;
 }

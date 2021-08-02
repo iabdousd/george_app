@@ -1,14 +1,15 @@
-import 'package:async/async.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:stackedtasks/models/UserModel.dart';
 import 'package:stackedtasks/models/notification/NotificationChat.dart';
 import 'package:stackedtasks/repositories/notification/message_repository.dart';
 import 'package:stackedtasks/services/feed-back/loader.dart';
 import 'package:stackedtasks/services/user/user_service.dart';
+import 'package:stackedtasks/views/chat/chat_messages_view.dart';
+import 'package:stackedtasks/views/shared/tools/contact_picker.dart';
 import 'package:stackedtasks/widgets/chat/chat_list_tile.dart';
 import 'package:stackedtasks/widgets/shared/app_error_widget.dart';
+import 'package:stackedtasks/widgets/shared/errors-widgets/centered_not_found.dart';
 
 class MessagesListView extends StatefulWidget {
   MessagesListView({Key key}) : super(key: key);
@@ -23,36 +24,8 @@ class _MessagesListViewState extends State<MessagesListView>
   Widget build(BuildContext context) {
     super.build(context);
     return Scaffold(
-      backgroundColor: Theme.of(context).backgroundColor,
       body: StreamBuilder<List<NotificationChat>>(
-        stream: StreamZip(
-            [MessageRepository.getChats(), UserService.getUserFollowing()]).map(
-          (event) => [
-            ...event[0],
-            ...(event[1]
-                .where(
-                  (e) => (event[0] as List<NotificationChat>)
-                      .where((element) =>
-                          element.usersIDs.contains((e as UserModel).uid))
-                      .isEmpty,
-                )
-                .map(
-                  (userModel) => NotificationChat(
-                    usersIDs: [
-                      (userModel as UserModel).uid,
-                      getCurrentUser().uid,
-                    ],
-                    users: [
-                      userModel as UserModel,
-                      UserModel.fromCurrentUser(),
-                    ],
-                    newMessages: {},
-                    lastMessage: '',
-                  ),
-                )
-                .toList())
-          ],
-        ),
+        stream: MessageRepository.getChats(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             print(snapshot.error);
@@ -60,8 +33,11 @@ class _MessagesListViewState extends State<MessagesListView>
           }
 
           if (snapshot.hasData) if (snapshot.data.isEmpty)
-            return Center(
-              child: Text('You have no new messages.'),
+            return CenteredNotFound(
+              image: 'assets/images/no_messages.svg',
+              title: 'You have no new messages',
+              subTitle: 'Yet 😉',
+              imageWidth: MediaQuery.of(context).size.width - 58 * 2,
             );
           else
             return ListView.builder(
@@ -77,75 +53,55 @@ class _MessagesListViewState extends State<MessagesListView>
           return LoadingWidget();
         },
       ),
-      // floatingActionButton: FloatingActionButton(
-      //   onPressed: newChat,
-      //   child: Icon(Icons.add),
-      //   backgroundColor: Theme.of(context).primaryColor,
-      //   foregroundColor: Theme.of(context).backgroundColor,
-      // ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: openContacts,
+        child: Icon(Icons.add),
+        backgroundColor: Theme.of(context).primaryColor,
+        foregroundColor: Theme.of(context).backgroundColor,
+      ),
     );
   }
 
   @override
   bool get wantKeepAlive => true;
 
-  void newChat() {
-    showMaterialModalBottomSheet(
+  void openContacts() {
+    showModalBottomSheet(
       context: context,
-      builder: (context) {
-        return SafeArea(
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  children: [
-                    IconButton(
-                      onPressed: Get.back,
-                      icon: Icon(Icons.close),
-                    ),
-                    Text(
-                      'Start Chat',
-                      style: Theme.of(context).textTheme.headline6,
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: StreamBuilder<List<UserModel>>(
-                  stream: UserService.getUserFollowing(),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) if (snapshot.data.isEmpty)
-                      return Center(
-                        child: Text('You have no contacts'),
-                      );
-                    else
-                      return ListView.builder(
-                        itemCount: snapshot.data.length,
-                        padding: EdgeInsets.all(16.0),
-                        itemBuilder: (context, index) {
-                          return ChatListTile(
-                            popFirst: true,
-                            chat: NotificationChat(
-                              usersIDs: [
-                                snapshot.data[index].uid,
-                                getCurrentUser().uid,
-                              ],
-                              users: [
-                                snapshot.data[index],
-                                UserModel.fromCurrentUser(),
-                              ],
-                            ),
-                          );
-                        },
-                      );
-                    return LoadingWidget();
-                  },
-                ),
-              ),
-            ],
-          ),
-        );
+      backgroundColor: Colors.transparent,
+      builder: (_) => ContactPickerView(
+        title: 'Contacts',
+        actionButtonText: 'DONE',
+        contactActionBtnText: 'Message',
+        onContactClick: (user) async {
+          final alreadyChat = await MessageRepository.getChatByUsers([
+            user.uid,
+            getCurrentUser().uid,
+          ]);
+
+          Get.to(
+            () => ChatMessagesView(
+              chat: alreadyChat ??
+                  NotificationChat(
+                    users: [
+                      UserModel.fromCurrentUser(),
+                      user,
+                    ],
+                    usersIDs: [
+                      getCurrentUser().uid,
+                      user.uid,
+                    ],
+                    lastMessage: '',
+                    lastMessageDate: DateTime.now(),
+                  ),
+            ),
+          );
+        },
+        selectable: false,
+      ),
+    ).then(
+      (users) async {
+        if (users != null) {}
       },
     );
   }

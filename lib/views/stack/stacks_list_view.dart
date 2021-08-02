@@ -1,102 +1,103 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:stackedtasks/config/extensions/hex_color.dart';
 
-import 'package:stackedtasks/constants/models/goal.dart' as goal_constants;
-import 'package:stackedtasks/constants/models/stack.dart' as stack_constants;
-import 'package:stackedtasks/models/Stack.dart' as stack_model;
+import 'package:stackedtasks/models/Stack.dart';
 import 'package:stackedtasks/models/Goal.dart';
+import 'package:stackedtasks/repositories/stack/stack_repository.dart';
 import 'package:stackedtasks/services/feed-back/loader.dart';
-import 'package:stackedtasks/views/stack/save_stack.dart';
 import 'package:stackedtasks/widgets/shared/app_error_widget.dart';
+import 'package:stackedtasks/widgets/shared/errors-widgets/not_found.dart';
 import 'package:stackedtasks/widgets/stack/StackTile.dart';
-import 'package:get/get.dart';
 
-class StacksListView extends StatelessWidget {
+class StacksListView extends StatefulWidget {
   final Goal goal;
-  final int limit;
-  final Function(int) updateCount;
-  const StacksListView(
-      {Key key, @required this.goal, this.limit, this.updateCount})
-      : super(key: key);
+  final Function(bool) updateIsEmpty;
+  const StacksListView({
+    Key key,
+    @required this.goal,
+    this.updateIsEmpty,
+  }) : super(key: key);
+
+  @override
+  _StacksListViewState createState() => _StacksListViewState();
+}
+
+class _StacksListViewState extends State<StacksListView> {
+  List<TasksStack> stacks = [];
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          margin: const EdgeInsets.symmetric(vertical: 12.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Stacks:',
-                style: Theme.of(context).textTheme.headline5.copyWith(
-                      fontWeight: FontWeight.w500,
-                    ),
-              ),
-              InkWell(
-                onTap: () => Get.to(
-                  () => SaveStackPage(
-                    goalRef: goal.id,
-                    goalColor: goal.color,
-                    goalPartnerIDs: goal.partnersIDs,
-                  ),
-                ),
-                child: Icon(
-                  Icons.add_circle_outline_rounded,
-                  size: 32.0,
-                  color: HexColor.fromHex(goal.color),
-                ),
-              ),
-            ],
-          ),
-        ),
-        StreamBuilder<QuerySnapshot>(
-          stream: FirebaseFirestore.instance
-              .collection(goal_constants.STACKS_KEY)
-              .where(
-                stack_constants.GOAL_REF_KEY,
-                isEqualTo: goal.id,
-              )
-              .orderBy(stack_constants.CREATION_DATE_KEY, descending: true)
-              .limit(limit)
-              .snapshots(),
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              updateCount(snapshot.data.docs.length);
-              if (snapshot.data.docs.length > 0)
-                return ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: snapshot.data.docs.length,
-                  physics: NeverScrollableScrollPhysics(),
-                  itemBuilder: (context, index) {
-                    return StackListTileWidget(
-                      stack: stack_model.TasksStack.fromJson(
-                        snapshot.data.docs[index].data(),
-                        goalRef: goal.id,
-                        goalTitle: goal.title,
-                        id: snapshot.data.docs[index].id,
-                      ),
+    return Expanded(
+      child: StreamBuilder<List<TasksStack>>(
+        stream: StackRepository.streamStacks(widget.goal),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            stacks = snapshot.data;
+            if (snapshot.data.length > 0) {
+              return ReorderableListView.builder(
+                onReorder: (oldIndex, newIndex) async {
+                  List<Future> futures = [];
+
+                  TasksStack old = stacks[oldIndex];
+                  if (oldIndex > newIndex) {
+                    for (int i = oldIndex; i > newIndex; i--) {
+                      futures.add(
+                        StackRepository.changeStackOrder(stacks[i - 1], i),
+                      );
+                      stacks[i] = stacks[i - 1];
+                    }
+                    futures.add(
+                      StackRepository.changeStackOrder(old, newIndex),
                     );
-                  },
-                );
-              else
-                return AppErrorWidget(
-                  status: 404,
-                  customMessage: 'No tasks added yet',
-                );
+                    stacks[newIndex] = old;
+                  } else {
+                    for (int i = oldIndex; i < newIndex - 1; i++) {
+                      futures.add(
+                        StackRepository.changeStackOrder(stacks[i + 1], i),
+                      );
+                      stacks[i] = stacks[i + 1];
+                    }
+                    futures.add(
+                      StackRepository.changeStackOrder(old, newIndex - 1),
+                    );
+                    stacks[newIndex - 1] = old;
+                  }
+                  setState(() {});
+                  await Future.wait(futures);
+                },
+                proxyDecorator: (widget, extent, animation) => Material(
+                  child: widget,
+                  shadowColor: Colors.transparent,
+                  color: Colors.transparent,
+                  elevation: animation.value,
+                ),
+                itemCount: stacks.length,
+                itemBuilder: (context, index) {
+                  return StackListTileWidget(
+                    key: Key(stacks[index].id),
+                    stack: stacks[index],
+                  );
+                },
+              );
+            } else {
+              if (widget.updateIsEmpty != null)
+                WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+                  widget.updateIsEmpty(true);
+                });
+              return NotFoundErrorWidget(
+                title: 'There are no stacks',
+                message: 'Create a Stack by pressing + to get started',
+              );
             }
+          }
 
-            if (snapshot.hasError) {
-              return AppErrorWidget();
-            }
+          if (snapshot.hasError) {
+            print(snapshot.error);
+            return AppErrorWidget();
+          }
 
-            return LoadingWidget();
-          },
-        ),
-      ],
+          return LoadingWidget();
+        },
+      ),
     );
   }
 }

@@ -33,8 +33,59 @@ class NoteRepository {
           isEqualTo: task.taskID,
         )
         .where(
+          note_constants.ATTACHMENTS_COUNT_KEY,
+          isEqualTo: 0,
+        )
+        .where(
           note_constants.STATUS_KEY,
           isEqualTo: 0,
+        )
+        .orderBy(
+          note_constants.CREATION_DATE_KEY,
+          descending: true,
+        )
+        .snapshots()
+        .asyncMap((event) async {
+      List<Note> notes = [];
+      for (final noteRaw in event.docs) {
+        Note note = Note.fromJson(
+          noteRaw.data(),
+          id: noteRaw.id,
+        );
+        if (note.userID != getCurrentUser().uid) {
+          final userModel = await UserService.getUser(note.userID);
+          note.creator = userModel;
+        } else {
+          note.creator = UserModel(
+            uid: getCurrentUser().uid,
+            fullName: getCurrentUser().displayName,
+            email: getCurrentUser().email,
+            photoURL: getCurrentUser().photoURL,
+          );
+        }
+        notes.add(note);
+      }
+      return notes;
+    });
+  }
+
+  static Stream<List<Note>> streamFeedAttachmentComments(Task task) {
+    return FirebaseFirestore.instance
+        .collection(NOTES_KEY)
+        .where(
+          note_constants.TASK_REF_KEY,
+          isEqualTo: task.taskID,
+        )
+        .where(
+          note_constants.ATTACHMENTS_COUNT_KEY,
+          isGreaterThan: 0,
+        )
+        .where(
+          note_constants.STATUS_KEY,
+          isEqualTo: 0,
+        )
+        .orderBy(
+          note_constants.ATTACHMENTS_COUNT_KEY,
         )
         .orderBy(
           note_constants.CREATION_DATE_KEY,

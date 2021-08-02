@@ -6,6 +6,113 @@ admin.initializeApp();
 const firestore = admin.firestore();
 const fcm = admin.messaging();
 
+// --- PRIVATE FUNCTIONS
+const sendNotificationToUser = async (
+  userID: string,
+  title: string,
+  body: string,
+  action: string,
+  icon: string,
+  saveNotification: boolean,
+  senderID?: string,
+  data?: any
+) => {
+  const userTokens: string[] = (
+    await firestore.collection("users").doc(userID).get()
+  ).data()?.fcmTokens;
+  const payLoad: admin.messaging.MessagingPayload = {
+    notification: {
+      title,
+      body,
+      clickaction: "FLUTTER_NOTIFICATION_CLICK",
+    },
+    data: {
+      clickaction: "FLUTTER_NOTIFICATION_CLICK",
+      priority: "normal",
+      "apns-priority": "5",
+      action,
+      data: JSON.stringify(data ?? {}),
+    },
+  };
+
+  if (saveNotification) {
+    const snapshot = await firestore.collection("notifications").add({
+      userID,
+      senderID: senderID ?? "",
+      creationDate: admin.firestore.Timestamp.now(),
+      status: 0,
+      title,
+      body,
+      icon,
+      action,
+      data: data ?? {},
+    });
+    await snapshot.update({ uid: snapshot.id });
+  }
+  return await fcm
+    .sendToDevice(userTokens, payLoad, {
+      priority: "high",
+      android: {
+        clickAction: "FLUTTER_NOTIFICATION_CLICK",
+        priority: "high",
+      },
+      apns: {
+        headers: {
+          "apns-priority": "5",
+        },
+      },
+    })
+    .then(() =>
+      functions.logger.log(`SENT NOTIFICATION OF ${title} to ${userID}`)
+    );
+};
+
+const getChatByUsers = async (users: string[]) => {
+  let chats = await firestore
+    .collection("chat")
+    .where("usersIDs", "==", users)
+    .get();
+  if (chats.empty || chats.docs.length == 0) {
+    chats = await firestore
+      .collection("chat")
+      .where("usersIDs", "==", [...users].reverse())
+      .get();
+  }
+  return chats.docs.length > 0 ? chats.docs[0] : null;
+};
+
+const createChatBetweenUsers = async (users: string[]): Promise<void> => {
+  const alreadyChat = await getChatByUsers(users);
+  if (alreadyChat == null) {
+    const newChat = await firestore.collection("chat").add({
+      usersIDs: users,
+      status: 1,
+      lastMessage: "Be the first one to send a message!",
+      lastMessageDate: admin.firestore.Timestamp.now(),
+      newMessages: {},
+    });
+    await newChat.update({ chatUID: newChat.id });
+  }
+};
+
+const deleteChatBetweenUsers = async (
+  users: string[],
+  options?: {
+    hardDelete: false;
+  }
+): Promise<void> => {
+  const alreadyChat = await getChatByUsers(users);
+  if (alreadyChat != null) {
+    if (options?.hardDelete) await alreadyChat.ref.delete();
+    else
+      await alreadyChat.ref.update({
+        status: -1,
+      });
+  }
+};
+
+// -- EXPORTED FUNCTIONS
+
 export const newFeedPost = functions.firestore
   .document("feed/{documentID}")
   .onUpdate(async (snapshot) => {
@@ -58,7 +165,13 @@ export const followUser = functions.firestore
     await follower.ref.update({
       followingCount: (follower.data()?.followingCount ?? 0) + 1,
     });
+
     if (followed.data()) {
+      await createChatBetweenUsers([
+        snapshot.data().follower,
+        snapshot.data().followed,
+      ]);
+
       const posts = (
         await firestore
           .collection("feed")
@@ -78,9 +191,10 @@ export const followUser = functions.firestore
       "New Follower",
       follower.data()?.fullName,
       "NEW_FOLLOW",
-      {
-        user: JSON.stringify(follower.data()),
-      }
+      follower.data()?.profilePicture,
+      true,
+      follower.id,
+      follower.data()
     );
   });
 
@@ -103,6 +217,12 @@ export const unfollowUser = functions
     await follower.ref.update({
       followingCount: Math.min(0, (follower.data()?.followingCount ?? 0) - 1),
     });
+
+    await deleteChatBetweenUsers([
+      snapshot.data().follower,
+      snapshot.data().followed,
+    ]);
+
     if (followed.data()) {
       const posts = (
         await firestore
@@ -130,49 +250,6 @@ export const onFeedPostDeletion = functions.firestore
       firestore.collection("feed").doc(snapshot.id).collection("feed-likes")
     );
   });
-
-const sendNotificationToUser = async (
-  userID: string,
-  title: string,
-  body: string,
-  action: string,
-  data?: any
-) => {
-  const userTokens: string[] = (
-    await firestore.collection("users").doc(userID).get()
-  ).data()?.fcmTokens;
-  const payLoad: admin.messaging.MessagingPayload = {
-    notification: {
-      title,
-      body,
-      clickaction: "FLUTTER_NOTIFICATION_CLICK",
-    },
-    data: {
-      clickaction: "FLUTTER_NOTIFICATION_CLICK",
-      priority: "normal",
-      "apns-priority": "5",
-      action,
-      ...data,
-    },
-  };
-
-  return await fcm
-    .sendToDevice(userTokens, payLoad, {
-      priority: "high",
-      android: {
-        clickAction: "FLUTTER_NOTIFICATION_CLICK",
-        priority: "high",
-      },
-      apns: {
-        headers: {
-          "apns-priority": "5",
-        },
-      },
-    })
-    .then(() =>
-      functions.logger.log(`SENT NOTIFICATION OF ${title} to ${userID}`)
-    );
-};
 
 export const eventsRunner = functions
   .runWith({ memory: "2GB" })
@@ -239,7 +316,9 @@ export const eventsRunner = functions
             userID,
             "Upcoming Task In 10 minutes !",
             `${title}`,
-            "TASK_STARTING"
+            "TASK_STARTING",
+            "",
+            false
           ).then((_) =>
             functions.logger.log(`SENT NOTIFICATION OF ${title} to ${userID}`)
           )
@@ -251,7 +330,10 @@ export const eventsRunner = functions
                 partnersIDs[i],
                 "Upcoming Partner Task",
                 `${title}`,
-                "PARTNER_TASK_STARTING"
+                "PARTNER_TASK_STARTING",
+                "",
+                true,
+                userID
               )
             );
           }
@@ -274,7 +356,9 @@ export const eventsRunner = functions
             userID,
             "Upcoming Task In 10 minutes !",
             `${title}`,
-            "TASK_STARTING"
+            "TASK_STARTING",
+            "",
+            false
           )
         );
 
@@ -285,7 +369,10 @@ export const eventsRunner = functions
                 partnersIDs[i],
                 "Upcoming Partner Task",
                 `${title}`,
-                "PARTNER_TASK_STARTING"
+                "PARTNER_TASK_STARTING",
+                "",
+                true,
+                userID
               )
             );
           }
@@ -320,7 +407,9 @@ export const eventsRunner = functions
           userID,
           "Goal Almost Accomlished",
           `Congrats! You are just three days behind accomplishing your goal \"${title}\" !`,
-          "GOAL_ALMOST_DONE"
+          "GOAL_ALMOST_DONE",
+          "",
+          true
         )
       );
     }
@@ -376,7 +465,7 @@ export const eventsRunner = functions
 
     for (let i = 0; i < endingOneTimeTasks.size; i++) {
       const snapshot = endingOneTimeTasks.docs[i];
-      const { title, partnersIDs } = snapshot.data();
+      const { userID, title, partnersIDs } = snapshot.data();
 
       if (partnersIDs && partnersIDs.length > 0) {
         for (let i = 0; i < partnersIDs.length; i++) {
@@ -385,7 +474,10 @@ export const eventsRunner = functions
               partnersIDs[i],
               "Partner Task Ended",
               `${title}`,
-              "PARTNER_TASK_ENDED"
+              "PARTNER_TASK_ENDED",
+              "",
+              true,
+              userID
             )
           );
         }
@@ -394,7 +486,11 @@ export const eventsRunner = functions
 
     for (let i = 0; i < endingRecurringTasks.size; i++) {
       const snapshot = endingRecurringTasks.docs[i];
-      const { title, partnersIDs }: { title: string; partnersIDs: string[] } =
+      const {
+        userID,
+        title,
+        partnersIDs,
+      }: { userID: string; title: string; partnersIDs: string[] } =
         snapshot.data() as any;
 
       if (partnersIDs && partnersIDs.length > 0) {
@@ -404,7 +500,10 @@ export const eventsRunner = functions
               partnersIDs[i],
               "Partner Task Ended",
               `${title}`,
-              "PARTNER_TASK_ENDED"
+              "PARTNER_TASK_ENDED",
+              "",
+              true,
+              userID
             )
           );
         }
@@ -449,7 +548,9 @@ export const weeklyEvent = functions
             `Congratulations! You have completed ${
               lastWeekSnapshot.data()?.accomplishedTasks ?? 0
             } task(s) last week !`,
-            "WEEK_SUMMARY"
+            "WEEK_SUMMARY",
+            "",
+            true
           )
         );
       }
@@ -506,7 +607,9 @@ export const dailyEvent = functions
               accomplishedTasks.length > 0
                 ? `Congratulations! You have completed ${accomplishedTasks.length} task(s) today !`
                 : `You missed out ${todayTasks.size} tasks !`,
-              "TODAY_SUMMARY"
+              "TODAY_SUMMARY",
+              "",
+              true
             )
           );
         }
@@ -519,42 +622,63 @@ export const dailyEvent = functions
 export const onComment = functions.firestore
   .document("notes/{documentID}")
   .onCreate(async (snapshot) => {
-    const { taskRef, userID } = snapshot.data();
+    const { taskRef, attachmentsCount, userID } = snapshot.data();
     if (taskRef) {
       const task = await firestore.collection("tasks").doc(taskRef).get();
+
       if (task.exists) {
+        const user = await firestore.collection("users").doc(userID).get();
+        // if (snapshot.data().status == 0) {
+        //   await addTaskLog(
+        //     task.id,
+        //     `${user.data()?.fullName} left ${
+        //       snapshot.data().attachmentsCount > 0
+        //         ? snapshot.data().attachmentsCount > 1
+        //           ? "attachments"
+        //           : "an attachment"
+        //         : "a comment"
+        //     }`,
+        //     0,
+        //     admin.firestore.Timestamp.now()
+        //   );
+        // }
         if (userID != task.data()?.userID) {
           await sendNotificationToUser(
             task.data()?.userID,
-            "New Comment",
-            `There's a new comment in your task: ${task.data()?.title}`,
+            user.data()?.fullName,
+            `${
+              attachmentsCount > 0
+                ? `Added ${attachmentsCount} photos`
+                : "Commented"
+            } in %*b${task.data()?.title}%*n`,
             "COMMENT_RECIEVED",
+            user.data()?.profilePicture,
+            true,
+            user.id,
             {
-              task: JSON.stringify({
-                ...task.data(),
-                id: snapshot.data().feedArticleID,
-                creationDate: (
-                  task.data()?.creationDate as admin.firestore.Timestamp
-                ).toMillis(),
-                dueDates: (
-                  task.data()?.dueDates as admin.firestore.Timestamp[]
-                ).map((e) => e.toMillis()),
-                donesHistory: (
-                  task.data()?.donesHistory as admin.firestore.Timestamp[]
-                ).map((e) => e.toMillis()),
-                startDate: (
-                  task.data()?.startDate as admin.firestore.Timestamp
-                ).toMillis(),
-                endDate: (
-                  task.data()?.endDate as admin.firestore.Timestamp
-                ).toMillis(),
-                startTime: (
-                  task.data()?.startTime as admin.firestore.Timestamp
-                ).toMillis(),
-                endTime: (
-                  task.data()?.endTime as admin.firestore.Timestamp
-                ).toMillis(),
-              }),
+              ...task.data(),
+              id: snapshot.data().feedArticleID,
+              creationDate: (
+                task.data()?.creationDate as admin.firestore.Timestamp
+              ).toMillis(),
+              dueDates: (
+                task.data()?.dueDates as admin.firestore.Timestamp[]
+              ).map((e) => e.toMillis()),
+              donesHistory: (
+                task.data()?.donesHistory as admin.firestore.Timestamp[]
+              ).map((e) => e.toMillis()),
+              startDate: (
+                task.data()?.startDate as admin.firestore.Timestamp
+              ).toMillis(),
+              endDate: (
+                task.data()?.endDate as admin.firestore.Timestamp
+              ).toMillis(),
+              startTime: (
+                task.data()?.startTime as admin.firestore.Timestamp
+              ).toMillis(),
+              endTime: (
+                task.data()?.endTime as admin.firestore.Timestamp
+              ).toMillis(),
             }
           );
         }
@@ -579,28 +703,36 @@ export const onMessage = functions.firestore
         };
 
         newMessages[`${toSendTo[0]}`] =
-          (chat.newMessages[toSendTo[0]] ?? 0) + 1;
+          (chat.newMessages ? chat.newMessages[toSendTo[0]] ?? 0 : 0) + 1;
 
-        await firestore.collection("chat").doc(chat.chatUID).update({
+        const newChat: Record<string, any> = {
           newMessages: newMessages,
           lastMessage: snapshot.data().content,
           lastMessageDate: admin.firestore.Timestamp.now(),
-        });
+          lastMessageDateSenderID: snapshot.data()?.senderID,
+        };
+
+        await firestore.collection("chat").doc(chat.chatUID).update(newChat);
 
         for (let i = 0; i < toSendTo.length; i++) {
           const userID = toSendTo[i];
+          const user = await firestore.collection("users").doc(userID).get();
+
           await sendNotificationToUser(
             userID,
-            "New Message",
-            snapshot.data()?.content,
+            user.data()?.fullName,
+            `New message: ${snapshot.data()?.content}`,
             "MESSAGE_RECIEVED",
+            user.data()?.profilePicture,
+            true,
+            user.id,
             {
-              chat: JSON.stringify({
-                ...chat,
-                lastMessageDate: (
+              ...chat,
+              lastMessageDate:
+                (
                   chat.lastMessageDate as admin.firestore.Timestamp
-                ).toMillis(),
-              }),
+                )?.toMillis() ??
+                admin.firestore.Timestamp.fromDate(new Date()).toMillis(),
             }
           );
         }
@@ -613,25 +745,36 @@ export const onInvite = functions.firestore
   .onCreate(async (snapshot) => {
     const userID = snapshot.data()?.reciever;
     if (userID) {
-      const invitationType = snapshot.data()?.type;
+      // const invitationType = snapshot.data()?.type;
+      const { title, body } = snapshot.data();
+      const sender = await firestore
+        .collection("users")
+        .doc(snapshot.data().senderID)
+        .get();
 
       await sendNotificationToUser(
         userID,
-        invitationType == "TASK_PARTNER_INVITATION"
-          ? "Task Partnership Invitation"
-          : invitationType == "GOAL_PARTNER_INVITATION"
-          ? "Goal Partnership Invitation"
-          : invitationType == "STACK_PARTNER_INVITATION"
-          ? "Stack Partnership Invitation"
-          : "New Notification",
-        invitationType == "TASK_PARTNER_INVITATION"
-          ? `You got invited to: ${snapshot.data().taskTitle}`
-          : invitationType == "GOAL_PARTNER_INVITATION"
-          ? `You got invited to: ${snapshot.data().goalTitle}`
-          : invitationType == "STACK_PARTNER_INVITATION"
-          ? `You got invited to: ${snapshot.data().stackTitle}`
-          : snapshot.data().content ?? "",
-        "INVITATION_TO_TASK"
+        title,
+        // invitationType == "TASK_PARTNER_INVITATION"
+        //   ? "Task Partnership Invitation"
+        //   : invitationType == "GOAL_PARTNER_INVITATION"
+        //   ? "Goal Partnership Invitation"
+        //   : invitationType == "STACK_PARTNER_INVITATION"
+        //   ? "Stack Partnership Invitation"
+        //   : "New Notification",
+        body,
+        // invitationType == "TASK_PARTNER_INVITATION"
+        //   ? `You got invited to: ${snapshot.data().taskTitle}`
+        //   : invitationType == "GOAL_PARTNER_INVITATION"
+        //   ? `You got invited to: ${snapshot.data().goalTitle}`
+        //   : invitationType == "STACK_PARTNER_INVITATION"
+        //   ? `You got invited to: ${snapshot.data().stackTitle}`
+        //   : snapshot.data().content ?? "",
+        "INVITATION_TO_TASK",
+        sender.data()?.profilePicture,
+        false,
+        sender.id,
+        snapshot.data().data
       )
         .catch(functions.logger.error)
         .then((res) =>
@@ -646,22 +789,31 @@ export const onInviteUpdate = functions.firestore
   .document("notifications/{notificationID}")
   .onUpdate(async (snapshot) => {
     if (snapshot.after.data().status == 0) return;
-    const userID = snapshot.after.data()?.senderID;
-    if (userID) {
+    const { userID, senderID, title, body } = snapshot.after.data();
+    if (senderID) {
       const accepted = snapshot.after.data()?.accepted;
-      const invitationType = snapshot.before.data()?.type;
+      // const invitationType = snapshot.before.data()?.action;
+
+      const reciever = await firestore.collection("users").doc(userID).get();
 
       await sendNotificationToUser(
-        userID,
-        accepted ? "Invitation Accepted" : "Invitation Declined",
-        invitationType == "TASK_PARTNER_INVITATION"
-          ? `${snapshot.before.data().taskTitle}`
-          : invitationType == "GOAL_PARTNER_INVITATION"
-          ? `${snapshot.before.data().goalTitle}`
-          : invitationType == "STACK_PARTNER_INVITATION"
-          ? `${snapshot.before.data().stackTitle}`
-          : snapshot.before.data().content ?? "",
-        "INVITATION_TO_TASK"
+        senderID,
+        title,
+        (body as string).replace(
+          "Invited you",
+          `${accepted ? "Accepted" : "Declined"} your invitation`
+        ),
+        // invitationType == "TASK_PARTNER_INVITATION"
+        //   ? `${reciever.data()?.fullName} joined: "${snapshot.before.data().taskTitle}"`
+        //   : invitationType == "GOAL_PARTNER_INVITATION"
+        //   ? `${reciever.data()?.fullName} joined: "${snapshot.before.data().goalTitle}"`
+        //   : invitationType == "STACK_PARTNER_INVITATION"
+        //   ? `${reciever.data()?.fullName} joined: "${snapshot.before.data().stackTitle}"`
+        //   : snapshot.before.data().content ?? "",
+        "INVITATION_TO_TASK",
+        reciever.data()?.profilePicture,
+        true,
+        snapshot.before.data().data
       )
         .catch(functions.logger.error)
         .then((res) =>
@@ -689,32 +841,81 @@ export const onLike = functions.firestore
       "New Like",
       `${liker.data()?.fullName} liked your post: ${feedPost.data()?.title}`,
       "NEW_LIKE",
+      liker.data()?.profilePicture,
+      true,
+      liker.id,
       {
-        task: JSON.stringify({
-          ...feedPost.data(),
-          id: feedPost.id,
-          creationDate: (
-            feedPost.data()?.creationDate as admin.firestore.Timestamp
-          ).toMillis(),
-          dueDates: (
-            feedPost.data()?.dueDates as admin.firestore.Timestamp[]
-          ).map((e) => e.toMillis()),
-          donesHistory: (
-            feedPost.data()?.donesHistory as admin.firestore.Timestamp[]
-          ).map((e) => e.toMillis()),
-          startDate: (
-            feedPost.data()?.startDate as admin.firestore.Timestamp
-          ).toMillis(),
-          endDate: (
-            feedPost.data()?.endDate as admin.firestore.Timestamp
-          ).toMillis(),
-          startTime: (
-            feedPost.data()?.startTime as admin.firestore.Timestamp
-          ).toMillis(),
-          endTime: (
-            feedPost.data()?.endTime as admin.firestore.Timestamp
-          ).toMillis(),
-        }),
+        ...feedPost.data(),
+        id: feedPost.id,
+        creationDate: (
+          feedPost.data()?.creationDate as admin.firestore.Timestamp
+        ).toMillis(),
+        dueDates: (
+          feedPost.data()?.dueDates as admin.firestore.Timestamp[]
+        ).map((e) => e.toMillis()),
+        donesHistory: (
+          feedPost.data()?.donesHistory as admin.firestore.Timestamp[]
+        ).map((e) => e.toMillis()),
+        startDate: (
+          feedPost.data()?.startDate as admin.firestore.Timestamp
+        ).toMillis(),
+        endDate: (
+          feedPost.data()?.endDate as admin.firestore.Timestamp
+        ).toMillis(),
+        startTime: (
+          feedPost.data()?.startTime as admin.firestore.Timestamp
+        ).toMillis(),
+        endTime: (
+          feedPost.data()?.endTime as admin.firestore.Timestamp
+        ).toMillis(),
       }
     );
+  });
+
+const addTaskLog = async (
+  taskID: string,
+  title: string,
+  status: number,
+  creationDate?: admin.firestore.Timestamp
+) => {
+  // await firestore.collection("taskLogs").add({
+  //   taskID,
+  //   log: title,
+  //   creationDateTime: creationDate ?? admin.firestore.Timestamp.now(),
+  //   status: status ?? 1,
+  // });
+};
+
+export const onTaskCreation = functions.firestore
+  .document("tasks/{taskID}")
+  .onCreate(async (snapshot, _context) => {
+    await addTaskLog(
+      snapshot.id,
+      `"${snapshot.data()["title"]}" created`,
+      1,
+      admin.firestore.Timestamp.now()
+    );
+  });
+
+export const onTaskAdditionToStack = functions.firestore
+  .document("tasks/{taskID}")
+  .onUpdate(async (snapshot, context) => {
+    if (
+      snapshot.after.data().stackRef != "inbox" &&
+      snapshot.before.data().stackRef == "inbox"
+    ) {
+      const stack = await firestore
+        .collection("inbox-items")
+        .doc(snapshot.after.data().stackRef)
+        .get();
+
+      await firestore.collection("taskLogs").add({
+        taskID: snapshot.after.id,
+        log: `"${snapshot.after.data().title}" added to "${
+          stack.data()?.title
+        }"`,
+        creationDateTime: admin.firestore.Timestamp.now(),
+        status: 1,
+      });
+    }
   });

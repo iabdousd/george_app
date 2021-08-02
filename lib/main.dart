@@ -8,6 +8,7 @@ import 'package:get/get.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:stackedtasks/views/main.dart';
 
+import 'config/app_preferences.dart';
 import 'config/theme.dart';
 
 void main() async {
@@ -17,6 +18,7 @@ void main() async {
     yield LicenseEntryWithLineBreaks(['google_fonts'], license);
   });
   await Firebase.initializeApp();
+  await AppPreferences.initPreferences();
 
   if (!kIsWeb) await initializeCache();
   runApp(MyApp());

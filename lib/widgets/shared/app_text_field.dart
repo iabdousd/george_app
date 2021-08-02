@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 class AppTextField extends StatelessWidget {
   final String label, hint, ifRequiredMessage;
   final bool isRequired, obscureText, autoFocus;
+  final Color backgroundColor;
+  final InputBorder border;
   final TextEditingController controller;
   final BoxDecoration containerDecoration;
   final EdgeInsets margin;
@@ -16,8 +18,10 @@ class AppTextField extends StatelessWidget {
   const AppTextField({
     Key key,
     @required this.controller,
-    @required this.label,
+    this.label,
     this.hint,
+    this.backgroundColor: const Color(0x10000000),
+    this.border: InputBorder.none,
     this.ifRequiredMessage,
     this.isRequired: false,
     this.margin: const EdgeInsets.symmetric(vertical: 8.0),
@@ -42,7 +46,7 @@ class AppTextField extends StatelessWidget {
     return Container(
       decoration: containerDecoration ??
           BoxDecoration(
-            color: Color(0x10000000),
+            color: backgroundColor,
             borderRadius: BorderRadius.circular(8.0),
           ),
       margin: margin,
@@ -54,7 +58,7 @@ class AppTextField extends StatelessWidget {
           labelText: label,
           hintText: hint,
           contentPadding: contentPadding,
-          border: InputBorder.none,
+          border: border,
           prefix: prefix,
           suffix: suffix,
         ),

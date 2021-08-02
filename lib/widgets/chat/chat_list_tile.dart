@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:stackedtasks/repositories/notification/message_repository.dart';
 import 'package:stackedtasks/services/user/user_service.dart';
 import 'package:stackedtasks/views/chat/chat_messages_view.dart';
-import 'package:timeago/timeago.dart' as timeago;
 
 import 'package:stackedtasks/models/notification/NotificationChat.dart';
 import 'package:stackedtasks/providers/cache/cached_image_provider.dart';
@@ -20,6 +20,7 @@ class ChatListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final otherUser = chat.users.first;
+    final now = DateTime.now();
 
     return GestureDetector(
       onTap: clickEvent,
@@ -27,20 +28,13 @@ class ChatListTile extends StatelessWidget {
         margin: EdgeInsets.symmetric(vertical: 1),
         decoration: BoxDecoration(
           color: Theme.of(context).backgroundColor,
-          boxShadow: [
-            BoxShadow(
-              color: Color(0x22000000),
-              blurRadius: 1,
-              offset: Offset(0, 2),
-            ),
-          ],
-          borderRadius: BorderRadius.circular(4.0),
         ),
-        padding: EdgeInsets.all(8.0),
+        padding: EdgeInsets.all(12.0),
         child: Stack(
           children: [
             IntrinsicHeight(
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(128),
@@ -49,8 +43,8 @@ class ChatListTile extends StatelessWidget {
                         otherUser.photoURL,
                       ),
                       fit: BoxFit.cover,
-                      width: chat.lastMessage != null ? 64 : 40,
-                      height: chat.lastMessage != null ? 64 : 40,
+                      width: 44,
+                      height: 44,
                     ),
                   ),
                   Expanded(
@@ -61,28 +55,77 @@ class ChatListTile extends StatelessWidget {
                           child: Padding(
                             padding: EdgeInsets.symmetric(
                               horizontal: 12.0,
-                              vertical: chat.lastMessage != null ? 0 : 6,
                             ),
                             child: Column(
                               mainAxisSize: MainAxisSize.max,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  otherUser.fullName,
-                                  style: Theme.of(context).textTheme.subtitle1,
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        otherUser.fullName,
+                                        style: TextStyle(
+                                          color: Color(0xFF3B404A),
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                    if (chat.lastMessageDate != null &&
+                                        chat.lastMessageSenderID ==
+                                            getCurrentUser().uid)
+                                      if ((chat.lastMessageSeen ?? false))
+                                        Icon(
+                                          Icons.done_all,
+                                          size: 14,
+                                          color: Theme.of(context).primaryColor,
+                                        )
+                                      else
+                                        Icon(
+                                          Icons.done,
+                                          size: 14,
+                                        ),
+                                    if (chat.lastMessageDate != null)
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(left: 4.0),
+                                        child: Text(
+                                          (chat.lastMessageDate.isAfter(
+                                            now.subtract(
+                                              Duration(days: 1),
+                                            ),
+                                          )
+                                                  ? DateFormat('hh:mm')
+                                                  : chat.lastMessageDate
+                                                          .isAfter(
+                                                      now.subtract(
+                                                        Duration(days: 7),
+                                                      ),
+                                                    )
+                                                      ? DateFormat('EEEE')
+                                                      : DateFormat(
+                                                          'MM/dd/yyyy'))
+                                              .format(chat.lastMessageDate),
+                                          style: TextStyle(
+                                            color: Color(0xFF767C8D),
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
                                 ),
                                 if (chat.lastMessage != null)
                                   Padding(
                                     padding: const EdgeInsets.only(
-                                      top: 4.0,
-                                      bottom: 24.0,
+                                      top: 2.0,
                                     ),
                                     child: Text(
                                       chat.lastMessage,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyText2
-                                          .copyWith(fontSize: 12),
+                                      style: TextStyle(
+                                        color: Color(0xFF767C8D),
+                                        fontSize: 14,
+                                      ),
                                       maxLines: 2,
                                     ),
                                   ),
@@ -124,17 +167,6 @@ class ChatListTile extends StatelessWidget {
                 ],
               ),
             ),
-            if (chat.lastMessageDate != null)
-              Positioned(
-                bottom: 0.0,
-                right: 0.0,
-                child: Text(
-                  timeago.format(chat.lastMessageDate),
-                  style: Theme.of(context).textTheme.bodyText1.copyWith(
-                        fontSize: 12.0,
-                      ),
-                ),
-              ),
           ],
         ),
       ),
@@ -147,8 +179,6 @@ class ChatListTile extends StatelessWidget {
       final alreadyChat = await MessageRepository.getChatByUsers(
         chat.usersIDs,
       );
-
-      print('NO CHAT UID: ${chat.toMap()}');
 
       Get.to(
         () => ChatMessagesView(

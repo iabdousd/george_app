@@ -9,6 +9,7 @@ import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 
 import 'package:stackedtasks/models/Attachment.dart';
+import 'package:stackedtasks/services/file/open_file.dart';
 
 class ImagesListView extends StatelessWidget {
   final List<String> customPathList;
@@ -27,21 +28,28 @@ class ImagesListView extends StatelessWidget {
     this.imageHeight,
   }) : super(key: key);
 
-  _zooImage(file, {PickedFile asset}) async {
+  _zoomImage(BuildContext context, file, {PickedFile asset}) async {
     List<File> fileImages = [];
     for (var e in images)
       fileImages.add(
         File(e.path),
       );
 
-    Get.to(
-      () => ZoomedImagesView(
-        galleryItems:
-            List<dynamic>.from(networkImages) + List<dynamic>.from(fileImages),
-        initialIndex: file is Attachment
-            ? networkImages.indexOf(file)
-            : networkImages.length + images.indexOf(asset),
-        customPathList: customPathList,
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ZoomedImagesView(
+          galleryItems: List<dynamic>.from(networkImages)
+                  .where(
+                    (element) =>
+                        ['png', 'jpg', 'jpeg', 'gif'].contains(element.ext),
+                  )
+                  .toList() +
+              List<dynamic>.from(fileImages),
+          initialIndex: file is Attachment
+              ? networkImages.indexOf(file)
+              : networkImages.length + images.indexOf(asset),
+          customPathList: customPathList,
+        ),
       ),
     );
   }
@@ -50,80 +58,43 @@ class ImagesListView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: MediaQuery.of(context).size.width,
-      margin: EdgeInsets.symmetric(vertical: 12.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (images.length > 0)
-            Text(
-              'Attached images:',
-              style: Theme.of(context)
-                  .textTheme
-                  .headline6
-                  .copyWith(fontWeight: FontWeight.bold),
-            ),
-          GridView(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 1.0,
-              mainAxisSpacing: 12.0,
-              crossAxisSpacing: 12.0,
-              mainAxisExtent: imageHeight,
-            ),
-            shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
-            padding: EdgeInsets.all(12.0),
-            children: networkImages
-                    .map((e) => Container(
+      child: GridView(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 4,
+          childAspectRatio: 1.0,
+          mainAxisSpacing: 8.0,
+          crossAxisSpacing: 8.0,
+          mainAxisExtent: imageHeight,
+        ),
+        padding: EdgeInsets.only(top: 4.0),
+        shrinkWrap: true,
+        physics: NeverScrollableScrollPhysics(),
+        children: networkImages
+                .map((e) => !['png', 'jpg', 'jpeg', 'gif'].contains(e.ext)
+                    ? InkWell(
+                        onTap: () => OpenFileService.openNetworkFile(
+                          e.path,
+                          e.ext,
+                        ),
+                        child: Container(
+                          width: 64,
+                          height: 64,
                           decoration: BoxDecoration(
-                            color: Theme.of(context).backgroundColor,
+                            color: Color.fromRGBO(178, 181, 195, 0.2),
                             borderRadius: BorderRadius.circular(4.0),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Color(0x22000000),
-                                blurRadius: 4,
-                              )
-                            ],
                           ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8.0),
-                            child: GestureDetector(
-                              onTap: () => _zooImage(e),
-                              child: Stack(
-                                fit: StackFit.expand,
-                                children: [
-                                  Image(
-                                    image: CachedImageProvider(
-                                      e.path,
-                                      customPathList: customPathList,
-                                    ),
-                                    fit: BoxFit.cover,
-                                    gaplessPlayback: true,
-                                    loadingBuilder: (ctx, _, chunk) =>
-                                        chunk == null ? _ : LoadingWidget(),
-                                  ),
-                                  if (!readOnly && deleteEvent != null)
-                                    Positioned(
-                                      top: 4,
-                                      right: 4,
-                                      child: GestureDetector(
-                                        onTap: () => deleteEvent(e),
-                                        child: Icon(
-                                          Icons.delete,
-                                          color: Colors.red,
-                                          size: 32.0,
-                                        ),
-                                      ),
-                                    ),
-                                ],
-                              ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            e.ext?.toUpperCase() ?? '?',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
                             ),
+                            textAlign: TextAlign.center,
                           ),
-                        ))
-                    .toList() +
-                images
-                    .map(
-                      (file) => Container(
+                        ),
+                      )
+                    : Container(
                         decoration: BoxDecoration(
                           color: Theme.of(context).backgroundColor,
                           borderRadius: BorderRadius.circular(4.0),
@@ -137,24 +108,26 @@ class ImagesListView extends StatelessWidget {
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(8.0),
                           child: GestureDetector(
-                            onTap: () => _zooImage(
-                              file,
-                              asset: file,
-                            ),
+                            onTap: () => _zoomImage(context, e),
                             child: Stack(
                               fit: StackFit.expand,
                               children: [
-                                Image.file(
-                                  File(file.path),
+                                Image(
+                                  image: CachedImageProvider(
+                                    e.path,
+                                    customPathList: customPathList,
+                                  ),
                                   fit: BoxFit.cover,
                                   gaplessPlayback: true,
+                                  loadingBuilder: (ctx, _, chunk) =>
+                                      chunk == null ? _ : LoadingWidget(),
                                 ),
                                 if (!readOnly && deleteEvent != null)
                                   Positioned(
                                     top: 4,
                                     right: 4,
                                     child: GestureDetector(
-                                      onTap: () => deleteEvent(file),
+                                      onTap: () => deleteEvent(e),
                                       child: Icon(
                                         Icons.delete,
                                         color: Colors.red,
@@ -166,11 +139,57 @@ class ImagesListView extends StatelessWidget {
                             ),
                           ),
                         ),
+                      ))
+                .toList() +
+            images
+                .map(
+                  (file) => Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).backgroundColor,
+                      borderRadius: BorderRadius.circular(4.0),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color(0x22000000),
+                          blurRadius: 4,
+                        )
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8.0),
+                      child: GestureDetector(
+                        onTap: () => _zoomImage(
+                          context,
+                          file,
+                          asset: file,
+                        ),
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            Image.file(
+                              File(file.path),
+                              fit: BoxFit.cover,
+                              gaplessPlayback: true,
+                            ),
+                            if (!readOnly && deleteEvent != null)
+                              Positioned(
+                                top: 4,
+                                right: 4,
+                                child: GestureDetector(
+                                  onTap: () => deleteEvent(file),
+                                  child: Icon(
+                                    Icons.delete,
+                                    color: Colors.red,
+                                    size: 32.0,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
                       ),
-                    )
-                    .toList(),
-          ),
-        ],
+                    ),
+                  ),
+                )
+                .toList(),
       ),
     );
   }
@@ -197,10 +216,11 @@ class ZoomedImagesView extends StatelessWidget {
             child: PhotoViewGallery.builder(
           scrollPhysics: const BouncingScrollPhysics(),
           builder: (BuildContext context, int index) {
+            final item = galleryItems[index];
             return PhotoViewGalleryPageOptions(
-              imageProvider: galleryItems[index] is Attachment
+              imageProvider: item is Attachment
                   ? CachedImageProvider(
-                      galleryItems[index].path,
+                      item.path,
                       quality: 100,
                       customPathList: customPathList,
                     )

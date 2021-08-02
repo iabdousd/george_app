@@ -2,13 +2,12 @@ import 'package:flutter/material.dart';
 
 import 'package:stackedtasks/models/Stack.dart' as stack_model;
 import 'package:stackedtasks/models/Task.dart';
+import 'package:stackedtasks/repositories/task/task_repository.dart';
 import 'package:stackedtasks/services/feed-back/loader.dart';
-import 'package:stackedtasks/views/task/save_task.dart';
-import 'package:stackedtasks/widgets/shared/app_action_button.dart';
 import 'package:stackedtasks/widgets/shared/app_error_widget.dart';
-import 'package:stackedtasks/widgets/task/task_list_tile_widget.dart';
+import 'package:stackedtasks/widgets/shared/errors-widgets/not_found.dart';
+import 'package:stackedtasks/widgets/task/task_tile_widget/task_list_tile_widget.dart';
 import 'package:stackedtasks/repositories/stack/stack_repository.dart';
-import 'package:get/get.dart';
 
 class TaskListView extends StatefulWidget {
   final stack_model.TasksStack stack;
@@ -20,99 +19,172 @@ class TaskListView extends StatefulWidget {
 
 class _TaskListViewState extends State<TaskListView>
     with AutomaticKeepAliveClientMixin {
-  int limit = 10;
-  int elementsCount = 10;
-  ScrollController _scrollController = ScrollController();
-
-  @override
-  void initState() {
-    super.initState();
-    _scrollController.addListener(() {
-      if (_scrollController.offset >=
-              _scrollController.position.maxScrollExtent &&
-          elementsCount == limit)
-        setState(() {
-          limit += 10;
-        });
-    });
-  }
+  List<Task> tasks;
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 16.0,
-        vertical: 4.0,
-      ),
-      child: ListView(
-        controller: _scrollController,
-        children: [
-          SizedBox(
-            height: 8.0,
-          ),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              return Container(
-                width: constraints.maxWidth,
-                child: AppActionButton(
-                  onPressed: () => Get.to(
-                    () => SaveTaskPage(
-                      goalRef: widget.stack.goalRef,
-                      stackRef: widget.stack.id,
-                      goalTitle: widget.stack.goalTitle,
-                      stackTitle: widget.stack.title,
-                      stackColor: widget.stack.color,
-                      stackPartners: widget.stack.partnersIDs ?? [],
+    return SingleChildScrollView(
+      child: StreamBuilder<List<Task>>(
+        stream: StackRepository.streamStackTasks(
+          widget.stack,
+        ),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            tasks = snapshot.data;
+            if (snapshot.data.length > 0) {
+              List<Task> tasks = snapshot.data;
+
+              tasks.sort(
+                (a, b) => a.nextDueDate() == null ? 1 : -1,
+              );
+
+              final currentTasks = tasks
+                  .where(
+                    (task) => task.nextDueDate() != null,
+                  )
+                  .toList();
+              final completedTasks = tasks
+                  .where(
+                    (task) => task.nextDueDate() == null,
+                  )
+                  .toList();
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      top: 24,
+                      bottom: 8.0,
+                      left: 16.0,
+                    ),
+                    child: Text(
+                      'Current tasks',
+                      style: TextStyle(
+                        color: Color(0xFFB2B5C3),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
                     ),
                   ),
-                  icon: Icons.add,
-                  label: 'NEW TASK',
-                  backgroundColor: Theme.of(context).primaryColor,
-                  alignment: Alignment.center,
-                  textStyle: Theme.of(context).textTheme.headline6.copyWith(
-                        color: Theme.of(context).backgroundColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18.0,
+                  ReorderableListView.builder(
+                    onReorder: (oldIndex, newIndex) async {
+                      List<Future> futures = [];
+
+                      var old = tasks[oldIndex];
+                      if (oldIndex > newIndex) {
+                        for (int i = oldIndex; i > newIndex; i--) {
+                          futures.add(
+                            TaskRepository.changeTaskOrder(tasks[i - 1], i),
+                          );
+                          tasks[i] = tasks[i - 1];
+                        }
+                        futures.add(
+                          TaskRepository.changeTaskOrder(
+                            old,
+                            newIndex,
+                          ),
+                        );
+                        tasks[newIndex] = old;
+                      } else {
+                        for (int i = oldIndex; i < newIndex - 1; i++) {
+                          futures.add(
+                            TaskRepository.changeTaskOrder(
+                              tasks[i + 1],
+                              i,
+                            ),
+                          );
+                          tasks[i] = tasks[i + 1];
+                        }
+                        futures.add(
+                          TaskRepository.changeTaskOrder(
+                            old,
+                            newIndex - 1,
+                          ),
+                        );
+                        tasks[newIndex - 1] = old;
+                      }
+                      setState(() {});
+                      await Future.wait(futures);
+                    },
+                    proxyDecorator: (widget, extent, animation) => Material(
+                      child: widget,
+                      shadowColor: Colors.transparent,
+                      color: Colors.transparent,
+                      elevation: animation.value,
+                    ),
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                    ),
+                    itemCount: currentTasks.length,
+                    itemBuilder: (context, index) {
+                      final task = currentTasks[index];
+                      return TaskListTileWidget(
+                        key: Key(task.id),
+                        task: task,
+                        stackColor: widget.stack.color,
+                      );
+                    },
+                  ),
+                  if (completedTasks.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        top: 16,
+                        bottom: 8.0,
+                        left: 16.0,
                       ),
-                  iconSize: 26.0,
-                ),
-              );
-            },
-          ),
-          StreamBuilder<List<Task>>(
-              stream: StackRepository.streamStackTasks(
-                widget.stack,
-                limit,
-              ),
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  elementsCount = snapshot.data.length;
-                  if (snapshot.data.length > 0)
-                    return ListView.builder(
+                      child: Text(
+                        'Completed tasks',
+                        style: TextStyle(
+                          color: Color(0xFFB2B5C3),
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  if (completedTasks.isNotEmpty)
+                    ListView.builder(
                       shrinkWrap: true,
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 4.0,
-                      ),
-                      itemCount: snapshot.data.length,
                       physics: NeverScrollableScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0,
+                        vertical: 8.0,
+                      ),
+                      itemCount: completedTasks.length,
                       itemBuilder: (context, index) {
+                        final task = completedTasks[index];
                         return TaskListTileWidget(
-                          task: snapshot.data[index],
+                          key: Key(task.id),
+                          task: task,
                           stackColor: widget.stack.color,
+                          showDragIndicator: false,
                         );
                       },
-                    );
-                  else
-                    return Container();
-                }
-                if (snapshot.hasError) {
-                  print(snapshot.error);
-                  return AppErrorWidget();
-                }
-                return LoadingWidget();
-              }),
-        ],
+                    ),
+                ],
+              );
+            } else
+              return Container(
+                width: MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.height -
+                    MediaQuery.of(context).viewInsets.top -
+                    MediaQuery.of(context).viewInsets.bottom -
+                    100,
+                child: NotFoundErrorWidget(
+                  title: 'There are no tasks',
+                  message: 'Create a Task by pressing + to get started',
+                ),
+              );
+          }
+          if (snapshot.hasError) {
+            print(snapshot.error);
+            return AppErrorWidget();
+          }
+          return LoadingWidget();
+        },
       ),
     );
   }

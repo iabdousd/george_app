@@ -9,6 +9,7 @@ import 'package:stackedtasks/views/feed/goal_summary_list.dart';
 import 'package:stackedtasks/views/profile/profile_page.dart';
 import 'package:stackedtasks/widgets/activity_feed/week_progress.dart';
 import 'package:get/get.dart';
+import 'package:stackedtasks/widgets/shared/foundation/app_app_bar.dart';
 
 class ActivityFeedView extends StatefulWidget {
   ActivityFeedView({Key key}) : super(key: key);
@@ -26,178 +27,162 @@ class _ActivityFeedViewState extends State<ActivityFeedView>
   void initState() {
     super.initState();
     _scrollViewController = ScrollController();
-    _tabController = TabController(vsync: this, length: 2);
+    _tabController = TabController(vsync: this, length: 2)
+      ..addListener(() {
+        setState(() {});
+      });
   }
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     super.build(context);
-    return NestedScrollView(
-      controller: _scrollViewController,
-      headerSliverBuilder: (context, bool) => [
-        SliverAppBar(
-          pinned: false,
-          backgroundColor: Colors.white,
-          flexibleSpace: FlexibleSpaceBar(
-            collapseMode: CollapseMode.pin,
-            background: Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                  margin: const EdgeInsets.only(top: 32.0, bottom: 12.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Container(
-                        child: Text(
-                          "Activity feed",
-                          style: Theme.of(context)
-                              .textTheme
-                              .headline5
-                              .copyWith(fontWeight: FontWeight.w700),
-                        ),
-                      ),
-                      InkWell(
-                        onTap: () => Get.to(
-                          () => ProfilePage(),
-                          transition: Transition.rightToLeft,
-                        ),
-                        child: Hero(
-                          tag: 'progile_logo',
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(64),
-                            child: FirebaseAuth.instance.currentUser.photoURL !=
-                                    null
-                                ? Image(
-                                    image: CachedImageProvider(
-                                      FirebaseAuth
-                                          .instance.currentUser.photoURL,
-                                    ),
-                                    fit: BoxFit.cover,
-                                    width: 36,
-                                    height: 36,
-                                  )
-                                : SvgPicture.asset(
-                                    'assets/images/profile.svg',
-                                    fit: BoxFit.cover,
-                                    width: 36,
-                                    height: 36,
-                                  ),
+    return Scaffold(
+      appBar: AppAppBar(
+        context: context,
+      ),
+      body: NestedScrollView(
+        controller: _scrollViewController,
+        headerSliverBuilder: (context, bool) => [
+          SliverAppBar(
+            pinned: false,
+            backgroundColor: Colors.white,
+            flexibleSpace: FlexibleSpaceBar(
+              collapseMode: CollapseMode.pin,
+              background: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    margin: const EdgeInsets.only(top: 16.0, bottom: 20.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Container(
+                          child: Text(
+                            "Activity feed",
+                            style: TextStyle(
+                              color: Color(0xFF3B404A),
+                              fontWeight: FontWeight.w600,
+                              fontSize: 24,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                        InkWell(
+                          onTap: () => Get.to(
+                            () => ProfilePage(),
+                            transition: Transition.rightToLeft,
+                          ),
+                          child: Hero(
+                            tag: 'progile_logo',
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(64),
+                              child:
+                                  FirebaseAuth.instance.currentUser.photoURL !=
+                                          null
+                                      ? Image(
+                                          image: CachedImageProvider(
+                                            FirebaseAuth
+                                                .instance.currentUser.photoURL,
+                                          ),
+                                          fit: BoxFit.cover,
+                                          width: 28,
+                                          height: 28,
+                                        )
+                                      : SvgPicture.asset(
+                                          'assets/images/profile.svg',
+                                          fit: BoxFit.cover,
+                                          width: 28,
+                                          height: 28,
+                                        ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                if (!kIsWeb) WeekProgress(),
-              ],
+                  if (!kIsWeb) WeekProgress(),
+                ],
+              ),
             ),
-          ),
-          expandedHeight: kIsWeb ? 90 : size.width / 1.7 + 180,
-          bottom: kIsWeb
-              ? null
-              : TabBar(
-                  indicatorColor: Colors.black,
-                  labelColor: Colors.black,
-                  indicatorSize: TabBarIndicatorSize.label,
+            expandedHeight: kIsWeb ? 90 : size.width / 2 + 172,
+            bottom: PreferredSize(
+              preferredSize: Size(size.width, 34),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                ),
+                child: TabBar(
+                  indicatorColor: Colors.transparent,
+                  labelColor: Theme.of(context).backgroundColor,
+                  unselectedLabelColor: Theme.of(context).primaryColor,
+                  labelStyle: TextStyle(
+                    fontSize: 16,
+                  ),
+                  labelPadding: EdgeInsets.zero,
                   tabs: [
                     Tab(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.article_outlined),
-                          Text(' Activity'),
-                        ],
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: _tabController.index == 0
+                              ? Theme.of(context).primaryColor
+                              : Theme.of(context).backgroundColor,
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(32),
+                            bottomLeft: Radius.circular(32),
+                            topRight: Radius.circular(0),
+                            bottomRight: Radius.circular(0),
+                          ),
+                          border: Border.all(
+                            color: Theme.of(context).primaryColor,
+                          ),
+                        ),
+                        constraints: BoxConstraints.expand(),
+                        alignment: Alignment.center,
+                        child: Text(
+                          'Activity',
+                        ),
                       ),
                     ),
                     Tab(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.stacked_bar_chart),
-                          Text(' Goals summary'),
-                        ],
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: _tabController.index == 1
+                              ? Theme.of(context).primaryColor
+                              : Theme.of(context).backgroundColor,
+                          borderRadius: BorderRadius.only(
+                            topRight: Radius.circular(32),
+                            bottomRight: Radius.circular(32),
+                            topLeft: Radius.circular(0),
+                            bottomLeft: Radius.circular(0),
+                          ),
+                          border: Border.all(
+                            color: Theme.of(context).primaryColor,
+                          ),
+                        ),
+                        constraints: BoxConstraints.expand(),
+                        alignment: Alignment.center,
+                        child: Text(
+                          'Projects summary',
+                        ),
                       ),
                     ),
                   ],
                   controller: _tabController,
                 ),
-        ),
-      ],
-      body: kIsWeb
-          ? Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    padding: EdgeInsets.only(right: 16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            'Summaries:',
-                            style:
-                                Theme.of(context).textTheme.headline6.copyWith(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                          ),
-                        ),
-                        Expanded(
-                          child: GoalsSummaryView(),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Container(
-                    padding: EdgeInsets.only(left: 24),
-                    decoration: BoxDecoration(
-                      border: Border(
-                        left: BorderSide(
-                          color: Color(0xFFAAAAAA),
-                        ),
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            'Articles:',
-                            style:
-                                Theme.of(context).textTheme.headline6.copyWith(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                          ),
-                        ),
-                        Expanded(
-                          child: Scrollbar(
-                            child: FeedArticlesList(),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            )
-          : Container(
-              child: TabBarView(
-                controller: _tabController,
-                physics: NeverScrollableScrollPhysics(),
-                children: [
-                  FeedArticlesList(),
-                  GoalsSummaryView(),
-                ],
               ),
             ),
+          ),
+        ],
+        body: TabBarView(
+          controller: _tabController,
+          physics: NeverScrollableScrollPhysics(),
+          children: [
+            FeedArticlesList(),
+            GoalsSummaryView(),
+          ],
+        ),
+      ),
     );
   }
 

@@ -4,7 +4,7 @@ import 'package:stackedtasks/config/extensions/hex_color.dart';
 import 'package:stackedtasks/models/Goal.dart';
 import 'package:stackedtasks/models/Stack.dart';
 import 'package:stackedtasks/services/feed-back/loader.dart';
-import 'package:stackedtasks/views/goal/save_goal.dart';
+import 'package:stackedtasks/views/goal/save_goal/save_goal.dart';
 import 'package:stackedtasks/views/stack/save_stack.dart';
 import 'package:stackedtasks/widgets/home/tiles/lg_stack_tile.dart';
 import 'package:stackedtasks/widgets/shared/app_action_button.dart';
@@ -32,10 +32,11 @@ class HomeLGStackListView extends StatefulWidget {
 
 class _HomeLGStackListViewState extends State<HomeLGStackListView> {
   _editGoal() {
-    Get.to(
-      () => SaveGoalPage(goal: widget.goal),
-      popGesture: true,
-      transition: Transition.rightToLeftWithFade,
+    showModalBottomSheet(
+      isScrollControlled: true,
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => SaveGoalPage(goal: widget.goal),
     );
   }
 

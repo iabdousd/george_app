@@ -35,8 +35,11 @@ class TodayTasks extends StatelessWidget {
             )
             .where(
               task_constants.DUE_DATES_KEY,
-              arrayContains: DateTime(DateTime.now().year, DateTime.now().month,
-                  DateTime.now().day),
+              arrayContains: DateTime.utc(
+                DateTime.now().year,
+                DateTime.now().month,
+                DateTime.now().day,
+              ),
             )
             .snapshots(),
         builder: (context, snapshot) {

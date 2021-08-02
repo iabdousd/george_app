@@ -5,7 +5,6 @@ import 'package:stackedtasks/repositories/inbox/inbox_repository.dart';
 import 'package:stackedtasks/services/feed-back/flush_bar.dart';
 import 'package:stackedtasks/services/feed-back/loader.dart';
 import 'package:stackedtasks/services/user/user_service.dart';
-import 'package:stackedtasks/widgets/shared/app_appbar.dart';
 
 class SaveStackPage extends StatefulWidget {
   final String goalRef;
@@ -76,7 +75,7 @@ class _SaveStackPageState extends State<SaveStackPage> {
       await stack.save();
     }
     toggleLoading(state: false);
-    Navigator.of(context).pop();
+    Navigator.of(context).pop(true);
     showFlushBar(
       title: 'Stack added successfully!',
       message: 'You can now see your stack in stacks list.',
@@ -93,87 +92,88 @@ class _SaveStackPageState extends State<SaveStackPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: appAppBar(
-        title: widget.stack != null ? 'Stack details' : 'New Stack',
-        actions: [
-          TextButton(
-            onPressed: _submitStack,
-            child: Text(
-              'Done',
-              style: Theme.of(context).textTheme.subtitle1.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-          ),
-        ],
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: Theme.of(context).backgroundColor,
       ),
-      backgroundColor: Theme.of(context).backgroundColor,
-      body: SafeArea(
-        child: Form(
-          key: _formKey,
-          child: Center(
-            child: ListView(
-              padding: const EdgeInsets.all(16.0),
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
+      padding: MediaQuery.of(context).viewInsets +
+          EdgeInsets.only(
+            left: 16.0,
+            right: 16.0,
+            bottom: MediaQuery.of(context).padding.bottom + 8,
+          ),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              color: Color(0xFFB2B6C3),
+              width: 28,
+              height: 3,
+              margin: EdgeInsets.symmetric(vertical: 12),
+            ),
+            Row(
               children: [
-                Row(
-                  children: [
-                    // InkWell(
-                    //   onTap: () => pickColor(
-                    //     (e) => setState(() {
-                    //       selectedColor = e;
-                    //     }),
-                    //   ),
-                    //   child: Container(
-                    //     padding: const EdgeInsets.all(16.0),
-                    //     decoration: BoxDecoration(
-                    //       color: Color(0x07000000),
-                    //       borderRadius: BorderRadius.circular(8.0),
-                    //     ),
-                    //     child: Icon(
-                    //       Icons.brightness_1,
-                    //       color: HexColor.fromHex(selectedColor),
-                    //       size: 32,
-                    //     ),
-                    //   ),
-                    // ),
-                    // SizedBox(
-                    //   width: 8,
-                    // ),
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).backgroundColor,
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                        child: TextFormField(
-                          controller: _titleController,
-                          autofocus: true,
-                          decoration: InputDecoration(
-                            labelText: 'Stack title',
-                            hintText: 'The title of the stack',
-                            contentPadding: const EdgeInsets.symmetric(
-                              vertical: 20.0,
-                              horizontal: 20.0,
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8.0),
-                              borderSide: BorderSide(width: 1),
-                            ),
-                          ),
-                          validator: (t) => t.isEmpty
-                              ? 'Please enter the stack\'s title'
-                              : null,
-                        ),
-                      ),
+                TextButton(
+                  onPressed: Navigator.of(context).pop,
+                  child: Text(
+                    'CANCEL',
+                    style: TextStyle(
+                      color: Color(0xFFB2B6C3),
+                      fontSize: 14,
                     ),
-                  ],
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    'New Stack',
+                    style: TextStyle(
+                      color: Color(0xFF767C8D),
+                      fontWeight: FontWeight.w500,
+                      fontSize: 18,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                TextButton(
+                  onPressed: _submitStack,
+                  child: Text(
+                    'DONE',
+                    style: TextStyle(
+                      color: Theme.of(context).accentColor,
+                      fontSize: 14,
+                    ),
+                  ),
                 ),
               ],
             ),
-          ),
+            Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).backgroundColor,
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+              child: TextFormField(
+                controller: _titleController,
+                autofocus: true,
+                decoration: InputDecoration(
+                  labelText: 'Stack title',
+                  hintText: 'The title of the stack',
+                  contentPadding: const EdgeInsets.symmetric(
+                    vertical: 20.0,
+                    horizontal: 20.0,
+                  ),
+                  border: UnderlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                    borderSide: BorderSide(width: 1),
+                  ),
+                ),
+                validator: (t) =>
+                    t.isEmpty ? 'Please enter the stack\'s title' : null,
+              ),
+            ),
+          ],
         ),
       ),
     );

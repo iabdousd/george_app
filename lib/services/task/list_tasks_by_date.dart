@@ -11,7 +11,11 @@ Future<List<Task>> tasksByDate(DateTime date) async {
       .collection(stack_constants.TASKS_KEY)
       .where(
         task_constants.DUE_DATES_KEY,
-        arrayContains: DateTime(now.year, now.month, now.day),
+        arrayContains: DateTime.utc(
+          now.year,
+          now.month,
+          now.day,
+        ),
       )
       .where(
         task_constants.USER_ID_KEY,

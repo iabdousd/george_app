@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:stackedtasks/services/feed-back/loader.dart';
 import 'package:stackedtasks/services/user/user_service.dart';
 
 import 'main-views/main.dart';
@@ -12,7 +13,7 @@ class AppViews extends StatefulWidget {
 }
 
 class _AppViewsState extends State<AppViews> {
-  final Future<bool> _initialization = checkAuthorization();
+  Future<bool> _initialization = checkAuthorization();
 
   @override
   Widget build(BuildContext context) {
@@ -25,10 +26,40 @@ class _AppViewsState extends State<AppViews> {
           return GuidesScreen();
 
         if (snapshot.hasError) {
-          print('Error: ${snapshot.error}');
-          return Center(
-            child: Container(
-              child: Icon(Icons.error_outline, color: Colors.red),
+          return Scaffold(
+            body: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Icon(
+                  Icons.error_outline,
+                  color: Colors.red,
+                  size: 64,
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    'Error ocurred, please try again!',
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                Center(
+                  child: ElevatedButton(
+                    onPressed: () => setState(
+                      () {
+                        // toggleLoading(state: true);
+                        _initialization = checkAuthorization();
+                        // .then(
+                        //   (value) => toggleLoading(state: false),
+                        // );
+                      },
+                    ),
+                    child: Text(
+                      'Try again',
+                    ),
+                  ),
+                ),
+              ],
             ),
           );
         }

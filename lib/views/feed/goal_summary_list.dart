@@ -7,7 +7,7 @@ import 'package:stackedtasks/services/feed-back/loader.dart';
 import 'package:stackedtasks/services/user/user_service.dart';
 import 'package:stackedtasks/widgets/activity_feed/feed_articles_empty.dart';
 import 'package:stackedtasks/widgets/activity_feed/week_progress.dart';
-import 'package:stackedtasks/widgets/goal/goal_summary.dart';
+import 'package:stackedtasks/widgets/activity_feed/cards/goal_summary.dart';
 import 'package:stackedtasks/constants/feed.dart' as feed_constants;
 import 'package:stackedtasks/widgets/shared/app_error_widget.dart';
 
@@ -22,7 +22,6 @@ class _GoalsSummaryViewState extends State<GoalsSummaryView> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
-      // TODO: Replace with a better stream
       stream: FirebaseFirestore.instance
           .collection(feed_constants.GOALS_SUMMARIES_KEY)
           .where(

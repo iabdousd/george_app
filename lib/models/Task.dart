@@ -17,6 +17,12 @@ import 'package:stackedtasks/services/user/user_service.dart';
 import 'InboxItem.dart';
 import 'Note.dart';
 
+DateTime forcedUTC(DateTime date) => DateTime.utc(
+      date.year,
+      date.month,
+      date.day,
+    );
+
 class Task extends InboxItem {
   String id;
   String userID;
@@ -45,7 +51,6 @@ class Task extends InboxItem {
 
   bool notesFetched = false;
   List<Note> detailedTaskNotes = [];
-  Note lastNote;
 
   String userName;
   String userPhoto;
@@ -56,6 +61,16 @@ class Task extends InboxItem {
   String taskPhoto;
 
   get taskID => id.contains('_') ? id.substring(0, id.length - 10) : id;
+
+  get frequency =>
+      task_constants.REPETITION_OPTIONS_TITLES[repetition.type] +
+      (repetition.type == 'weekly'
+          ? ' ${repetition.selectedWeekDays.map(
+              (e) => task_constants.WEEK_DAYS[e],
+            )}'
+          : repetition.type == 'monthly'
+              ? 'Day ${repetition.dayNumber} each ${repetition.monthsCount} month${repetition.monthsCount == 1 ? '' : 's'}'
+              : '');
 
   Task({
     this.id,
@@ -80,7 +95,8 @@ class Task extends InboxItem {
     this.endDate,
     this.startTime,
     this.endTime,
-    this.lastNote,
+    this.userName,
+    this.userPhoto,
     this.taskPhoto,
   }) {
     if (task_constants.REPETITION_OPTIONS
@@ -91,14 +107,20 @@ class Task extends InboxItem {
       int i = 0;
       final now = DateTime.now();
       if (repetition?.type == 'daily') {
-        dueDates.add(startDate);
+        dueDates.add(
+          forcedUTC(startDate),
+        );
       } else if (repetition?.type == 'monthly' &&
           repetition.dayNumber == now.day) {
-        dueDates.add(startDate);
+        dueDates.add(
+          forcedUTC(startDate),
+        );
       } else if (repetition?.type == 'weekly' &&
           repetition.selectedWeekDays
               .contains(dateTimeToDayNumber(startDate))) {
-        dueDates.add(startDate);
+        dueDates.add(
+          forcedUTC(startDate),
+        );
       }
       do {
         nextDue = getNextInstanceDate(after: nextDue);
@@ -108,12 +130,16 @@ class Task extends InboxItem {
           break;
         }
 
-        dueDates.add(DateTime(nextDue.year, nextDue.month, nextDue.day));
+        dueDates.add(
+          DateTime.utc(nextDue.year, nextDue.month, nextDue.day),
+        );
         i++;
       } while (nextDue.isBefore(endDate) && i < 1000);
     } else {
       this.dueDates = [];
-      dueDates.add(startDate);
+      dueDates.add(
+        forcedUTC(startDate),
+      );
       DateTime nextDue = startDate;
       do {
         nextDue = getNextInstanceDate(after: nextDue);
@@ -123,7 +149,9 @@ class Task extends InboxItem {
           break;
         }
 
-        dueDates.add(DateTime(nextDue.year, nextDue.month, nextDue.day));
+        dueDates.add(
+          DateTime.utc(nextDue.year, nextDue.month, nextDue.day),
+        );
       } while (nextDue.year * 365 + nextDue.month * 12 + nextDue.day >
           endDate.year * 365 + endDate.month * 12 + endDate.day);
     }
@@ -157,22 +185,26 @@ class Task extends InboxItem {
       this.repetition =
           TaskRepetition.fromJson(jsonObject[task_constants.REPETITION_KEY]);
 
-    this.creationDate =
-        jsonObject[task_constants.CREATION_DATE_KEY] is Timestamp
+    this.creationDate = jsonObject[task_constants.CREATION_DATE_KEY] is DateTime
+        ? jsonObject[task_constants.CREATION_DATE_KEY]
+        : jsonObject[task_constants.CREATION_DATE_KEY] is Timestamp
             ? (jsonObject[task_constants.CREATION_DATE_KEY] as Timestamp)
                 .toDate()
                 .toLocal()
             : DateTime.fromMillisecondsSinceEpoch(
-                jsonObject[task_constants.CREATION_DATE_KEY]);
+                jsonObject[task_constants.CREATION_DATE_KEY],
+              );
 
     if (jsonObject[task_constants.DONES_HISTORY_KEY] != null &&
         jsonObject[task_constants.DONES_HISTORY_KEY] is List)
       this.donesHistory =
           List<DateTime>.from(jsonObject[task_constants.DONES_HISTORY_KEY]
               .map(
-                (e) => e is Timestamp
-                    ? e.toDate().toLocal()
-                    : DateTime.fromMillisecondsSinceEpoch(e),
+                (e) => e is DateTime
+                    ? e
+                    : e is Timestamp
+                        ? e.toDate().toUtc()
+                        : DateTime.fromMillisecondsSinceEpoch(e),
               )
               .toList());
     else
@@ -183,43 +215,47 @@ class Task extends InboxItem {
       this.dueDates =
           List<DateTime>.from(jsonObject[task_constants.DUE_DATES_KEY]
               .map(
-                (e) => e is Timestamp
-                    ? e.toDate().toLocal()
-                    : DateTime.fromMillisecondsSinceEpoch(e),
+                (e) => e is DateTime
+                    ? e
+                    : e is Timestamp
+                        ? e.toDate().toUtc()
+                        : DateTime.fromMillisecondsSinceEpoch(e),
               )
               .toList());
     else
       this.dueDates = [];
 
-    this.startDate = jsonObject[task_constants.START_DATE_KEY] is Timestamp
-        ? (jsonObject[task_constants.START_DATE_KEY] as Timestamp)
-            .toDate()
-            .toLocal()
-        : DateTime.fromMillisecondsSinceEpoch(
-            jsonObject[task_constants.START_DATE_KEY]);
-    this.endDate = jsonObject[task_constants.END_DATE_KEY] is Timestamp
-        ? (jsonObject[task_constants.END_DATE_KEY] as Timestamp)
-            .toDate()
-            .toLocal()
-        : DateTime.fromMillisecondsSinceEpoch(
-            jsonObject[task_constants.END_DATE_KEY]);
-    this.startTime = jsonObject[task_constants.START_TIME_KEY] is Timestamp
-        ? (jsonObject[task_constants.START_TIME_KEY] as Timestamp)
-            .toDate()
-            .toLocal()
-        : DateTime.fromMillisecondsSinceEpoch(
-            jsonObject[task_constants.START_TIME_KEY]);
+    this.startDate = jsonObject[task_constants.START_DATE_KEY] is DateTime
+        ? jsonObject[task_constants.START_DATE_KEY]
+        : jsonObject[task_constants.START_DATE_KEY] is Timestamp
+            ? (jsonObject[task_constants.START_DATE_KEY] as Timestamp).toDate()
+            : DateTime.fromMillisecondsSinceEpoch(
+                jsonObject[task_constants.START_DATE_KEY]);
+    this.endDate = jsonObject[task_constants.END_DATE_KEY] is DateTime
+        ? jsonObject[task_constants.END_DATE_KEY]
+        : jsonObject[task_constants.END_DATE_KEY] is Timestamp
+            ? (jsonObject[task_constants.END_DATE_KEY] as Timestamp).toDate()
+            : DateTime.fromMillisecondsSinceEpoch(
+                jsonObject[task_constants.END_DATE_KEY]);
+    this.startTime = jsonObject[task_constants.START_TIME_KEY] is DateTime
+        ? jsonObject[task_constants.START_TIME_KEY]
+        : jsonObject[task_constants.START_TIME_KEY] is Timestamp
+            ? (jsonObject[task_constants.START_TIME_KEY] as Timestamp)
+                .toDate()
+                .toLocal()
+            : DateTime.fromMillisecondsSinceEpoch(
+                jsonObject[task_constants.START_TIME_KEY],
+              );
 
-    this.endTime = jsonObject[task_constants.END_TIME_KEY] is Timestamp
-        ? (jsonObject[task_constants.END_TIME_KEY] as Timestamp)
-            .toDate()
-            .toLocal()
-        : DateTime.fromMillisecondsSinceEpoch(
-            jsonObject[task_constants.END_TIME_KEY]);
-
-    this.lastNote = jsonObject[task_constants.LAST_NOTE_KEY] != null
-        ? Note.fromJson(jsonObject[task_constants.LAST_NOTE_KEY])
-        : null;
+    this.endTime = jsonObject[task_constants.END_TIME_KEY] is DateTime
+        ? jsonObject[task_constants.END_TIME_KEY]
+        : jsonObject[task_constants.END_TIME_KEY] is Timestamp
+            ? (jsonObject[task_constants.END_TIME_KEY] as Timestamp)
+                .toDate()
+                .toLocal()
+            : DateTime.fromMillisecondsSinceEpoch(
+                jsonObject[task_constants.END_TIME_KEY],
+              );
 
     this.likesCount = jsonObject[feed_constants.LIKES_COUNT_KEY] ?? 0;
     this.taskPhoto = jsonObject[feed_constants.TASK_PHOTO_KEY];
@@ -227,6 +263,8 @@ class Task extends InboxItem {
 
   Map<String, dynamic> toJson() {
     return {
+      if (id == null) task_constants.INDEX_KEY: 0,
+      task_constants.ID_KEY: id,
       task_constants.USER_ID_KEY: userID,
       task_constants.PARTNERS_IDS_KEY: partnersIDs,
       task_constants.GOAL_REF_KEY: goalRef,
@@ -243,13 +281,12 @@ class Task extends InboxItem {
               ? repetition.toJson()
               : null,
       task_constants.CREATION_DATE_KEY: creationDate.toUtc(),
-      task_constants.DUE_DATES_KEY: dueDates?.map((e) => e.toUtc())?.toList(),
+      task_constants.DUE_DATES_KEY: dueDates,
       task_constants.DONES_HISTORY_KEY: donesHistory,
-      task_constants.START_DATE_KEY: startDate.toUtc(),
-      task_constants.END_DATE_KEY: endDate.toUtc(),
-      task_constants.START_TIME_KEY: startTime,
-      task_constants.END_TIME_KEY: endTime,
-      task_constants.LAST_NOTE_KEY: lastNote?.toJson(),
+      task_constants.START_DATE_KEY: startDate,
+      task_constants.END_DATE_KEY: endDate,
+      task_constants.START_TIME_KEY: startTime.toUtc(),
+      task_constants.END_TIME_KEY: endTime.toUtc(),
       feed_constants.TASK_PHOTO_KEY: taskPhoto,
     };
   }
@@ -288,22 +325,31 @@ class Task extends InboxItem {
   bool isDone({DateTime date}) =>
       (repetition == null && status == 1) ||
       ((donesHistory ?? []).length > 0 &&
-          donesHistory.contains(
-            (date != null
-                ? DateTime(date.year, date.month, date.day)
-                : dueDates.firstWhere(
-                    (element) => DateTime(
-                      element.year,
-                      element.month,
-                      element.day,
-                      endTime.hour,
-                      endTime.minute,
-                    ).isAfter(
-                      DateTime.now(),
-                    ),
-                    orElse: () => donesHistory.last,
-                  )),
-          ));
+          donesHistory
+              .where(
+                (element) =>
+                    element.toString().replaceAll('Z', '') ==
+                    (date != null
+                        ? DateTime.utc(date.year, date.month, date.day)
+                            .toString()
+                            .replaceAll('Z', '')
+                        : dueDates
+                            .firstWhere(
+                              (element) => DateTime(
+                                element.year,
+                                element.month,
+                                element.day,
+                                endTime.hour,
+                                endTime.minute,
+                              ).isAfter(
+                                DateTime.now(),
+                              ),
+                              orElse: () => dueDates.last,
+                            )
+                            .toString()
+                            .replaceAll('Z', '')),
+              )
+              .isNotEmpty);
 
   bool get hasNext => (repetition != null && status != 1);
 
@@ -318,8 +364,20 @@ class Task extends InboxItem {
               : startDate;
     }
     if (this.dueDates.length > 0) {
+      Function(DateTime) condition = this.dueDates.last.isAfter(DateTime(
+                DateTime.now().year,
+                DateTime.now().month,
+                DateTime.now().day,
+              ))
+          ? (DateTime due) => due.isAfter(DateTime(
+                DateTime.now().year,
+                DateTime.now().month,
+                DateTime.now().day,
+              ))
+          : (due) => true;
+
       for (DateTime due in this.dueDates) {
-        if (!this.donesHistory.contains(due)) return due;
+        if (!this.donesHistory.contains(due) && condition(due)) return due;
       }
     }
     return null;
@@ -354,7 +412,7 @@ class Task extends InboxItem {
     return allPartners;
   }
 
-  accomplish({DateTime customDate, bool unChecking: false}) async {
+  Future<void> accomplish({DateTime customDate, bool unChecking: false}) async {
     if (repetition == null) {
       if (status == 1) {
         status = 0;
@@ -364,18 +422,16 @@ class Task extends InboxItem {
         await FirebaseFirestore.instance
             .collection(feed_constants.FEED_KEY)
             .doc(
-              id + DateFormat('yyyy_MM_dd').format(startDate),
+              id,
             )
             .delete();
-        // TODO: !
         if (stackRef != 'inbox' && goalRef != 'inbox') {
           await removeTaskAccomplishment(this);
-          if (stackRef != 'inbox' && goalRef != 'inbox')
-            await GoalSummary(id: goalRef).accomplishTask(
-              -1,
-              stackRef,
-              withFetch: true,
-            );
+          await GoalSummary(id: goalRef).accomplishTask(
+            -1,
+            stackRef,
+            withFetch: true,
+          );
         }
       } else {
         status = 1;
@@ -387,7 +443,6 @@ class Task extends InboxItem {
         await saveAsFeed(
           [getCurrentUser().uid, ...allPartners],
           tryUpdate: false,
-          customID: this.id + DateFormat('yyyy_MM_dd').format(startDate),
         );
         if (stackRef != 'inbox' && goalRef != 'inbox') {
           await addTaskAccomplishment(this);
@@ -405,26 +460,40 @@ class Task extends InboxItem {
     DateTime now =
         customDate ?? (unChecking ? this.donesHistory.last : nextDueDate());
 
-    DateTime accompishedDate = DateTime(
+    DateTime accompishedDate = forcedUTC(DateTime(
       now.year,
       now.month,
       now.day,
-    );
+    ));
+    String accompishedDateString = accompishedDate.toString().replaceAll(
+          'Z',
+          '',
+        );
 
-    if (this.donesHistory.contains(accompishedDate)) {
+    if (this
+        .donesHistory
+        .where(
+          (e) =>
+              e.toString().replaceAll(
+                    'Z',
+                    '',
+                  ) ==
+              accompishedDateString,
+        )
+        .isNotEmpty) {
       // UNCHECKED!
       if (this.donesHistory.length == this.dueDates.length) this.status = 0;
-      this.donesHistory.remove(accompishedDate);
+      this.donesHistory.removeWhere(
+            (e) =>
+                e.toString().replaceAll(
+                      'Z',
+                      '',
+                    ) ==
+                accompishedDateString,
+          );
       await save(
         updateSummaries: false,
       );
-      await FirebaseFirestore.instance
-          .collection(feed_constants.FEED_KEY)
-          .doc(
-            id + DateFormat('yyyy_MM_dd').format(accompishedDate),
-          )
-          .delete();
-      // TODO: !
       if (stackRef != 'inbox' && goalRef != 'inbox') {
         await removeTaskAccomplishment(this);
         await GoalSummary(id: goalRef)
@@ -432,7 +501,7 @@ class Task extends InboxItem {
       }
     } else {
       // CHECKED!
-      this.donesHistory.add(accompishedDate);
+      this.donesHistory.add(forcedUTC(accompishedDate));
       if (this.donesHistory.length == this.dueDates.length) this.status = 1;
       await save(
         updateSummaries: false,
@@ -441,7 +510,6 @@ class Task extends InboxItem {
       await saveAsFeed(
         [getCurrentUser().uid, ...allPartners],
         tryUpdate: false,
-        customID: this.id + DateFormat('yyyy_MM_dd').format(accompishedDate),
       );
 
       if (stackRef != 'inbox' && goalRef != 'inbox') {
@@ -574,7 +642,6 @@ class Task extends InboxItem {
 
   Future<void> updateSummary() async {
     if (goalRef == 'inbox') {
-      // TODO:
       return;
     }
     await GoalSummary(id: goalRef).addTasks(
@@ -616,6 +683,18 @@ class Task extends InboxItem {
 
       if (updateSummaries) await updateSummary();
     }
+    if (repetition != null && donesHistory.isNotEmpty) {
+      print('Saved 1 $id');
+      saveAsFeed(to);
+    } else if (repetition != null) {
+      deleteAsFeed();
+    } else if (status == 1) {
+      saveAsFeed(
+        to,
+      );
+    } else if (status == 0) {
+      if (id != null) deleteAsFeed();
+    }
   }
 
   Future delete() async {
@@ -628,7 +707,6 @@ class Task extends InboxItem {
       await InboxRepository.deleteInboxItem(id);
     }
 
-    // TODO:
     if (stackRef != 'inbox' && goalRef != 'inbox')
       await GoalSummary(id: goalRef).deleteTask(
         this.dueDates.length,
@@ -646,33 +724,36 @@ class Task extends InboxItem {
   Future saveAsFeed(
     List<String> to, {
     bool tryUpdate: true,
-    String customID,
   }) async {
+    List<String> allPartners = to ?? await getAllPartners();
     try {
       if (tryUpdate)
         await FirebaseFirestore.instance
             .collection(feed_constants.FEED_KEY)
             .doc(
-              customID ?? id,
+              id,
             )
             .update({
           task_constants.TITLE_KEY: title,
           task_constants.DESCRIPTION_KEY: description,
-          feed_constants.TO_KEY: [getCurrentUser().uid, ...to],
+          feed_constants.TO_KEY: [
+            getCurrentUser().uid,
+            ...(to ?? allPartners),
+          ],
           task_constants.STATUS_KEY: status,
         });
       else {
         await FirebaseFirestore.instance
             .collection(feed_constants.FEED_KEY)
             .doc(
-              customID ?? id,
+              id,
             )
             .set({
           task_constants.TITLE_KEY: title,
           task_constants.DESCRIPTION_KEY: description,
-          feed_constants.TO_KEY: [getCurrentUser().uid, ...to],
-          task_constants.CREATION_DATE_KEY: DateTime.now(),
+          feed_constants.TO_KEY: [getCurrentUser().uid, ...(to ?? allPartners)],
           ...toJson(),
+          task_constants.CREATION_DATE_KEY: DateTime.now(),
         });
       }
     } catch (e) {
@@ -684,9 +765,12 @@ class Task extends InboxItem {
           .set({
         task_constants.TITLE_KEY: title,
         task_constants.DESCRIPTION_KEY: description,
-        feed_constants.TO_KEY: [getCurrentUser().uid, ...to],
-        task_constants.CREATION_DATE_KEY: DateTime.now(),
+        feed_constants.TO_KEY: [
+          getCurrentUser().uid,
+          ...(to ?? allPartners),
+        ],
         ...toJson(),
+        task_constants.CREATION_DATE_KEY: DateTime.now(),
       });
     }
   }
@@ -725,7 +809,6 @@ class Task extends InboxItem {
     String stackColor,
     bool notesFetched,
     List<Note> detailedTaskNotes,
-    Note lastNote,
     String userName,
     String userPhoto,
     String taskPhoto,
@@ -752,8 +835,9 @@ class Task extends InboxItem {
       startTime: startTime ?? this.startTime,
       endTime: endTime ?? this.endTime,
       stackColor: stackColor ?? this.stackColor,
-      lastNote: lastNote ?? this.lastNote,
       taskPhoto: taskPhoto ?? this.taskPhoto,
+      userName: userName ?? this.userName,
+      userPhoto: userPhoto ?? this.userPhoto,
     );
   }
 }

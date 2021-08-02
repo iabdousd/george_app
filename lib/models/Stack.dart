@@ -53,13 +53,17 @@ class TasksStack extends InboxItem {
     this.color = jsonObject[stack_constants.COLOR_KEY];
     this.status = jsonObject[stack_constants.STATUS_KEY];
     this.creationDate =
-        (jsonObject[stack_constants.CREATION_DATE_KEY] as Timestamp)
-            .toDate()
-            .toLocal();
+        jsonObject[stack_constants.CREATION_DATE_KEY] is DateTime
+            ? jsonObject[stack_constants.CREATION_DATE_KEY]
+            : (jsonObject[stack_constants.CREATION_DATE_KEY] as Timestamp)
+                .toDate()
+                .toLocal();
   }
 
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> toJson({String id}) {
     return {
+      if (this.id == null) stack_constants.INDEX_KEY: 0,
+      if (id != null || this.id != null) stack_constants.ID_KEY: id ?? this.id,
       stack_constants.USER_ID_KEY: userID,
       stack_constants.PARTNERS_IDS_KEY: partnersIDs,
       stack_constants.TITLE_KEY: title,
@@ -72,12 +76,12 @@ class TasksStack extends InboxItem {
 
   Future<void> updateSummary() async {
     if (goalRef == 'inbox') {
-      // TODO:
-    } else
+    } else {
       await GoalSummary(id: goalRef).addStack(
         this,
         withFetch: true,
       );
+    }
   }
 
   Future save({
@@ -124,7 +128,6 @@ class TasksStack extends InboxItem {
     for (final task in tasks.docs) await task.reference.delete();
 
     await reference.delete();
-    // TODO: FIX INBOX ONES
     if (goalRef != null && goalRef != 'inbox')
       await GoalSummary(id: goalRef).deleteStack(
         this,

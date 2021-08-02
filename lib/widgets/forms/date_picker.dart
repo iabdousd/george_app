@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_rounded_date_picker/flutter_rounded_date_picker.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:stackedtasks/config/extensions/hex_color.dart';
 import 'package:stackedtasks/services/feed-back/flush_bar.dart';
 import 'package:intl/intl.dart';
@@ -23,9 +24,13 @@ class DatePickerWidget extends StatelessWidget {
     this.startDate,
     this.selectedDate,
     this.endDate,
-    this.dateFormat = 'dd/MM/yyyy',
+    this.dateFormat = 'dd MMM yyyy',
     this.crossAxisAlignment = CrossAxisAlignment.center,
-    this.margin = const EdgeInsets.only(top: 8.0),
+    this.margin = const EdgeInsets.only(
+      top: 16.0,
+      left: 8.0,
+      right: 8.0,
+    ),
   }) : super(key: key);
 
   _pickDate(context) async {
@@ -71,79 +76,64 @@ class DatePickerWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          margin: margin,
-          child: Row(
-            children: [
-              Expanded(
-                child: Container(
-                  height: 1,
-                  color: Theme.of(context).primaryColor.withOpacity(.2),
+    return Container(
+      margin: margin,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: Theme.of(context).textTheme.bodyText1.copyWith(
+                  color: Color(0xFFB2B6C3),
                 ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Text(
-                  title,
-                  style: Theme.of(context).textTheme.bodyText1,
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              Expanded(
-                child: Container(
-                  height: 1,
-                  color: Theme.of(context).primaryColor.withOpacity(.2),
-                ),
-              ),
-            ],
           ),
-        ),
-        Container(
-          padding: EdgeInsets.only(top: 4, bottom: 4.0),
-          decoration: BoxDecoration(
-            color: Color(0x07000000),
-            borderRadius: BorderRadius.circular(8.0),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: crossAxisAlignment,
-            children: [
-              Expanded(
-                child: InkWell(
-                  onTap: () => _pickDate(context),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Icon(
-                          Icons.calendar_today_outlined,
-                          color: HexColor.fromHex(color),
-                          size: 24,
+          Container(
+            padding: EdgeInsets.only(top: 4, bottom: 4.0),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: Color(0x88B2B5C3),
+                ),
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: crossAxisAlignment,
+              children: [
+                Expanded(
+                  child: InkWell(
+                    onTap: () => _pickDate(context),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            DateFormat(dateFormat).format(selectedDate),
+                            style: Theme.of(context)
+                                .textTheme
+                                .headline6
+                                .copyWith(fontSize: 16),
+                          ),
                         ),
-                      ),
-                      SizedBox(
-                        width: 4,
-                      ),
-                      Expanded(
-                        child: Text(
-                          DateFormat(dateFormat).format(selectedDate),
-                          style: Theme.of(context)
-                              .textTheme
-                              .headline6
-                              .copyWith(fontSize: 16),
+                        SizedBox(
+                          width: 4,
                         ),
-                      ),
-                    ],
+                        Container(
+                          padding: const EdgeInsets.all(8.0),
+                          child: SvgPicture.asset(
+                            'assets/images/icons/calendar.svg',
+                            color: HexColor.fromHex(color),
+                            width: 24,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

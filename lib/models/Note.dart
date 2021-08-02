@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:stackedtasks/models/UserModel.dart';
 import 'package:stackedtasks/services/storage/image_upload.dart';
-import 'package:image_picker/image_picker.dart';
 
 import 'package:stackedtasks/constants/models/note.dart' as note_constants;
 import 'package:stackedtasks/constants/models/stack.dart' as stack_constants;
@@ -133,9 +132,9 @@ class Note {
     await save();
   }
 
-  Future addAttachments(List<PickedFile> images) async {
+  Future addAttachments(List images) async {
     attachments = attachments ?? [];
-    for (PickedFile img in images) {
+    for (final img in images) {
       String url = await uploadFile(img);
       Attachment attachment = Attachment(
         path: url,

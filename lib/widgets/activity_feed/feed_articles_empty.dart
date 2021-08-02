@@ -15,12 +15,17 @@ class FeedArticlesEmptyWidget extends StatelessWidget {
             width: MediaQuery.of(context).size.width / 4,
             height: MediaQuery.of(context).size.width / 4,
           ),
-          SizedBox(
-            height: 16,
-          ),
-          Text(
-            'You haven\'t completed any tasks!',
-            style: Theme.of(context).textTheme.bodyText2,
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              'You have no activity yet!',
+              style: TextStyle(
+                color: Color(0xFF3B404A),
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.center,
+            ),
           ),
         ],
       ),

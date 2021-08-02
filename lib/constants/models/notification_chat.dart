@@ -5,4 +5,5 @@ const CHAT_USERS_IDS_KEY = 'usersIDs';
 const CHAT_STATUS_KEY = 'status';
 const CHAT_NEW_MESSAGES_KEY = 'newMessages';
 const CHAT_LAST_MESSAGE_KEY = 'lastMessage';
+const CHAT_LAST_MESSAGE_SENDER_ID_KEY = 'lastMessageDateSenderID';
 const CHAT_LAST_MESSAGE_DATE_KEY = 'lastMessageDate';

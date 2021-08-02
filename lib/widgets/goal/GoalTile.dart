@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:stackedtasks/config/extensions/hex_color.dart';
 import 'package:stackedtasks/models/Goal.dart';
 import 'package:stackedtasks/services/feed-back/loader.dart';
-import 'package:stackedtasks/views/goal/goal_details.dart';
-import 'package:stackedtasks/views/goal/save_goal.dart';
+import 'package:stackedtasks/views/goal/goal_details/goal_details.dart';
+import 'package:stackedtasks/views/goal/save_goal/save_goal.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:stackedtasks/views/stack/save_stack.dart';
 
 class GoalListTileWidget extends StatelessWidget {
   final Goal goal;
@@ -58,33 +60,29 @@ class GoalListTileWidget extends StatelessWidget {
   }
 
   _editGoal(context) {
-    Get.to(
-      () => SaveGoalPage(goal: goal),
-      popGesture: true,
-      transition: Transition.rightToLeftWithFade,
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SaveGoalPage(goal: goal),
     );
   }
+
+  void _openGoalDetailsPage() => Get.to(
+        () => GoalDetailsPage(
+          goal: goal,
+        ),
+      );
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).backgroundColor,
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(8.0),
-        boxShadow: [
-          BoxShadow(
-            color: Color(0x33000000),
-            blurRadius: 8.0,
-            offset: Offset(0, 3),
-          )
-        ],
       ),
       width: MediaQuery.of(context).size.width,
       margin: EdgeInsets.only(top: 16.0),
       child: GestureDetector(
-        onTap: () => Get.to(() => GoalDetailsPage(
-              goal: goal,
-            )),
+        onTap: _openGoalDetailsPage,
         child: Slidable(
           actionPane: SlidableScrollActionPane(),
           actionExtentRatio: 0.25,
@@ -92,6 +90,13 @@ class GoalListTileWidget extends StatelessWidget {
             decoration: BoxDecoration(
               color: Theme.of(context).backgroundColor,
               borderRadius: BorderRadius.circular(8.0),
+              boxShadow: [
+                BoxShadow(
+                  color: Color(0x33000000),
+                  blurRadius: 8.0,
+                  offset: Offset(0, 3),
+                )
+              ],
             ),
             child: IntrinsicHeight(
               child: Row(
@@ -99,43 +104,73 @@ class GoalListTileWidget extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Container(
-                    width: 12.0,
-                    height: 64.0,
+                    width: 8.0,
+                    height: double.infinity,
                     decoration: BoxDecoration(
                       color: HexColor.fromHex(goal.color),
-                      borderRadius: BorderRadius.circular(2.0),
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(8.0),
+                        bottomLeft: Radius.circular(8.0),
+                      ),
                     ),
-                    margin: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                    // margin: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
                   ),
                   Expanded(
                     child: Container(
                       margin:
-                          EdgeInsets.symmetric(vertical: 16, horizontal: 10),
+                          EdgeInsets.symmetric(vertical: 16, horizontal: 16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Hero(
-                            tag: goal.id,
+                          Text(
+                            goal.title,
+                            style:
+                                Theme.of(context).textTheme.headline6.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 18.0,
+                                    ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4.0),
                             child: Text(
-                              goal.title.toUpperCase(),
+                              DateFormat('MMM yyyy').format(goal.startDate) +
+                                  ' - ' +
+                                  DateFormat('MMM yyyy').format(goal.endDate),
                               style: Theme.of(context)
                                   .textTheme
-                                  .headline6
-                                  .copyWith(fontWeight: FontWeight.w600),
+                                  .subtitle1
+                                  .copyWith(
+                                    fontWeight: FontWeight.w300,
+                                    fontSize: 14,
+                                  ),
                             ),
-                          ),
-                          Text(
-                            DateFormat('MMM yyyy').format(goal.startDate) +
-                                ' - ' +
-                                DateFormat('MMM yyyy').format(goal.endDate),
-                            style: Theme.of(context)
-                                .textTheme
-                                .subtitle1
-                                .copyWith(fontWeight: FontWeight.w300),
                           ),
                         ],
                       ),
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () => showModalBottomSheet(
+                      context: context,
+                      builder: (context) => SaveStackPage(
+                        goalRef: goal.id,
+                        goalColor: goal.color,
+                        goalPartnerIDs: goal.partnersIDs,
+                      ),
+                    ).then((value) =>
+                        value != null && value ? _openGoalDetailsPage() : null),
+                    child: Padding(
+                      padding: EdgeInsets.only(right: 10),
+                      child: SvgPicture.asset(
+                        'assets/images/icons/add.svg',
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(right: 16),
+                    child: SvgPicture.asset(
+                      'assets/images/icons/drag_indicator.svg',
                     ),
                   ),
                 ],
@@ -147,9 +182,22 @@ class GoalListTileWidget extends StatelessWidget {
               onTap: () => _editGoal(context),
               iconWidget: LayoutBuilder(builder: (context, constraints) {
                 return Container(
-                  width: constraints.maxWidth,
-                  height: constraints.maxHeight,
-                  color: Theme.of(context).accentColor,
+                  width: constraints.maxWidth - 24,
+                  height: constraints.maxWidth - 24,
+                  margin: EdgeInsets.only(
+                    left: 16,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).accentColor,
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Color(0x33000000),
+                        blurRadius: 6.0,
+                        offset: Offset(0, 3),
+                      )
+                    ],
+                  ),
                   child: Icon(
                     Icons.edit,
                     color: Theme.of(context).backgroundColor,
@@ -163,14 +211,21 @@ class GoalListTileWidget extends StatelessWidget {
               iconWidget: LayoutBuilder(
                 builder: (context, constraints) {
                   return Container(
-                    width: constraints.maxWidth,
-                    height: constraints.maxHeight,
+                    width: constraints.maxWidth - 24,
+                    height: constraints.maxWidth - 24,
+                    margin: EdgeInsets.only(
+                      right: 16,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.red,
-                      borderRadius: BorderRadius.only(
-                        topRight: Radius.circular(8.0),
-                        bottomRight: Radius.circular(8.0),
-                      ),
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color(0x33000000),
+                          blurRadius: 6.0,
+                          offset: Offset(0, 3),
+                        )
+                      ],
                     ),
                     child: Icon(
                       Icons.delete,

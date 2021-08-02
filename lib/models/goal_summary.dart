@@ -135,15 +135,28 @@ class GoalSummary {
         .instance
         .collection(feed_constants.GOALS_SUMMARIES_KEY)
         .doc(id);
-    stacksSummaries.add(
-      StackSummary(
-        id: stack.id,
-        title: stack.title,
-        allocatedTime: Duration(microseconds: 0),
-        tasksTotal: 0,
-        tasksAccomlished: 0,
-      ),
+
+    final stackSummary = stacksSummaries.firstWhere(
+      (element) => element.id == stack.id,
+      orElse: () => null,
     );
+    if (stackSummary != null) {
+      final stackSummaryIndex = stacksSummaries.indexWhere(
+        (element) => element.id == stack.id,
+      );
+      stackSummary.title = stack.title;
+      stacksSummaries[stackSummaryIndex] = stackSummary;
+    } else {
+      stacksSummaries.add(
+        StackSummary(
+          id: stack.id,
+          title: stack.title,
+          allocatedTime: Duration(microseconds: 0),
+          tasksTotal: 0,
+          tasksAccomlished: 0,
+        ),
+      );
+    }
     await reference.update(
       {
         goal_summary_constants.STACKS_SUMMARIES_KEY:

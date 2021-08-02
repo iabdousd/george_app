@@ -35,6 +35,10 @@ class _FeedArticlesListState extends State<FeedArticlesList>
           DateTime lastDate;
           return ListView(
             addAutomaticKeepAlives: true,
+            padding: EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 8,
+            ),
             children: snapshot.data.map(
               (task) {
                 bool showDate = false;
@@ -46,99 +50,69 @@ class _FeedArticlesListState extends State<FeedArticlesList>
                       lastDate.year == task.creationDate.year);
 
                 lastDate = task.creationDate;
-                return Row(
-                  key: Key(task.id),
-                  crossAxisAlignment: showDate
-                      ? CrossAxisAlignment.start
-                      : CrossAxisAlignment.center,
-                  children: [
-                    Container(
-                      margin: EdgeInsets.only(
-                        left: 8.0,
-                        right: 8.0,
-                        top: 8.0,
-                      ),
-                      width: 80,
-                      child: showDate
-                          ? Column(
-                              children: [
-                                Text(
-                                  DateFormat('EEEE\nMMMM d')
-                                      .format(task.creationDate)
-                                      .toUpperCase(),
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .headline6
-                                      .copyWith(
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 14,
-                                        color: Theme.of(context)
-                                            .textTheme
-                                            .headline6
-                                            .color
-                                            .withOpacity(.6),
-                                      ),
-                                  textAlign: TextAlign.center,
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 12.0),
-                                  child: Text(
-                                    DateFormat('hh:mm a')
-                                        .format(task.startTime),
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyText1
-                                        .copyWith(
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 12,
-                                          color: Theme.of(context)
-                                              .textTheme
-                                              .headline6
-                                              .color
-                                              .withOpacity(.5),
-                                        ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                              ],
-                            )
-                          : Text(
-                              DateFormat('hh:mm a').format(task.creationDate),
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyText1
-                                  .copyWith(
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 12,
-                                    color: Theme.of(context)
-                                        .textTheme
-                                        .headline6
-                                        .color
-                                        .withOpacity(.5),
-                                  ),
-                              textAlign: TextAlign.center,
-                            ),
-                    ),
-                    if (task.repetition == null)
-                      Expanded(
-                        child: OnetimeTaskArticleWidget(
-                          name: task.userName,
-                          profilePicture: task.userPhoto,
-                          task: task,
-                          showAuthorRow: true,
-                        ),
-                      )
-                    else
-                      Expanded(
-                        child: RecurringTaskArticleWidget(
-                          name: task.userName,
-                          profilePicture: task.userPhoto,
-                          task: task,
-                          showAuthorRow: true,
-                        ),
-                      ),
-                  ],
-                );
+                if (task.repetition == null)
+                  return OnetimeTaskArticleWidget(
+                    key: Key(task.id),
+                    name: task.userName,
+                    profilePicture: task.userPhoto,
+                    task: task,
+                    showAuthorRow: true,
+                  );
+                else
+                  return RecurringTaskArticleWidget(
+                    key: Key(task.id),
+                    name: task.userName,
+                    profilePicture: task.userPhoto,
+                    task: task,
+                    showAuthorRow: true,
+                  );
+                // return Column(
+                //   children: [
+                // if (showDate)
+                //   Padding(
+                //     padding: const EdgeInsets.only(
+                //       top: 16.0,
+                //       bottom: 8.0,
+                //     ),
+                //     child: Row(
+                //       children: [
+                //         Expanded(
+                //           child: Text(
+                //             DateFormat('EEEE, MMMM dd').format(lastDate),
+                //             style: TextStyle(
+                //               color: Color(0xFFB2B5C3),
+                //               fontWeight: FontWeight.w600,
+                //               fontSize: 14,
+                //             ),
+                //           ),
+                //         ),
+                //         Text(
+                //           DateFormat('hh:mm').format(lastDate),
+                //           style: TextStyle(
+                //             color: Color(0xFFB2B5C3),
+                //             fontWeight: FontWeight.w600,
+                //             fontSize: 14,
+                //           ),
+                //         ),
+                //       ],
+                //     ),
+                //   ),
+                // if (task.repetition == null)
+                //   OnetimeTaskArticleWidget(
+                //     name: task.userName,
+                //     profilePicture: task.userPhoto,
+                //     task: task,
+                //     showAuthorRow: true,
+                //   )
+                // else
+                //   RecurringTaskArticleWidget(
+                //     name: task.userName,
+                //     profilePicture: task.userPhoto,
+                //     task: task,
+                //     showAuthorRow: true,
+                //   ),
+                //   ],
+                // );
               },
             ).toList(),
           );

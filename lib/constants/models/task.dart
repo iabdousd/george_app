@@ -1,4 +1,4 @@
-const String ID_KEY = 'id';
+const String ID_KEY = 'uid';
 const String USER_ID_KEY = 'userID';
 const String PARTNERS_IDS_KEY = 'partnersIDs';
 const String GOAL_REF_KEY = 'gooalRef';
@@ -7,6 +7,7 @@ const String GOAL_TITLE_KEY = 'gooalTitle';
 const String STACK_TITLE_KEY = 'stackTitle';
 const String STACK_COLOR_KEY = 'stackColor';
 const String TITLE_KEY = 'title';
+const String INDEX_KEY = 'index';
 const String DESCRIPTION_KEY = 'description';
 const String TASK_NOTES_KEY = 'taskNotes';
 const String STATUS_KEY = 'status';
@@ -27,3 +28,18 @@ const String REPETITION_MONTHS_COUNT_KEY = 'repetitionMonthsCount';
 const String REPETITION_DAY_NUMBER_KEY = 'repetitionDayNumber';
 
 const REPETITION_OPTIONS = const ['daily', 'weekly', 'monthly'];
+const REPETITION_OPTIONS_TITLES = const {
+  'daily': 'Daily',
+  'weekly': 'Weekly',
+  'monthly': 'Monthly'
+};
+
+const Map<int, String> WEEK_DAYS = {
+  0: 'Mon',
+  1: 'Tue',
+  2: 'Wed',
+  3: 'Thu',
+  4: 'Fri',
+  5: 'Sat',
+  6: 'Sun',
+};

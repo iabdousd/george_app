@@ -17,12 +17,12 @@ class AppBottomNavigationBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BottomNavigationBar(
-      showSelectedLabels: false,
-      showUnselectedLabels: false,
+      backgroundColor: Theme.of(context).backgroundColor,
       currentIndex: index,
       onTap: changePage,
       items: [
         BottomNavigationBarItem(
+          backgroundColor: Theme.of(context).backgroundColor,
           icon: SvgPicture.asset(
             'assets/images/icons/home.svg',
             key: keys[0],
@@ -30,10 +30,11 @@ class AppBottomNavigationBar extends StatelessWidget {
             height: 22,
             color: index == 0 ? Theme.of(context).primaryColor : null,
           ),
-          label: '',
-          tooltip: '',
+          label: 'Home',
+          tooltip: 'Home',
         ),
         BottomNavigationBarItem(
+          backgroundColor: Theme.of(context).backgroundColor,
           icon: SvgPicture.asset(
             'assets/images/icons/calendar.svg',
             key: keys[1],
@@ -41,16 +42,17 @@ class AppBottomNavigationBar extends StatelessWidget {
             height: 22,
             color: index == 1 ? Theme.of(context).primaryColor : null,
           ),
-          label: '',
-          tooltip: '',
+          label: 'Calendar',
+          tooltip: 'Calendar',
         ),
         BottomNavigationBarItem(
+          backgroundColor: Theme.of(context).backgroundColor,
           icon: StreamBuilder<int>(
             stream: NotificationRepository.countNotifications(),
             builder: (context, snapshot) {
               final count = snapshot.data ?? 0;
               return Badge(
-                showBadge: count > 0,
+                showBadge: false, //count > 0,
                 badgeContent: Padding(
                   padding: const EdgeInsets.all(2.0),
                   child: Text(
@@ -71,10 +73,11 @@ class AppBottomNavigationBar extends StatelessWidget {
               );
             },
           ),
-          label: '',
-          tooltip: '',
+          label: 'Notifications',
+          tooltip: 'Notifications',
         ),
         BottomNavigationBarItem(
+          backgroundColor: Theme.of(context).backgroundColor,
           icon: SvgPicture.asset(
             'assets/images/icons/activity.svg',
             key: keys[3],
@@ -82,8 +85,8 @@ class AppBottomNavigationBar extends StatelessWidget {
             height: 22,
             color: index == 3 ? Theme.of(context).primaryColor : null,
           ),
-          label: '',
-          tooltip: '',
+          label: 'Activity',
+          tooltip: 'Activity',
         ),
       ],
     );

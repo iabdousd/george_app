@@ -72,12 +72,14 @@ class _AddPostPhotoState extends State<AddPostPhoto> {
                     ),
                   ),
                   SizedBox(width: 16),
-                  AppActionButton(
-                    onPressed: submitImage,
-                    label: 'Save',
-                    icon: Icons.done,
-                    margin: EdgeInsets.zero,
-                    backgroundColor: Colors.green[500],
+                  Expanded(
+                    child: AppActionButton(
+                      onPressed: submitImage,
+                      label: 'Save',
+                      icon: Icons.done,
+                      margin: EdgeInsets.zero,
+                      backgroundColor: Theme.of(context).accentColor,
+                    ),
                   ),
                 ],
               ),
@@ -94,7 +96,10 @@ class _AddPostPhotoState extends State<AddPostPhoto> {
     final res = await TaskRepository.addTaskPostPhoto(widget.task, taskPhoto);
     toggleLoading(state: false);
     if (res) {
-      Navigator.pop(context);
+      Navigator.pop(
+        context,
+        widget.task.copyWith(taskPhoto: image.path),
+      );
       showFlushBar(
         title: 'Photo Added',
         message: 'The Photo was Added Successfully',
