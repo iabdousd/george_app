@@ -43,7 +43,8 @@ _updatePhone(CountryCode country, String phone, String password) async {
         toggleLoading(state: false);
         showFlushBar(
           title: 'Verification Failure',
-          message: 'We couldn\'t send SMS code to this number.',
+          message:
+              exception.message ?? 'We couldn\'t send SMS code to this number.',
           success: false,
         );
       },

@@ -7,9 +7,9 @@ import 'package:share/share.dart';
 import 'package:stackedtasks/models/UserModel.dart';
 import 'package:stackedtasks/providers/cache/cached_image_provider.dart';
 import 'package:stackedtasks/repositories/contact/contact_repository.dart';
-import 'package:stackedtasks/services/feed-back/flush_bar.dart';
 import 'package:stackedtasks/services/feed-back/loader.dart';
 import 'package:stackedtasks/services/user/user_service.dart';
+import 'package:stackedtasks/widgets/shared/app_error_widget.dart';
 import 'package:stackedtasks/widgets/shared/buttons/circular_action_button.dart';
 
 class ContactPickerView extends StatefulWidget {
@@ -33,11 +33,11 @@ class ContactPickerView extends StatefulWidget {
 }
 
 class _ContactPickerViewState extends State<ContactPickerView> {
+  bool permissionError = false;
   List<Contact> foundContactList = [];
   List<Contact> contactList = [];
   Map<String, UserModel> selectedUsers = {};
   Map<String, UserModel> users = {};
-  Set<String> alreadyShownUsers = {};
   bool loading = true;
   CountryDetails details;
 
@@ -88,12 +88,11 @@ class _ContactPickerViewState extends State<ContactPickerView> {
       setState(() {
         loading = false;
       });
-    } else
-      showFlushBar(
-        title: 'Permission Error',
-        message:
-            'Couldn\'t fetch contacts because you didn\'t approve the permission to them !',
-      );
+    } else {
+      setState(() {
+        permissionError = true;
+      });
+    }
   }
 
   @override
@@ -104,10 +103,12 @@ class _ContactPickerViewState extends State<ContactPickerView> {
 
   @override
   Widget build(BuildContext context) {
-    alreadyShownUsers = {};
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.only(
+          topRight: Radius.circular(12),
+          topLeft: Radius.circular(12),
+        ),
         color: Theme.of(context).backgroundColor,
       ),
       padding: EdgeInsets.only(
@@ -162,7 +163,11 @@ class _ContactPickerViewState extends State<ContactPickerView> {
               ),
             ],
           ),
-          if (loading)
+          if (permissionError)
+            AppErrorWidget(
+              customMessage: 'Contacts permission need to be granted first',
+            )
+          else if (loading)
             Expanded(
               child: Center(
                 child: LoadingWidget(),
@@ -188,35 +193,30 @@ class _ContactPickerViewState extends State<ContactPickerView> {
                   UserModel userModel;
                   if (!notUser) {
                     final foundPhones = contact.phones.where((element) {
-                      final tPhone =
-                          ContactRepository.trimPhoneNumber(element.value);
+                      final tPhone = ContactRepository.trimPhoneNumber(
+                        element.value,
+                      );
                       return users.containsKey(
                         tPhone.startsWith('+')
                             ? tPhone
                             : details.dialCode + tPhone,
                       );
                     });
-                    if (foundPhones.isNotEmpty &&
-                        !alreadyShownUsers.contains(
-                          ContactRepository.trimPhoneNumber(
-                              foundPhones.first.value),
-                        )) {
+                    if (foundPhones.isNotEmpty) {
                       final phone = ContactRepository.trimPhoneNumber(
                         foundPhones.first.value,
                       );
                       userModel = users[phone.startsWith('+')
                           ? phone
                           : details.dialCode + phone];
-                      alreadyShownUsers.add(phone);
                     } else {
-                      final emails = contact.emails.where((element) {
+                      final foundEmails = contact.emails.where((element) {
                         return users.containsKey(
                           element.value.toLowerCase(),
                         );
                       });
-                      if (emails.isNotEmpty) {
-                        final email = emails.first.value;
-
+                      if (foundEmails.isNotEmpty) {
+                        final email = foundEmails.first.value;
                         userModel = users[email.toLowerCase()];
                       } else {
                         notUser = true;
@@ -232,16 +232,24 @@ class _ContactPickerViewState extends State<ContactPickerView> {
                     children: [
                       if (index == foundContactList.length || index == 0)
                         Padding(
-                          padding: const EdgeInsets.only(
+                          padding: EdgeInsets.only(
                             left: 8.0,
                             right: 8.0,
-                            top: 32.0,
-                            bottom: 16.0,
+                            top: (index == foundContactList.length ||
+                                    (index == 0 && foundContactList.isNotEmpty))
+                                ? 32.0
+                                : 0.0,
+                            bottom: (index == foundContactList.length ||
+                                    (index == 0 && foundContactList.isNotEmpty))
+                                ? 16.0
+                                : 0.0,
                           ),
                           child: Text(
                             index == foundContactList.length
                                 ? 'Friends that aren’t on the platform:'
-                                : 'Friends on the platform',
+                                : foundContactList.isNotEmpty
+                                    ? 'Friends on the platform'
+                                    : '',
                             style:
                                 Theme.of(context).textTheme.subtitle1.copyWith(
                                       color: Color(0xFFB2B5C3),

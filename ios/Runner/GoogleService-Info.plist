@@ -3,9 +3,11 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>857707576305-6947mkjokc87c0id83hhe12qglf9tb87.apps.googleusercontent.com</string>
+	<string>857707576305-c725uk3ibd9j2a3ov7so94jarhd8tb0e.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.857707576305-6947mkjokc87c0id83hhe12qglf9tb87</string>
+	<string>com.googleusercontent.apps.857707576305-c725uk3ibd9j2a3ov7so94jarhd8tb0e</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>857707576305-aj77mbar8kl69e71nohuqkr3dmm7jtb2.apps.googleusercontent.com</string>
 	<key>API_KEY</key>
 	<string>AIzaSyCbrbe_vCLiTpKNOBUzM0aHU04-ua-96rY</string>
 	<key>GCM_SENDER_ID</key>
@@ -13,7 +15,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.timemapmaker.stackedtasks</string>
+	<string>com.stackedtasks.stackd</string>
 	<key>PROJECT_ID</key>
 	<string>upwork-projects-56b20</string>
 	<key>STORAGE_BUCKET</key>
@@ -29,6 +31,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:857707576305:ios:2111710a89749978322250</string>
+	<string>1:857707576305:ios:bfe5d7871bc10930322250</string>
 </dict>
 </plist>
