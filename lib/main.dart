@@ -18,6 +18,7 @@ void main() async {
     yield LicenseEntryWithLineBreaks(['google_fonts'], license);
   });
   await Firebase.initializeApp();
+
   await AppPreferences.initPreferences();
 
   if (!kIsWeb) await initializeCache();

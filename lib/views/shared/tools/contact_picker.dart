@@ -186,7 +186,7 @@ class _ContactPickerViewState extends State<ContactPickerView> {
 
                   final displayname = contact.displayName ?? contact.givenName;
 
-                  if (displayname == null) {
+                  if ((displayname ?? '').isEmpty) {
                     return Container();
                   }
 

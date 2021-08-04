@@ -163,7 +163,7 @@ class AddPartnerDialog extends StatelessWidget {
         alreadyInvited: partners.map((e) => e.uid).toList(),
       ),
     ).then((users) async {
-      if (users != null) {
+      if (users != null && users is List<UserModel>) {
         if (object?.id == null) {
           for (final foundUser in users) {
             invitePartner(foundUser);
@@ -175,8 +175,9 @@ class AddPartnerDialog extends StatelessWidget {
           );
           return;
         }
+        int successCount = users.length;
         for (final foundUser in users) {
-          type == PartnerInvitationType.task
+          bool res = type == PartnerInvitationType.task
               ? await NotificationRepository.addTaskNotification(
                   object,
                   foundUser.uid,
@@ -190,11 +191,15 @@ class AddPartnerDialog extends StatelessWidget {
                       object,
                       foundUser.uid,
                     );
+          if (!res) {
+            successCount--;
+          }
         }
-        showFlushBar(
-          title: 'Success',
-          message: 'Successfully invited ${users.length} partner(s)',
-        );
+        if (successCount > 0)
+          showFlushBar(
+            title: 'Success',
+            message: 'Successfully invited $successCount partner(s)',
+          );
       }
     });
   }

@@ -98,54 +98,55 @@ class NotificationRepository {
   }
 
   static Future<bool> addGoalNotification(Goal goal, String invitedID) async {
-    try {
-      if (goal.userID == invitedID) {
-        await showFlushBar(
-          title: 'Hmmm...',
-          message: 'Unfortunately, you cannot invite your self !',
-          success: false,
-        );
-      }
+    // try {
+    if (goal.userID == invitedID) {
+      await showFlushBar(
+        title: 'Hmmm...',
+        message: 'Unfortunately, you cannot invite your self !',
+        success: false,
+      );
+    }
 
-      final alreadyNotification = await FirebaseFirestore.instance
-          .collection(NOTIFICATIONS_COLLECTION)
-          .where('senderID', isEqualTo: goal.userID)
-          .where(NOTIFICATION_RECIEVER_KEY, isEqualTo: invitedID)
-          .where('data', isEqualTo: goal.id)
-          .where(NOTIFICATION_STATUS_KEY, isEqualTo: 0)
-          .get();
+    final alreadyNotification = await FirebaseFirestore.instance
+        .collection(NOTIFICATIONS_COLLECTION)
+        .where('senderID', isEqualTo: goal.userID)
+        .where(NOTIFICATION_RECIEVER_KEY, isEqualTo: invitedID)
+        .where('data', isEqualTo: goal.id)
+        .where(NOTIFICATION_STATUS_KEY, isEqualTo: 0)
+        .get();
 
-      if (alreadyNotification.size > 0) {
-        showFlushBar(
-          title: 'Already Invited',
-          message: 'This user has been already invited to this task',
-          success: false,
-        );
-        return false;
-      }
-
-      final res = await FirebaseFirestore.instance
-          .collection(NOTIFICATIONS_COLLECTION)
-          .add(
-            GoalInvitationNotification(
-              senderID: goal.userID,
-              userID: invitedID,
-              status: 0,
-              creationDate: DateTime.now(),
-              title: getCurrentUser().displayName,
-              body: 'Invited you to goal "${goal.title}"',
-              icon: getCurrentUser().photoURL,
-              data: goal.toJson(),
-            ).toMap(),
-          );
-
-      res.update({
-        NOTIFICATION_ID_KEY: res.id,
-      });
-      return true;
-    } catch (e) {
+    if (alreadyNotification.size > 0) {
+      print('Already invited');
+      showFlushBar(
+        title: 'Already Invited',
+        message: 'This user has been already invited to this task',
+        success: false,
+      );
       return false;
     }
+
+    final res = await FirebaseFirestore.instance
+        .collection(NOTIFICATIONS_COLLECTION)
+        .add(
+          GoalInvitationNotification(
+            senderID: goal.userID,
+            userID: invitedID,
+            status: 0,
+            creationDate: DateTime.now(),
+            title: getCurrentUser().displayName,
+            body: 'Invited you to goal "${goal.title}"',
+            icon: getCurrentUser().photoURL,
+            data: goal.id,
+          ).toMap(),
+        );
+
+    res.update({
+      NOTIFICATION_ID_KEY: res.id,
+    });
+    return true;
+    // } catch (e) {
+    // return false;
+    // }
   }
 
   static Future<bool> addStackNotification(
@@ -187,7 +188,7 @@ class NotificationRepository {
               title: getCurrentUser().displayName,
               body: 'Invited you to stack "${stack.title}"',
               icon: getCurrentUser().photoURL,
-              data: stack.toJson(),
+              data: stack.id,
             ).toMap(),
           );
       res.update({
